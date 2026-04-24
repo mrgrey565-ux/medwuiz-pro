@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>Results — MedQuiz Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar no-print">
+    <div class="nav-brand" onclick="window.location.href='index.html'">
+      <div class="nav-logo">🧠</div>
+      <span class="nav-brand-text">MedQuiz Pro</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-ghost btn-sm" onclick="window.location.href='index.html'">🏠 New Quiz</button>
+    </div>
+  </nav>
+
+  <div id="resultsScreen" class="screen active">
+    <div class="quiz-header no-print">
+      <div class="quiz-header-left">
+        <span class="quiz-title">Results</span>
+        <span class="mode-badge" id="resultModeBadge">Results</span>
+      </div>
+      <div class="quiz-header-right">
+        <button class="btn btn-ghost btn-sm" onclick="window.location.href='index.html'">🏠 New Quiz</button>
+      </div>
+    </div>
+    <div class="results-body">
+      <div class="print-header">
+        <h1 style="font-size:24px;margin-bottom:4px">MedQuiz Pro — Test Report</h1>
+        <p id="printDate" style="color:#666;font-size:13px"></p>
+      </div>
+      <div class="results-header">
+        <div class="score-ring-wrap">
+          <div class="score-ring">
+            <svg viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="gradScore" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#6366f1"/>
+                  <stop offset="50%" stop-color="#a855f7"/>
+                  <stop offset="100%" stop-color="#ec4899"/>
+                </linearGradient>
+              </defs>
+              <circle class="ring-bg" cx="80" cy="80" r="68"/>
+              <circle class="ring-fill" id="ringFill" cx="80" cy="80" r="68" stroke-dasharray="427" stroke-dashoffset="427"/>
+            </svg>
+            <div class="score-ring-text">
+              <div class="score-percent" id="scorePercent">0%</div>
+              <div class="score-label">Score</div>
+            </div>
+          </div>
+        </div>
+        <div class="results-title" id="resultsTitle">Quiz Complete!</div>
+        <div class="results-subtitle" id="resultsSubtitle"></div>
+      </div>
+
+      <div class="results-stats" id="resultsStats"></div>
+
+      <div class="weakness-dashboard" id="weaknessDashboard" style="display:none">
+        <div class="weakness-title">📊 Topic-wise Accuracy</div>
+        <div id="weaknessContent"></div>
+      </div>
+
+      <div class="heatmap-container" id="heatmapContainer">
+        <div class="heatmap-title">🔥 Study Consistency (Last 84 Days)</div>
+        <div class="heatmap-grid" id="heatmapGrid"></div>
+        <div class="heatmap-legend">
+          <span>Less</span>
+          <div class="heatmap-legend-dot" style="background:var(--heatmap-empty)"></div>
+          <div class="heatmap-legend-dot" style="background:var(--heatmap-l1)"></div>
+          <div class="heatmap-legend-dot" style="background:var(--heatmap-l2)"></div>
+          <div class="heatmap-legend-dot" style="background:var(--heatmap-l3)"></div>
+          <div class="heatmap-legend-dot" style="background:var(--heatmap-l4)"></div>
+          <span>More</span>
+        </div>
+      </div>
+
+      <div class="ai-assessment" id="aiAssessment">
+        <div class="ai-assessment-header">✨ AI Performance Assessment</div>
+        <div class="ai-assessment-content" id="aiAssessmentContent"></div>
+      </div>
+
+      <div class="results-actions no-print">
+        <button class="btn btn-ai" onclick="getAIAssessment()" id="aiAssessBtn">🤖 Get AI Assessment</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+        <button class="btn btn-green" onclick="downloadResults()">📥 Download</button>
+        <button class="btn btn-orange" onclick="retakeWrong()" id="retakeWrongBtn">🔄 Retake Wrong</button>
+        <button class="btn btn-ghost" onclick="openFlashcards()">🃏 Flashcards</button>
+        <button class="btn btn-ghost" onclick="window.location.href='index.html'">🏠 New Quiz</button>
+      </div>
+
+      <div class="review-list" id="reviewList">
+        <h3>📝 Question-by-Question Review</h3>
+        <div class="review-filters no-print" id="reviewFilters">
+          <button class="review-filter active" data-filter="all" onclick="filterReview('all')">All</button>
+          <button class="review-filter" data-filter="wrong" onclick="filterReview('wrong')">❌ Wrong</button>
+          <button class="review-filter" data-filter="correct" onclick="filterReview('correct')">✅ Correct</button>
+          <button class="review-filter" data-filter="skipped" onclick="filterReview('skipped')">⏭ Skipped</button>
+        </div>
+        <div id="reviewItems"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flashcard overlay -->
+  <div class="flashcard-overlay" id="flashcardOverlay">
+    <div class="flashcard" id="flashcard" onclick="flipFlashcard()">
+      <div class="fc-front" id="fcFront"></div>
+      <div class="fc-back" id="fcBack"></div>
+    </div>
+    <div class="fc-nav">
+      <button class="btn btn-ghost btn-sm" onclick="prevFlashcard()">←</button>
+      <span class="fc-counter" id="fcCounter">1/1</span>
+      <button class="btn btn-ghost btn-sm" onclick="nextFlashcard()">→</button>
+      <button class="btn btn-red btn-sm" onclick="closeFlashcards()">✕ Close</button>
+    </div>
+  </div>
+
+  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="togglePomodoroWidget()" title="Pomodoro Timer">🍅</button>
+  <div class="pomodoro-widget" id="pomodoroWidget">
+    <div class="pomodoro-body">
+      <div class="pomo-header">
+        <span class="pomo-label" id="pomoLabel">FOCUS</span>
+        <button class="btn btn-ghost btn-xs" onclick="togglePomodoroWidget()" style="padding:4px 8px">✕</button>
+      </div>
+      <div class="pomo-time" id="pomoTime">25:00</div>
+      <div class="pomo-actions">
+        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="startPomodoro()">▶ Start</button>
+        <button class="btn btn-ghost btn-xs" onclick="resetPomodoro()">↺</button>
+        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(25)">25m</button>
+        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(50)">50m</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
