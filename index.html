@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#0a0e1a">
+  <meta name="description" content="MedQuiz Pro - Advanced Medical Quiz Platform with AI Integration">
+  <title>MedQuiz Pro — AI-Powered Medical Quiz Platform</title>
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIk1lZFF1aXogUHJvIiwKICAic2hvcnRfbmFtZSI6ICJNZWRRdWl6IiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwNzBiMTQiLAogICJ0aGVtZV9jb2xvciI6ICIjNjM2NmYxIiwKICAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sOzxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCc+PHRleHQgeT0nNzAnIGZvbnQtc2l6ZT0nNzAnPuCfnqA8L3RleHQ+PC9zdmc+Iiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwifV19">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <script src="https://js.puter.com/v2/"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar no-print">
+    <div class="nav-brand" onclick="window.location.href='index.html'">
+      <div class="nav-logo">🧠</div>
+      <span class="nav-brand-text">MedQuiz Pro</span>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-icon-btn" onclick="openModal('bankModal')" title="Question Bank">🏦</button>
+      <div class="ai-status connected" id="aiStatus" title="AI Integration Status">
+        <span class="ai-status-dot"></span>
+        <span id="aiStatusText">AI Ready</span>
+      </div>
+      <button class="nav-icon-btn" onclick="openModal('aiConfigModal')" title="AI Settings">🤖</button>
+      <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn">🌙</button>
+      <button class="nav-icon-btn" onclick="openModal('helpModal')" title="Help">❔</button>
+    </div>
+  </nav>
+
+  <div id="homeScreen" class="screen active">
+    <div class="hero">
+      <div class="hero-badge">✨ AI-Powered · Mobile-First · Free · 20+ Features</div>
+      <div class="hero-logo">🧠</div>
+      <h1>MedQuiz Pro</h1>
+      <p>The ultimate AI-assisted medical quiz platform for serious learners. Paste questions, upload images, track progress, and master your exams.</p>
+      <div class="features-strip">
+        <div class="feature-chip">⏱️ Custom Timer</div>
+        <div class="feature-chip">🤖 AI Explanations</div>
+        <div class="feature-chip">📱 Mobile-Friendly</div>
+        <div class="feature-chip">🎯 Exam & Study Mode</div>
+        <div class="feature-chip">📊 Smart Analytics</div>
+        <div class="feature-chip">🔄 Spaced Repetition</div>
+        <div class="feature-chip">📸 OCR Import</div>
+        <div class="feature-chip">🔥 Heatmap</div>
+      </div>
+    </div>
+
+    <div class="home-card" id="mainHomeCard">
+      <div class="card-title">
+        <span class="card-title-icon">📋</span>
+        <span>Paste Your Questions (JSON)</span>
+      </div>
+      <p class="hint">
+        Required fields: <code>question</code>, <code>options</code>, <code>correct_option</code>, <code>explanation</code>.
+        Optional: <code>subject</code>, <code>topic</code>, <code>difficulty</code>, <code>blooms_level</code>, <code>tags</code>, <code>image_url</code>.
+      </p>
+      <textarea class="json-textarea" id="jsonInput" placeholder='[
+  {
+    "question": "Which finding most strongly supports antemortem drowning?",
+    "options": ["Cutis anserina", "Washerwoman hands", "Fine persistent froth in airways", "Water in stomach"],
+    "correct_option": "Fine persistent froth in airways",
+    "explanation": "Fine, persistent froth indicates active respiration in water...",
+    "difficulty": 3,
+    "subject": "Forensic Medicine",
+    "topic": "Asphyxial Deaths",
+    "tags": ["PYQ","HYT"],
+    "image_url": ""
+  }
+]'></textarea>
+
+      <div class="action-row">
+        <button class="btn btn-primary" onclick="parseJSON()">⚡ Load Questions</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadSample()">📝 Load Sample</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadFromStorage()">💾 Load Saved</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearInput()">🗑 Clear</button>
+        <button class="btn btn-ghost btn-sm" onclick="triggerCSVUpload()">📊 CSV/Excel</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('ocrModal')">📸 OCR</button>
+        <input type="file" id="csvFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleCSVUpload(event)">
+      </div>
+
+      <div class="smart-filters" id="smartFilters" style="display:none">
+        <span style="font-size:12px;color:var(--text-muted);margin-right:4px">Quick Filters:</span>
+        <button class="smart-filter-chip" data-tag="HYT" onclick="toggleSmartFilter('HYT',this)">🔥 HYT Only</button>
+        <button class="smart-filter-chip" data-tag="PYQ" onclick="toggleSmartFilter('PYQ',this)">📌 PYQ Only</button>
+        <button class="smart-filter-chip" data-tag="ALL" onclick="resetSmartFilters()">🔄 All</button>
+      </div>
+
+      <div class="parse-status" id="parseStatus"></div>
+
+      <div class="q-preview" id="qPreview">
+        <h3 id="qPreviewTitle">Questions Loaded</h3>
+        <div class="q-chip-list" id="qChipList"></div>
+        <div class="stats-bar" id="statsBar"></div>
+      </div>
+
+      <div class="mode-selector" id="modeSelector">
+        <h3>🎯 Choose Your Quiz Mode</h3>
+        <div class="mode-cards">
+          <div class="mode-card" id="examModeCard" onclick="selectMode('exam')">
+            <span class="mode-icon">⏱️</span>
+            <div class="mode-name">Exam Mode</div>
+            <div class="mode-desc">Timed · CBT-style · Flag questions · Final submit · Full review</div>
+          </div>
+          <div class="mode-card" id="studyModeCard" onclick="selectMode('study')">
+            <span class="mode-icon">📖</span>
+            <div class="mode-name">Study Mode</div>
+            <div class="mode-desc">No timer · Instant feedback · AI explanations · Progressive learning</div>
+          </div>
+          <div class="mode-card" id="retakeModeCard" onclick="selectMode('retake')" style="display:none">
+            <span class="mode-icon">🔄</span>
+            <div class="mode-name">Targeted Retake</div>
+            <div class="mode-desc">Only wrong/skipped questions · Focus on weak areas</div>
+          </div>
+        </div>
+
+        <div class="timer-config" id="timerConfig">
+          <label>⏱️ Exam Timer (select preset or set custom)</label>
+          <div class="timer-presets">
+            <button class="timer-preset" onclick="setTimerPreset(0)">No Limit</button>
+            <button class="timer-preset" onclick="setTimerPreset(30)">30s/Q</button>
+            <button class="timer-preset" onclick="setTimerPreset(60)">1 min/Q</button>
+            <button class="timer-preset active" onclick="setTimerPreset(90)">1.5 min/Q</button>
+            <button class="timer-preset" onclick="setTimerPreset(120)">2 min/Q</button>
+          </div>
+          <div class="custom-time">
+            <input type="number" id="customMinutes" min="0" placeholder="Custom (min)">
+            <button class="btn btn-ghost btn-sm" onclick="setCustomTimer()">Set Custom</button>
+            <span style="font-size:12px;color:var(--text-muted);margin-left:6px" id="timerDisplay2">Total: —</span>
+          </div>
+        </div>
+
+        <div class="scoring-config" id="scoringConfig">
+          <label>
+            <input type="checkbox" id="negMarkingCheck" onchange="toggleScoringModel()">
+            Enable +4/-1 Negative Marking (NEET-style)
+          </label>
+          <span style="font-size:11px;color:var(--text-muted);margin-left:28px">Correct: +4 · Wrong: -1 · Skipped: 0</span>
+        </div>
+      </div>
+
+      <div class="milestone-bar" id="milestoneBar">
+        <div class="milestone-header">
+          <span>🎯 Daily Goal</span>
+          <span id="milestoneText">0 / 100 Questions</span>
+        </div>
+        <div class="milestone-progress-bg">
+          <div class="milestone-progress-fill" id="milestoneFill" style="width:0%"></div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="number" id="dailyGoalInput" min="1" max="500" value="100" style="width:70px;padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:inherit;font-size:12px">
+          <button class="btn btn-ghost btn-xs" onclick="setDailyGoal()">Set Goal</button>
+        </div>
+      </div>
+
+      <div class="start-section" id="startSection">
+        <button class="btn btn-primary btn-lg btn-full" onclick="startQuiz()">🚀 Start Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="bankModal">
+    <div class="modal-box" style="max-width:600px">
+      <div class="modal-icon">🏦</div>
+      <div class="modal-title">Local Question Bank</div>
+      <div class="modal-body" style="text-align:left">
+        <div class="bank-list" id="bankList"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="bankNameInput" placeholder="Bank name..." style="flex:1;padding:8px 10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:inherit;font-size:12px;min-width:120px">
+          <button class="btn btn-primary btn-sm" onclick="saveToBank()">💾 Save Current</button>
+        </div>
+      </div>
+      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('bankModal')">Close</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="folderModal">
+    <div class="modal-box" style="max-width:550px">
+      <div class="modal-icon">📁</div>
+      <div class="modal-title">Review Folders</div>
+      <div class="modal-body" style="text-align:left">
+        <div class="folder-list" id="folderList"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="newFolderName" placeholder="New folder name..." style="flex:1;padding:8px 10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:inherit;font-size:12px;min-width:120px">
+          <button class="btn btn-primary btn-sm" onclick="createFolder()">➕ Create</button>
+        </div>
+        <div id="folderQuestions" style="margin-top:12px;max-height:200px;overflow-y:auto"></div>
+      </div>
+      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('folderModal')">Close</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="ocrModal">
+    <div class="modal-box" style="max-width:600px">
+      <div class="modal-icon">📸</div>
+      <div class="modal-title">OCR — Image to JSON</div>
+      <div class="modal-body" style="text-align:left">
+        <div class="ocr-zone" id="ocrZone" onclick="document.getElementById('ocrFileInput').click()">
+          <div style="font-size:36px;margin-bottom:8px">📷</div>
+          <div style="font-size:13px;color:var(--text-secondary)">Click or drop an image here</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Snap a photo of textbook MCQs</div>
+        </div>
+        <input type="file" id="ocrFileInput" accept="image/*" style="display:none" onchange="handleOCRUpload(event)">
+        <img class="ocr-preview-img" id="ocrPreviewImg">
+        <div id="ocrProgress" style="display:none;margin-top:10px">
+          <div class="ai-loading"><div class="spinner"></div><span id="ocrProgressText">Processing...</span></div>
+        </div>
+        <div id="ocrResult" style="display:none;margin-top:10px"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('ocrModal')">Cancel</button>
+        <button class="btn btn-primary" id="ocrConvertBtn" onclick="runOCR()" disabled>🔍 Convert</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="aiConfigModal">
+    <div class="modal-box">
+      <div class="modal-icon">🤖</div>
+      <div class="modal-title">AI Integration Settings</div>
+      <div class="modal-body" style="text-align:left">
+        <div class="api-config-field">
+          <label for="providerSelect">AI Provider</label>
+          <select id="providerSelect" onchange="onProviderChange()">
+            <option value="pollinations">🌸 Pollinations AI — FREE, No Key Needed ✅</option>
+            <option value="gemini">Google Gemini (Requires API Key)</option>
+          </select>
+        </div>
+        <div id="pollinationsConfig">
+          <div class="api-config-field">
+            <label for="pollinationsModelSelect">Model</label>
+            <select id="pollinationsModelSelect">
+              <option value="openai">OpenAI GPT (Recommended)</option>
+              <option value="openai-fast">OpenAI GPT Fast</option>
+              <option value="openai-large">OpenAI GPT Large (Most Powerful)</option>
+              <option value="mistral">Mistral</option>
+              <option value="deepseek">DeepSeek V3</option>
+              <option value="qwen-coder">Qwen Coder</option>
+            </select>
+            <div class="api-help">✨ Completely <strong>free</strong>, no signup, no API key. Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener">Pollinations.ai</a>.</div>
+          </div>
+        </div>
+        <div id="geminiConfig" style="display:none">
+          <div class="api-config-field"><label for="apiKeyInput">Google Gemini API Key</label><input type="password" id="apiKeyInput" placeholder="AIza..."><div class="api-help">Get a free API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.</div></div>
+          <div class="api-config-field"><label for="modelSelect">Gemini Model</label><select id="modelSelect"><option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended)</option><option value="gemini-2.5-pro">Gemini 2.5 Pro</option><option value="gemini-2.0-flash">Gemini 2.0 Flash</option></select></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('aiConfigModal')">Cancel</button>
+        <button class="btn btn-ai" onclick="saveAIConfig()">💾 Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-box">
+      <div class="modal-icon">❔</div>
+      <div class="modal-title">Help & Shortcuts</div>
+      <div class="modal-body" style="text-align:left">
+        <div style="margin-bottom:14px"><strong style="color:var(--accent)">⌨️ Keyboard Shortcuts</strong><div style="font-size:13px;margin-top:8px;line-height:2"><kbd>←</kbd> <kbd>→</kbd> Navigate · <kbd>1</kbd>–<kbd>5</kbd> Select A–E · <kbd>F</kbd> Flag · <kbd>Space</kbd> Pause</div></div>
+        <div style="margin-bottom:14px"><strong style="color:var(--accent)">📋 JSON Format</strong><div style="font-size:13px;margin-top:8px;line-height:1.6">Array of objects with: <code>question</code>, <code>options</code>, <code>correct_option</code>, <code>explanation</code>. Optional: <code>image_url</code>, <code>subject</code>, <code>topic</code>, <code>difficulty</code>, <code>tags</code>.</div></div>
+        <div><strong style="color:var(--accent)">🤖 AI Features</strong><div style="font-size:13px;margin-top:8px;line-height:1.6">Pollinations AI is free & always available. Click ✨ buttons for deep explanations, mnemonics, and assessments.</div></div>
+      </div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal('helpModal')">Got it!</button></div>
+    </div>
+  </div>
+
+  <!-- Fixed widgets (shared across pages) -->
+  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="togglePomodoroWidget()" title="Pomodoro Timer">🍅</button>
+  <div class="pomodoro-widget" id="pomodoroWidget">
+    <div class="pomodoro-body">
+      <div class="pomo-header">
+        <span class="pomo-label" id="pomoLabel">FOCUS</span>
+        <button class="btn btn-ghost btn-xs" onclick="togglePomodoroWidget()" style="padding:4px 8px">✕</button>
+      </div>
+      <div class="pomo-time" id="pomoTime">25:00</div>
+      <div class="pomo-actions">
+        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="startPomodoro()">▶ Start</button>
+        <button class="btn btn-ghost btn-xs" onclick="resetPomodoro()">↺</button>
+        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(25)">25m</button>
+        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(50)">50m</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
