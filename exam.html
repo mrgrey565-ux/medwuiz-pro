@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>Exam Mode — MedQuiz Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navbar (simplified for exam) -->
+  <nav class="navbar no-print">
+    <div class="nav-brand" onclick="window.location.href='index.html'">
+      <div class="nav-logo">🧠</div>
+      <span class="nav-brand-text">MedQuiz Pro</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-ghost btn-sm" onclick="confirmGoHome()">🏠 Home</button>
+    </div>
+  </nav>
+
+  <div id="examScreen" class="screen active">
+    <div class="quiz-header no-print">
+      <div class="quiz-header-left">
+        <span class="quiz-title">Exam</span>
+        <span class="mode-badge exam">⏱ Exam Mode</span>
+        <span id="scoringBadge" style="font-size:11px;color:var(--text-muted);display:none">+4/-1</span>
+      </div>
+      <div class="quiz-header-right">
+        <span id="perQuestionTimer" style="font-size:12px;color:var(--text-muted);display:none"></span>
+        <div class="timer-box" id="timerBox">
+          <span class="timer-icon">⏳</span>
+          <div class="timer-display" id="timerDisplay">00:00</div>
+          <button class="timer-pause-btn" onclick="togglePause()" title="Pause">⏸</button>
+        </div>
+        <button class="nav-toggle-btn" onclick="toggleMobileNav()">📋 <span id="navBtnCount">Nav</span></button>
+      </div>
+    </div>
+
+    <div class="progress-wrap no-print">
+      <div class="progress-info">
+        <span id="examProgressText">Question 1 of 1</span>
+        <span id="examAnsweredText">0 Answered</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="examProgressBar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="exam-body">
+      <div class="exam-question-panel">
+        <div class="question-card" id="examQuestionCard">
+          <div class="question-meta" id="examQuestionMeta"></div>
+          <img class="question-image" id="examQuestionImage" alt="Question image">
+          <div class="question-number" id="examQNumber"></div>
+          <div class="question-text" id="examQuestionText"></div>
+          <div class="options-list" id="examOptionsList"></div>
+          <div class="exam-action-bar">
+            <button class="flag-btn" id="flagBtn" onclick="toggleFlag()">🚩 Flag</button>
+            <button class="flag-btn" onclick="clearAnswer()" title="Clear current answer">✖ Clear</button>
+            <button class="flag-btn" onclick="saveToFolder(currentQ)" title="Save to review folder">📁 Save</button>
+            <div class="nav-arrows">
+              <button class="nav-arrow" id="examPrevBtn" onclick="examNavigate(-1)" title="Previous (←)">←</button>
+              <button class="nav-arrow" id="examNextBtn" onclick="examNavigate(1)" title="Next (→)">→</button>
+            </div>
+          </div>
+        </div>
+        <div class="submit-section no-print" id="submitSection">
+          <p>⚠️ Review all questions before submitting. Flagged questions are highlighted. Use <kbd>←</kbd> <kbd>→</kbd> or <kbd>1</kbd>-<kbd>5</kbd> to navigate/select.</p>
+          <button class="btn btn-red btn-lg" onclick="showSubmitModal()">📤 Submit Exam</button>
+        </div>
+      </div>
+      <div class="exam-nav-panel no-print">
+        <div class="nav-panel-title">Question Navigator</div>
+        <div class="nav-grid" id="navGrid"></div>
+        <div class="nav-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--bg-card);border:1px solid var(--border)"></div>Not visited</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent-green)"></div>Answered</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent-yellow)"></div>Flagged</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Current</div>
+        </div>
+        <button class="btn btn-red btn-full btn-sm" onclick="showSubmitModal()">📤 Submit Exam</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile nav overlay -->
+  <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileNav()">
+    <div class="mobile-nav-drawer" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="nav-panel-title" style="margin:0">Navigator</div>
+        <button class="btn btn-ghost btn-sm" onclick="closeMobileNav()">✕</button>
+      </div>
+      <div class="nav-grid" id="mobileNavGrid"></div>
+      <div class="nav-legend" style="margin-top:12px">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--bg-card);border:1px solid var(--border)"></div>Not visited</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-green)"></div>Answered</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-yellow)"></div>Flagged</div>
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn btn-red btn-full" onclick="showSubmitModal(); closeMobileNav()">📤 Submit Exam</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause overlay -->
+  <div class="pause-overlay" id="pauseOverlay">
+    <div class="pause-icon">⏸️</div>
+    <h2>Exam Paused</h2>
+    <p>Take a break. Your timer is paused.</p>
+    <button class="btn btn-primary btn-lg" onclick="togglePause()">▶ Resume</button>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="submitModal">
+    <div class="modal-box">
+      <div class="modal-icon">📤</div>
+      <div class="modal-title">Submit Exam?</div>
+      <div class="modal-body" id="submitModalBody"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('submitModal')">Cancel</button>
+        <button class="btn btn-red" onclick="submitExam()">Yes, Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="timeUpModal">
+    <div class="modal-box">
+      <div class="modal-icon">⏰</div>
+      <div class="modal-title">Time's Up!</div>
+      <div class="modal-body">Your exam time has ended. Your answers have been automatically submitted.</div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeModal('timeUpModal'); submitExam()">View Results</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmHomeModal">
+    <div class="modal-box">
+      <div class="modal-icon">🏠</div>
+      <div class="modal-title">Leave Quiz?</div>
+      <div class="modal-body">Your current progress will be lost. Are you sure?</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('confirmHomeModal')">Stay</button>
+        <button class="btn btn-red" onclick="closeModal('confirmHomeModal'); goHome()">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed widgets -->
+  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="togglePomodoroWidget()" title="Pomodoro Timer">🍅</button>
+  <div class="pomodoro-widget" id="pomodoroWidget">
+    <div class="pomodoro-body">
+      <div class="pomo-header">
+        <span class="pomo-label" id="pomoLabel">FOCUS</span>
+        <button class="btn btn-ghost btn-xs" onclick="togglePomodoroWidget()" style="padding:4px 8px">✕</button>
+      </div>
+      <div class="pomo-time" id="pomoTime">25:00</div>
+      <div class="pomo-actions">
+        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="startPomodoro()">▶ Start</button>
+        <button class="btn btn-ghost btn-xs" onclick="resetPomodoro()">↺</button>
+        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(25)">25m</button>
+        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(50)">50m</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
