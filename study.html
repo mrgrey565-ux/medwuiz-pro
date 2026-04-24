@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>Study Mode — MedQuiz Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar no-print">
+    <div class="nav-brand" onclick="window.location.href='index.html'">
+      <div class="nav-logo">🧠</div>
+      <span class="nav-brand-text">MedQuiz Pro</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-ghost btn-sm" onclick="confirmGoHome()">🏠 Home</button>
+    </div>
+  </nav>
+
+  <div id="studyScreen" class="screen active">
+    <div class="quiz-header no-print">
+      <div class="quiz-header-left">
+        <span class="quiz-title">Study</span>
+        <span class="mode-badge study">📖 Study Mode</span>
+      </div>
+      <div class="quiz-header-right">
+        <button class="btn btn-ghost btn-sm" onclick="confirmGoHome()">🏠 Home</button>
+      </div>
+    </div>
+    <div class="progress-wrap no-print">
+      <div class="progress-info">
+        <span id="studyProgressText">Question 1 of 1</span>
+        <span id="studyScoreText">Score: 0</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="studyProgressBar" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="study-body">
+      <div class="study-card">
+        <div class="question-meta" id="studyQuestionMeta"></div>
+        <img class="question-image" id="studyQuestionImage" alt="Question image">
+        <div class="question-number" id="studyQNumber"></div>
+        <div class="question-text" id="studyQuestionText"></div>
+        <div class="options-list" id="studyOptionsList"></div>
+        <div class="result-feedback" id="resultFeedback"></div>
+        <div class="explanation-box" id="explanationBox">
+          <div class="explanation-header">
+            <div class="explanation-header-left">💡 Explanation</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-ai btn-sm" id="aiExplainBtn" onclick="getAIExplanation('standard')" style="display:none">✨ Ask AI</button>
+            </div>
+          </div>
+          <div class="explanation-text" id="explanationText"></div>
+          <div class="ai-prompt-chips" id="aiPromptChips" style="display:none">
+            <button class="ai-prompt-chip" onclick="getAIExplanation('stepbystep')">📝 Explain Step-by-Step</button>
+            <button class="ai-prompt-chip" onclick="getAIExplanation('mnemonic')">🧠 Give Me a Mnemonic</button>
+            <button class="ai-prompt-chip" onclick="getAIExplanation('contrast')">⚖️ Contrast with 2nd Best</button>
+            <button class="ai-prompt-chip" onclick="getAIExplanation('clinical')">🏥 Clinical Correlation</button>
+          </div>
+          <div class="ai-panel" id="aiExplainPanel">
+            <div class="ai-panel-header">🤖 AI Deep Explanation</div>
+            <div class="ai-panel-content" id="aiExplainContent"></div>
+          </div>
+        </div>
+      </div>
+      <div class="study-nav">
+        <button class="btn btn-ghost" onclick="confirmGoHome()">🏠 Home</button>
+        <button class="btn btn-primary" id="studyNextBtn" onclick="studyNext()" style="display:none">Next Question →</button>
+        <button class="btn btn-green" id="studyFinishBtn" onclick="finishStudy()" style="display:none">🏁 Finish & See Results</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="confirmHomeModal">
+    <div class="modal-box">
+      <div class="modal-icon">🏠</div>
+      <div class="modal-title">Leave Quiz?</div>
+      <div class="modal-body">Your current progress will be lost. Are you sure?</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('confirmHomeModal')">Stay</button>
+        <button class="btn btn-red" onclick="closeModal('confirmHomeModal'); goHome()">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="togglePomodoroWidget()" title="Pomodoro Timer">🍅</button>
+  <div class="pomodoro-widget" id="pomodoroWidget">
+    <div class="pomodoro-body">
+      <div class="pomo-header">
+        <span class="pomo-label" id="pomoLabel">FOCUS</span>
+        <button class="btn btn-ghost btn-xs" onclick="togglePomodoroWidget()" style="padding:4px 8px">✕</button>
+      </div>
+      <div class="pomo-time" id="pomoTime">25:00</div>
+      <div class="pomo-actions">
+        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="startPomodoro()">▶ Start</button>
+        <button class="btn btn-ghost btn-xs" onclick="resetPomodoro()">↺</button>
+        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(25)">25m</button>
+        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(50)">50m</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
