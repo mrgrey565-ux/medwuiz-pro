@@ -2,63 +2,436 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <meta name="theme-color" content="#0a0e1a">
-  <meta name="description" content="MedQuiz Pro - Advanced Medical Quiz Platform with AI Integration">
-  <title>MedQuiz Pro — AI-Powered Medical Quiz Platform</title>
+  <meta name="description" content="MedQuiz Pro — Advanced Medical Quiz Platform for Serious Learners">
+  <meta property="og:title" content="MedQuiz Pro — Medical MCQ Platform">
+  <meta property="og:description" content="AI-assisted medical quiz platform. Paste questions, track progress, and master your exams.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <title>MedQuiz Pro — Medical MCQ Quiz Platform</title>
   <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIk1lZFF1aXogUHJvIiwKICAic2hvcnRfbmFtZSI6ICJNZWRRdWl6IiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwNzBiMTQiLAogICJ0aGVtZV9jb2xvciI6ICIjNjM2NmYxIiwKICAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sOzxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCc+PHRleHQgeT0nNzAnIGZvbnQtc2l6ZT0nNzAnPuCfnqA8L3RleHQ+PC9zdmc+Iiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwifV19">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   <script src="https://js.puter.com/v2/"></script>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ===== LANDING PAGE ENHANCEMENTS (temporary inline until style.css is updated) ===== */
+
+    /* Sticky Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(10, 14, 26, 0.85);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .navbar.scrolled {
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      background: rgba(10, 14, 26, 0.95);
+    }
+
+    /* Floating Particles Canvas */
+    #particlesCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+    }
+    .hero > *:not(canvas) {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Feature Chips Animation */
+    .feature-chip {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: chipFadeIn 0.5s ease forwards;
+    }
+    .feature-chip:nth-child(1) { animation-delay: 0.05s; }
+    .feature-chip:nth-child(2) { animation-delay: 0.10s; }
+    .feature-chip:nth-child(3) { animation-delay: 0.15s; }
+    .feature-chip:nth-child(4) { animation-delay: 0.20s; }
+    .feature-chip:nth-child(5) { animation-delay: 0.25s; }
+    .feature-chip:nth-child(6) { animation-delay: 0.30s; }
+    .feature-chip:nth-child(7) { animation-delay: 0.35s; }
+    .feature-chip:nth-child(8) { animation-delay: 0.40s; }
+    @keyframes chipFadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* JSON Textarea Validation Glow */
+    .json-textarea {
+      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+    .json-textarea.valid-glow {
+      border-color: #22c55e !important;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15), 0 0 20px rgba(34, 197, 94, 0.08) !important;
+    }
+    .json-textarea.invalid-glow {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15), 0 0 20px rgba(239, 68, 68, 0.08) !important;
+    }
+    .json-validator-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      margin-top: 6px;
+      min-height: 18px;
+      transition: color 0.3s ease;
+    }
+    .json-validator-indicator.valid { color: #22c55e; }
+    .json-validator-indicator.invalid { color: #ef4444; }
+
+    /* Paste Button */
+    .paste-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-family: inherit;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .paste-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Mobile Action Row */
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .action-row .btn-primary {
+      width: 100%;
+      justify-content: center;
+    }
+    @media (min-width: 480px) {
+      .action-row .btn-primary {
+        width: auto;
+        flex: 0 0 auto;
+      }
+    }
+    .action-row .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+    .action-separator {
+      color: var(--text-muted);
+      font-size: 14px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    /* Back to Top Button */
+    .back-to-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .back-to-top:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* Daily Streak Badge */
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-left: 8px;
+      animation: streakPulse 2s ease-in-out infinite;
+      white-space: nowrap;
+    }
+    @keyframes streakPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0); }
+    }
+
+    /* AI Link Cards (CSS-only hover) */
+    .ai-link-card {
+      flex: 1;
+      min-width: 100px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .ai-link-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    /* Subject Chips */
+    .subject-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .subject-chip {
+      padding: 5px 10px;
+      font-size: 11px;
+      font-family: inherit;
+      font-weight: 500;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .subject-chip.selected {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    }
+    .subject-chip:hover:not(.selected) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Prompt Modal Tabs */
+    .prompt-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 18px;
+      border-bottom: 2px solid var(--border);
+    }
+    .prompt-tab {
+      flex: 1;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      text-align: center;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+    .prompt-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .prompt-tab:hover {
+      color: var(--text-primary);
+    }
+    .prompt-tab-content {
+      display: none;
+    }
+    .prompt-tab-content.active {
+      display: block;
+    }
+
+    /* Custom number input */
+    .custom-number-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13px;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .custom-number-input:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+    }
+
+    /* Section labels */
+    .section-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .section-label .optional-tag {
+      font-weight: 400;
+      text-transform: none;
+      color: var(--text-muted);
+      letter-spacing: 0;
+    }
+
+    /* Ensure pomodoro toggle stays above */
+    .pomodoro-toggle {
+      z-index: 998;
+    }
+  </style>
 </head>
 <body>
-  <nav class="navbar no-print">
-    <div class="nav-brand" onclick="window.location.href='index.html'">
+  <!-- ========== FLOATING PARTICLES CANVAS ========== -->
+  <canvas id="particlesCanvas" aria-hidden="true"></canvas>
+
+  <!-- ========== NAVBAR (Sticky) ========== -->
+  <nav class="navbar no-print" id="mainNavbar">
+    <div class="nav-brand" onclick="window.location.href='index.html'" title="MedQuiz Pro Home">
       <div class="nav-logo">🧠</div>
       <span class="nav-brand-text">MedQuiz Pro</span>
+      <span class="streak-badge" id="streakBadge" style="display:none;" title="Daily study streak">🔥 <span id="streakCount">0</span></span>
     </div>
     <div class="nav-actions">
-      <button class="nav-icon-btn" onclick="openModal('bankModal')" title="Question Bank">🏦</button>
+      <button class="nav-icon-btn" onclick="openModal('bankModal')" title="Question Bank" aria-label="Question Bank">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+        </svg>
+      </button>
+      <button class="nav-icon-btn" onclick="openModal('folderModal')" title="Review Folders" aria-label="Review Folders">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+      </button>
       <div class="ai-status connected" id="aiStatus" title="AI Integration Status">
         <span class="ai-status-dot"></span>
-        <span id="aiStatusText">AI Ready</span>
+        <span id="aiStatusText">AI Ready (Free)</span>
       </div>
-      <button class="nav-icon-btn" onclick="openModal('aiConfigModal')" title="AI Settings">🤖</button>
-      <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn">🌙</button>
-      <button class="nav-icon-btn" onclick="openModal('helpModal')" title="Help">❔</button>
+      <button class="nav-icon-btn" onclick="openModal('aiConfigModal')" title="AI Settings" aria-label="AI Settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </button>
+      <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn" aria-label="Toggle Theme">
+        <svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+      <button class="nav-icon-btn" onclick="openModal('helpModal')" title="Help & Shortcuts" aria-label="Help">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </button>
     </div>
   </nav>
 
+  <!-- ========== HOME SCREEN ========== -->
   <div id="homeScreen" class="screen active">
-    <div class="hero">
-      <div class="hero-badge">✨ AI-Powered · Mobile-First · Free · 20+ Features</div>
+    <div class="hero" id="heroSection">
+      <div class="hero-badge">AI-Assisted · Mobile-First · Free · 20+ Features</div>
       <div class="hero-logo">🧠</div>
       <h1>MedQuiz Pro</h1>
-      <p>The ultimate AI-assisted medical quiz platform for serious learners. Paste questions, upload images, track progress, and master your exams.</p>
+      <p>The ultimate medical MCQ platform for serious learners. Build your question bank, test yourself, and master your exams with smart analytics.</p>
       <div class="features-strip">
-        <div class="feature-chip">⏱️ Custom Timer</div>
-        <div class="feature-chip">🤖 AI Explanations</div>
-        <div class="feature-chip">📱 Mobile-Friendly</div>
-        <div class="feature-chip">🎯 Exam & Study Mode</div>
-        <div class="feature-chip">📊 Smart Analytics</div>
-        <div class="feature-chip">🔄 Spaced Repetition</div>
-        <div class="feature-chip">📸 OCR Import</div>
-        <div class="feature-chip">🔥 Heatmap</div>
+        <div class="feature-chip">Custom Timer</div>
+        <div class="feature-chip">AI Explanations</div>
+        <div class="feature-chip">Mobile-Friendly</div>
+        <div class="feature-chip">Exam & Study Mode</div>
+        <div class="feature-chip">Smart Analytics</div>
+        <div class="feature-chip">Spaced Repetition</div>
+        <div class="feature-chip">AI Prompt Generator</div>
+        <div class="feature-chip">Activity Heatmap</div>
       </div>
     </div>
 
+    <!-- ========== MAIN CARD ========== -->
     <div class="home-card" id="mainHomeCard">
       <div class="card-title">
-        <span class="card-title-icon">📋</span>
-        <span>Paste Your Questions (JSON)</span>
+        <span class="card-title-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </span>
+        <span>Build Your Question Bank</span>
+        <button class="paste-btn" onclick="pasteFromClipboard()" title="Paste JSON from clipboard" style="margin-left:auto;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Paste
+        </button>
       </div>
       <p class="hint">
-        Required fields: <code>question</code>, <code>options</code>, <code>correct_option</code>, <code>explanation</code>.
-        Optional: <code>subject</code>, <code>topic</code>, <code>difficulty</code>, <code>blooms_level</code>, <code>tags</code>, <code>image_url</code>.
+        Paste your questions in JSON format, load a sample set, or use the <strong>AI Prompt Generator</strong> to create questions with ChatGPT, Claude, or Gemini.
+        Required: <code>question</code>, <code>options</code>, <code>correct_option</code>, <code>explanation</code>.
       </p>
       <textarea class="json-textarea" id="jsonInput" placeholder='[
   {
@@ -72,23 +445,26 @@
     "tags": ["PYQ","HYT"],
     "image_url": ""
   }
-]'></textarea>
+]' oninput="validateJSONLive()"></textarea>
+      <div class="json-validator-indicator" id="jsonValidatorIndicator"></div>
 
       <div class="action-row">
-        <button class="btn btn-primary" onclick="parseJSON()">⚡ Load Questions</button>
-        <button class="btn btn-ghost btn-sm" onclick="loadSample()">📝 Load Sample</button>
-        <button class="btn btn-ghost btn-sm" onclick="loadFromStorage()">💾 Load Saved</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearInput()">🗑 Clear</button>
-        <button class="btn btn-ghost btn-sm" onclick="triggerCSVUpload()">📊 CSV/Excel</button>
-        <button class="btn btn-ghost btn-sm" onclick="openModal('ocrModal')">📸 OCR</button>
-        <input type="file" id="csvFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleCSVUpload(event)">
+        <button class="btn btn-primary" onclick="parseJSON(); revealQuizConfig();">Load Questions</button>
+        <span class="action-separator">·</span>
+        <div class="action-group">
+          <button class="btn btn-ghost btn-sm" onclick="loadSample()">Sample</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadFromStorage()">Saved</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearInput()">Clear</button>
+        </div>
+        <span class="action-separator">·</span>
+        <button class="btn btn-accent btn-sm" onclick="openModal('aiPromptModal')">AI Generate</button>
       </div>
 
       <div class="smart-filters" id="smartFilters" style="display:none">
-        <span style="font-size:12px;color:var(--text-muted);margin-right:4px">Quick Filters:</span>
-        <button class="smart-filter-chip" data-tag="HYT" onclick="toggleSmartFilter('HYT',this)">🔥 HYT Only</button>
-        <button class="smart-filter-chip" data-tag="PYQ" onclick="toggleSmartFilter('PYQ',this)">📌 PYQ Only</button>
-        <button class="smart-filter-chip" data-tag="ALL" onclick="resetSmartFilters()">🔄 All</button>
+        <span class="filter-label">Quick Filters:</span>
+        <button class="smart-filter-chip" data-tag="HYT" onclick="toggleSmartFilter('HYT',this)">HYT Only</button>
+        <button class="smart-filter-chip" data-tag="PYQ" onclick="toggleSmartFilter('PYQ',this)">PYQ Only</button>
+        <button class="smart-filter-chip" data-tag="ALL" onclick="resetSmartFilters()">All</button>
       </div>
 
       <div class="parse-status" id="parseStatus"></div>
@@ -99,28 +475,41 @@
         <div class="stats-bar" id="statsBar"></div>
       </div>
 
-      <div class="mode-selector" id="modeSelector">
-        <h3>🎯 Choose Your Quiz Mode</h3>
-        <div class="mode-cards">
-          <div class="mode-card" id="examModeCard" onclick="selectMode('exam')">
-            <span class="mode-icon">⏱️</span>
-            <div class="mode-name">Exam Mode</div>
-            <div class="mode-desc">Timed · CBT-style · Flag questions · Final submit · Full review</div>
-          </div>
-          <div class="mode-card" id="studyModeCard" onclick="selectMode('study')">
-            <span class="mode-icon">📖</span>
-            <div class="mode-name">Study Mode</div>
-            <div class="mode-desc">No timer · Instant feedback · AI explanations · Progressive learning</div>
-          </div>
-          <div class="mode-card" id="retakeModeCard" onclick="selectMode('retake')" style="display:none">
-            <span class="mode-icon">🔄</span>
-            <div class="mode-name">Targeted Retake</div>
-            <div class="mode-desc">Only wrong/skipped questions · Focus on weak areas</div>
+      <!-- Step 2: Quiz Configuration (revealed after questions load) -->
+      <div id="quizConfigSection" class="quiz-config-section" style="display:none;">
+        <div class="config-divider">
+          <span>Quiz Settings</span>
+        </div>
+
+        <div class="mode-selector" id="modeSelector">
+          <h3>Choose Your Quiz Mode</h3>
+          <div class="mode-cards">
+            <div class="mode-card" id="examModeCard" onclick="selectMode('exam')">
+              <span class="mode-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </span>
+              <div class="mode-name">Exam Mode</div>
+              <div class="mode-desc">Timed · CBT-style · Final submit · Full review</div>
+            </div>
+            <div class="mode-card" id="studyModeCard" onclick="selectMode('study')">
+              <span class="mode-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              </span>
+              <div class="mode-name">Study Mode</div>
+              <div class="mode-desc">No timer · Instant feedback · AI help · Learn deeply</div>
+            </div>
+            <div class="mode-card" id="retakeModeCard" onclick="selectMode('retake')" style="display:none">
+              <span class="mode-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              </span>
+              <div class="mode-name">Targeted Retake</div>
+              <div class="mode-desc">Wrong/skipped only · Focus weak areas</div>
+            </div>
           </div>
         </div>
 
         <div class="timer-config" id="timerConfig">
-          <label>⏱️ Exam Timer (select preset or set custom)</label>
+          <label>Exam Timer</label>
           <div class="timer-presets">
             <button class="timer-preset" onclick="setTimerPreset(0)">No Limit</button>
             <button class="timer-preset" onclick="setTimerPreset(30)">30s/Q</button>
@@ -131,7 +520,7 @@
           <div class="custom-time">
             <input type="number" id="customMinutes" min="0" placeholder="Custom (min)">
             <button class="btn btn-ghost btn-sm" onclick="setCustomTimer()">Set Custom</button>
-            <span style="font-size:12px;color:var(--text-muted);margin-left:6px" id="timerDisplay2">Total: —</span>
+            <span class="timer-display-text" id="timerDisplay2">Total: —</span>
           </div>
         </div>
 
@@ -140,55 +529,76 @@
             <input type="checkbox" id="negMarkingCheck" onchange="toggleScoringModel()">
             Enable +4/-1 Negative Marking (NEET-style)
           </label>
-          <span style="font-size:11px;color:var(--text-muted);margin-left:28px">Correct: +4 · Wrong: -1 · Skipped: 0</span>
+          <span class="scoring-hint">Correct: +4 · Wrong: -1 · Skipped: 0</span>
         </div>
-      </div>
 
-      <div class="milestone-bar" id="milestoneBar">
-        <div class="milestone-header">
-          <span>🎯 Daily Goal</span>
-          <span id="milestoneText">0 / 100 Questions</span>
+        <div class="milestone-bar" id="milestoneBar">
+          <div class="milestone-header">
+            <span>Daily Goal</span>
+            <span id="milestoneText">0 / 100 Questions</span>
+          </div>
+          <div class="milestone-progress-bg">
+            <div class="milestone-progress-fill" id="milestoneFill" style="width:0%"></div>
+          </div>
+          <div class="milestone-controls">
+            <input type="number" id="dailyGoalInput" min="1" max="500" value="100" class="goal-input">
+            <button class="btn btn-ghost btn-xs" onclick="setDailyGoal()">Set Goal</button>
+            <button class="btn btn-ghost btn-xs" onclick="resetDailyGoal()" title="Reset today's count">Reset</button>
+          </div>
         </div>
-        <div class="milestone-progress-bg">
-          <div class="milestone-progress-fill" id="milestoneFill" style="width:0%"></div>
-        </div>
-        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input type="number" id="dailyGoalInput" min="1" max="500" value="100" style="width:70px;padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:inherit;font-size:12px">
-          <button class="btn btn-ghost btn-xs" onclick="setDailyGoal()">Set Goal</button>
-        </div>
-      </div>
 
-      <div class="start-section" id="startSection">
-        <button class="btn btn-primary btn-lg btn-full" onclick="startQuiz()">🚀 Start Quiz</button>
+        <div class="start-section" id="startSection">
+          <button class="btn btn-primary btn-lg btn-full" onclick="startQuiz()">Start Quiz</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Modals -->
+  <!-- ========== BACK TO TOP BUTTON ========== -->
+  <button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()" title="Back to top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+
+  <!-- ========== MODALS ========== -->
+
+  <!-- Question Bank Modal -->
   <div class="modal-overlay" id="bankModal">
     <div class="modal-box" style="max-width:600px">
-      <div class="modal-icon">🏦</div>
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+        </svg>
+      </div>
       <div class="modal-title">Local Question Bank</div>
       <div class="modal-body" style="text-align:left">
         <div class="bank-list" id="bankList"></div>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
           <input type="text" id="bankNameInput" placeholder="Bank name..." style="flex:1;padding:8px 10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:inherit;font-size:12px;min-width:120px">
-          <button class="btn btn-primary btn-sm" onclick="saveToBank()">💾 Save Current</button>
+          <button class="btn btn-primary btn-sm" onclick="saveToBank()">Save Current</button>
         </div>
       </div>
       <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('bankModal')">Close</button></div>
     </div>
   </div>
 
+  <!-- Review Folders Modal -->
   <div class="modal-overlay" id="folderModal">
     <div class="modal-box" style="max-width:550px">
-      <div class="modal-icon">📁</div>
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
       <div class="modal-title">Review Folders</div>
       <div class="modal-body" style="text-align:left">
         <div class="folder-list" id="folderList"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <input type="text" id="newFolderName" placeholder="New folder name..." style="flex:1;padding:8px 10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:inherit;font-size:12px;min-width:120px">
-          <button class="btn btn-primary btn-sm" onclick="createFolder()">➕ Create</button>
+          <button class="btn btn-primary btn-sm" onclick="createFolder()">Create</button>
         </div>
         <div id="folderQuestions" style="margin-top:12px;max-height:200px;overflow-y:auto"></div>
       </div>
@@ -196,39 +606,172 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="ocrModal">
-    <div class="modal-box" style="max-width:600px">
-      <div class="modal-icon">📸</div>
-      <div class="modal-title">OCR — Image to JSON</div>
-      <div class="modal-body" style="text-align:left">
-        <div class="ocr-zone" id="ocrZone" onclick="document.getElementById('ocrFileInput').click()">
-          <div style="font-size:36px;margin-bottom:8px">📷</div>
-          <div style="font-size:13px;color:var(--text-secondary)">Click or drop an image here</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Snap a photo of textbook MCQs</div>
+  <!-- AI Prompt Generator Modal (Fully Redesigned with Tabs) -->
+  <div class="modal-overlay" id="aiPromptModal">
+    <div class="modal-box" style="max-width:620px">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="modal-title">AI Prompt Generator</div>
+      <div class="modal-body" style="text-align:left;padding: 0 4px;">
+        <p style="font-size:13px;color:var(--text-secondary);margin:0 0 16px 0;line-height:1.6;">
+          Generate a prompt, copy it, then paste into ChatGPT, Claude, or Gemini. The AI will create perfectly formatted JSON questions for you.
+        </p>
+
+        <!-- Tabs -->
+        <div class="prompt-tabs">
+          <button class="prompt-tab active" onclick="switchPromptTab('topic')" id="tabTopic">Topic-Based</button>
+          <button class="prompt-tab" onclick="switchPromptTab('notes')" id="tabNotes">Notes-Based</button>
         </div>
-        <input type="file" id="ocrFileInput" accept="image/*" style="display:none" onchange="handleOCRUpload(event)">
-        <img class="ocr-preview-img" id="ocrPreviewImg">
-        <div id="ocrProgress" style="display:none;margin-top:10px">
-          <div class="ai-loading"><div class="spinner"></div><span id="ocrProgressText">Processing...</span></div>
+
+        <!-- ===== TAB 1: TOPIC-BASED ===== -->
+        <div class="prompt-tab-content active" id="tabContentTopic">
+          <!-- Subject Chips (Multi-select, Optional) -->
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Subjects <span class="optional-tag">(optional — select one or more)</span></span>
+            <div class="subject-chips" id="subjectChips"></div>
+            <input type="hidden" id="aiSelectedSubjects" value="">
+          </div>
+
+          <!-- Topic (Optional) -->
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Specific Topic <span class="optional-tag">(optional)</span></span>
+            <input type="text" id="aiTopic" placeholder="e.g., Asphyxial Deaths, Myocardial Infarction..." class="custom-number-input">
+          </div>
+
+          <!-- Number of Questions & Standard -->
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+            <div style="flex:1;min-width:100px;">
+              <span class="section-label">Number of Questions</span>
+              <input type="number" id="aiNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="Any number">
+            </div>
+            <div style="flex:2;min-width:160px;">
+              <span class="section-label">Exam Standard</span>
+              <select id="aiStandard" style="width:100%;padding:10px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:inherit;font-size:13px;appearance:none;cursor:pointer;">
+                <option value="NEET PG / INI-CET level" selected>NEET PG / INI-CET</option>
+                <option value="USMLE Step 1 level">USMLE Step 1</option>
+                <option value="USMLE Step 2 CK level">USMLE Step 2 CK</option>
+                <option value="MBBS University Exam level">MBBS University Exam</option>
+                <option value="PLAB level">PLAB (UK)</option>
+                <option value="AMC level">AMC (Australia)</option>
+                <option value="AIIMS / PGI level">AIIMS / PGI Pattern</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Extra Instructions -->
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Extra Instructions <span class="optional-tag">(optional)</span></span>
+            <input type="text" id="aiExtraInstructions" placeholder="e.g., Focus on high-yield topics, clinical vignettes only..." class="custom-number-input">
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" onclick="generateAIPrompt()" style="padding:10px 18px;font-weight:600;">Generate Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyAIPrompt()" id="copyPromptBtn" style="padding:10px 18px;">Copy Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearAIPromptFields()" style="padding:10px 18px;color:var(--text-muted);">Clear All</button>
+          </div>
+
+          <!-- Generated Prompt Output -->
+          <div style="margin-bottom:20px;">
+            <span class="section-label">Generated Prompt</span>
+            <textarea id="aiGeneratedPrompt" readonly rows="6" style="width:100%;padding:12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;" placeholder="Your generated prompt will appear here..."></textarea>
+          </div>
         </div>
-        <div id="ocrResult" style="display:none;margin-top:10px"></div>
+
+        <!-- ===== TAB 2: NOTES-BASED ===== -->
+        <div class="prompt-tab-content" id="tabContentNotes">
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Paste Your Study Notes</span>
+            <textarea id="aiNotesContent" rows="6" placeholder="Paste your notes, textbook content, or lecture summary here. The AI will generate questions based on this content." style="width:100%;padding:12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:inherit;font-size:12px;line-height:1.6;resize:vertical;box-sizing:border-box;"></textarea>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+            <div style="flex:1;min-width:100px;">
+              <span class="section-label">Number of Questions</span>
+              <input type="number" id="aiNotesNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="Any number">
+            </div>
+            <div style="flex:2;min-width:160px;">
+              <span class="section-label">Exam Standard</span>
+              <select id="aiNotesStandard" style="width:100%;padding:10px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:inherit;font-size:13px;appearance:none;cursor:pointer;">
+                <option value="NEET PG / INI-CET level" selected>NEET PG / INI-CET</option>
+                <option value="USMLE Step 1 level">USMLE Step 1</option>
+                <option value="USMLE Step 2 CK level">USMLE Step 2 CK</option>
+                <option value="MBBS University Exam level">MBBS University Exam</option>
+                <option value="PLAB level">PLAB (UK)</option>
+                <option value="AMC level">AMC (Australia)</option>
+                <option value="AIIMS / PGI level">AIIMS / PGI Pattern</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Extra Instructions <span class="optional-tag">(optional)</span></span>
+            <input type="text" id="aiNotesExtraInstructions" placeholder="e.g., Focus on clinical applications, include PYQ-style questions..." class="custom-number-input">
+          </div>
+
+          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" onclick="generateAINotesPrompt()" style="padding:10px 18px;font-weight:600;">Generate Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyAINotesPrompt()" id="copyNotesPromptBtn" style="padding:10px 18px;">Copy Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearAINotesFields()" style="padding:10px 18px;color:var(--text-muted);">Clear All</button>
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <span class="section-label">Generated Prompt</span>
+            <textarea id="aiNotesGeneratedPrompt" readonly rows="6" style="width:100%;padding:12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;" placeholder="Your notes-based prompt will appear here..."></textarea>
+          </div>
+        </div>
+
+        <!-- AI App Links -->
+        <div style="border-top:1px solid var(--border);padding-top:16px;">
+          <span class="section-label" style="margin-bottom:10px;">Open AI App &amp; Paste Prompt</span>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="https://chat.openai.com/" target="_blank" rel="noopener" class="ai-link-card">
+              <span style="font-size:22px;flex-shrink:0;">💬</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;">ChatGPT</div>
+                <div style="font-size:10px;color:var(--text-muted);">Opens in app</div>
+              </div>
+            </a>
+            <a href="https://claude.ai/" target="_blank" rel="noopener" class="ai-link-card">
+              <span style="font-size:22px;flex-shrink:0;">🧡</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;">Claude</div>
+                <div style="font-size:10px;color:var(--text-muted);">Opens in app</div>
+              </div>
+            </a>
+            <a href="https://gemini.google.com/" target="_blank" rel="noopener" class="ai-link-card">
+              <span style="font-size:22px;flex-shrink:0;">🔵</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;">Gemini</div>
+                <div style="font-size:10px;color:var(--text-muted);">Opens in app</div>
+              </div>
+            </a>
+          </div>
+        </div>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-ghost" onclick="closeModal('ocrModal')">Cancel</button>
-        <button class="btn btn-primary" id="ocrConvertBtn" onclick="runOCR()" disabled>🔍 Convert</button>
+        <button class="btn btn-ghost" onclick="closeModal('aiPromptModal')">Close</button>
       </div>
     </div>
   </div>
 
+  <!-- AI Configuration Modal -->
   <div class="modal-overlay" id="aiConfigModal">
     <div class="modal-box">
-      <div class="modal-icon">🤖</div>
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
       <div class="modal-title">AI Integration Settings</div>
       <div class="modal-body" style="text-align:left">
         <div class="api-config-field">
           <label for="providerSelect">AI Provider</label>
           <select id="providerSelect" onchange="onProviderChange()">
-            <option value="pollinations">🌸 Pollinations AI — FREE, No Key Needed ✅</option>
+            <option value="pollinations">Pollinations AI — FREE, No Key Needed</option>
             <option value="gemini">Google Gemini (Requires API Key)</option>
           </select>
         </div>
@@ -243,7 +786,7 @@
               <option value="deepseek">DeepSeek V3</option>
               <option value="qwen-coder">Qwen Coder</option>
             </select>
-            <div class="api-help">✨ Completely <strong>free</strong>, no signup, no API key. Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener">Pollinations.ai</a>.</div>
+            <div class="api-help">Completely <strong>free</strong>, no signup, no API key. Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener">Pollinations.ai</a>.</div>
           </div>
         </div>
         <div id="geminiConfig" style="display:none">
@@ -253,44 +796,562 @@
       </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('aiConfigModal')">Cancel</button>
-        <button class="btn btn-ai" onclick="saveAIConfig()">💾 Save Settings</button>
+        <button class="btn btn-ai" onclick="saveAIConfig()">Save Settings</button>
       </div>
     </div>
   </div>
 
+  <!-- Help Modal -->
   <div class="modal-overlay" id="helpModal">
     <div class="modal-box">
-      <div class="modal-icon">❔</div>
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
       <div class="modal-title">Help & Shortcuts</div>
       <div class="modal-body" style="text-align:left">
-        <div style="margin-bottom:14px"><strong style="color:var(--accent)">⌨️ Keyboard Shortcuts</strong><div style="font-size:13px;margin-top:8px;line-height:2"><kbd>←</kbd> <kbd>→</kbd> Navigate · <kbd>1</kbd>–<kbd>5</kbd> Select A–E · <kbd>F</kbd> Flag · <kbd>Space</kbd> Pause</div></div>
-        <div style="margin-bottom:14px"><strong style="color:var(--accent)">📋 JSON Format</strong><div style="font-size:13px;margin-top:8px;line-height:1.6">Array of objects with: <code>question</code>, <code>options</code>, <code>correct_option</code>, <code>explanation</code>. Optional: <code>image_url</code>, <code>subject</code>, <code>topic</code>, <code>difficulty</code>, <code>tags</code>.</div></div>
-        <div><strong style="color:var(--accent)">🤖 AI Features</strong><div style="font-size:13px;margin-top:8px;line-height:1.6">Pollinations AI is free & always available. Click ✨ buttons for deep explanations, mnemonics, and assessments.</div></div>
+        <div style="margin-bottom:14px">
+          <strong style="color:var(--accent)">Keyboard Shortcuts</strong>
+          <div style="font-size:13px;margin-top:8px;line-height:2">
+            <kbd>&larr;</kbd> <kbd>&rarr;</kbd> Navigate &middot;
+            <kbd>1</kbd>–<kbd>5</kbd> Select A–E &middot;
+            <kbd>F</kbd> Flag &middot;
+            <kbd>Space</kbd> Pause
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <strong style="color:var(--accent)">JSON Format</strong>
+          <div style="font-size:13px;margin-top:8px;line-height:1.6">
+            Array of objects with: <code>question</code>, <code>options</code>, <code>correct_option</code>, <code>explanation</code>.
+            Optional: <code>image_url</code>, <code>subject</code>, <code>topic</code>, <code>difficulty</code>, <code>tags</code>.
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <strong style="color:var(--accent)">AI Prompt Generator</strong>
+          <div style="font-size:13px;margin-top:8px;line-height:1.6">
+            Two modes: <strong>Topic-Based</strong> (pick subjects, get questions) and <strong>Notes-Based</strong> (paste study content, AI creates questions from it). Generate a prompt, copy it, paste into ChatGPT/Claude/Gemini.
+          </div>
+        </div>
+        <div>
+          <strong style="color:var(--accent)">AI Explanations</strong>
+          <div style="font-size:13px;margin-top:8px;line-height:1.6">
+            Pollinations AI is free & always available. Click AI buttons during quizzes for deep explanations, mnemonics, and assessments.
+          </div>
+        </div>
       </div>
       <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal('helpModal')">Got it!</button></div>
     </div>
   </div>
 
-  <!-- Fixed widgets (shared across pages) -->
-  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="togglePomodoroWidget()" title="Pomodoro Timer">🍅</button>
+  <!-- ========== POMODORO WIDGET ========== -->
+  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="togglePomodoroWidget()" title="Focus Timer" aria-label="Pomodoro Focus Timer">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+  </button>
   <div class="pomodoro-widget" id="pomodoroWidget">
     <div class="pomodoro-body">
       <div class="pomo-header">
         <span class="pomo-label" id="pomoLabel">FOCUS</span>
-        <button class="btn btn-ghost btn-xs" onclick="togglePomodoroWidget()" style="padding:4px 8px">✕</button>
+        <button class="btn btn-ghost btn-xs" onclick="togglePomodoroWidget()" style="padding:4px 8px">&times;</button>
       </div>
       <div class="pomo-time" id="pomoTime">25:00</div>
       <div class="pomo-actions">
-        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="startPomodoro()">▶ Start</button>
-        <button class="btn btn-ghost btn-xs" onclick="resetPomodoro()">↺</button>
+        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="startPomodoro()">Start</button>
+        <button class="btn btn-ghost btn-xs" onclick="resetPomodoro()">Reset</button>
         <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(25)">25m</button>
         <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(50)">50m</button>
       </div>
     </div>
   </div>
 
+  <!-- ========== TOAST ========== -->
   <div class="toast" id="toast"></div>
 
+  <!-- ========== INLINE SCRIPTS ========== -->
+  <script>
+    // =============================================
+    // FLOATING PARTICLES BACKGROUND
+    // =============================================
+    (function() {
+      var canvas = document.getElementById('particlesCanvas');
+      var hero = document.getElementById('heroSection');
+      if (!canvas || !hero) return;
+      var ctx = canvas.getContext('2d');
+      var particles = [];
+      var particleCount = 50;
+
+      function resizeCanvas() {
+        var rect = hero.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.left = rect.left + 'px';
+        canvas.style.top = rect.top + window.scrollY + 'px';
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      function createParticle() {
+        return {
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2.5 + 0.8,
+          speedX: (Math.random() - 0.5) * 0.4,
+          speedY: -(Math.random() * 0.6 + 0.2),
+          opacity: Math.random() * 0.5 + 0.15,
+          pulse: Math.random() * Math.PI * 2
+        };
+      }
+
+      for (var i = 0; i < particleCount; i++) {
+        particles.push(createParticle());
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        var isDark = document.body.classList.contains('dark') || !document.body.classList.contains('light');
+        var particleColor = isDark ? '255, 255, 255' : '99, 102, 241';
+
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          p.x += p.speedX;
+          p.y += p.speedY;
+          p.pulse += 0.02;
+
+          var alpha = p.opacity + Math.sin(p.pulse) * 0.1;
+          if (alpha < 0) alpha = 0;
+          if (alpha > 0.7) alpha = 0.7;
+
+          if (p.y < -10) {
+            p.y = canvas.height + 10;
+            p.x = Math.random() * canvas.width;
+          }
+          if (p.x < -10) p.x = canvas.width + 10;
+          if (p.x > canvas.width + 10) p.x = -10;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(' + particleColor + ',' + alpha + ')';
+          ctx.fill();
+
+          // Subtle glow on some particles
+          if (p.size > 1.8) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(' + particleColor + ',' + (alpha * 0.25) + ')';
+            ctx.fill();
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+
+      resizeCanvas();
+      animate();
+
+      window.addEventListener('resize', function() {
+        resizeCanvas();
+        // Recreate particles for new dimensions
+        particles.length = 0;
+        for (var j = 0; j < particleCount; j++) {
+          particles.push(createParticle());
+        }
+      });
+
+      // Reposition on scroll
+      window.addEventListener('scroll', function() {
+        var rect = hero.getBoundingClientRect();
+        canvas.style.top = rect.top + 'px';
+      });
+    })();
+
+    // =============================================
+    // STICKY NAVBAR SCROLL EFFECT
+    // =============================================
+    window.addEventListener('scroll', function() {
+      var navbar = document.getElementById('mainNavbar');
+      if (navbar) {
+        if (window.scrollY > 10) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      }
+    });
+
+    // =============================================
+    // BACK TO TOP BUTTON
+    // =============================================
+    window.addEventListener('scroll', function() {
+      var btn = document.getElementById('backToTopBtn');
+      if (btn) {
+        if (window.scrollY > 400) {
+          btn.classList.add('visible');
+        } else {
+          btn.classList.remove('visible');
+        }
+      }
+    });
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =============================================
+    // DAILY STREAK BADGE
+    // =============================================
+    (function() {
+      var streakBadge = document.getElementById('streakBadge');
+      var streakCount = document.getElementById('streakCount');
+      if (!streakBadge || !streakCount) return;
+
+      var today = new Date().toDateString();
+      var streakData = JSON.parse(localStorage.getItem('medquiz_streak') || '{"lastDate":"","count":0}');
+
+      if (streakData.lastDate === today) {
+        // Already logged today
+        if (streakData.count > 0) {
+          streakBadge.style.display = 'inline-flex';
+          streakCount.textContent = streakData.count + 'd streak';
+        }
+      } else {
+        var yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        var yesterdayStr = yesterday.toDateString();
+
+        if (streakData.lastDate === yesterdayStr) {
+          // Consecutive day
+          streakData.count += 1;
+          streakData.lastDate = today;
+        } else {
+          // Streak broken or first time
+          streakData.count = 1;
+          streakData.lastDate = today;
+        }
+        localStorage.setItem('medquiz_streak', JSON.stringify(streakData));
+        if (streakData.count > 0) {
+          streakBadge.style.display = 'inline-flex';
+          streakCount.textContent = streakData.count + 'd streak';
+        }
+      }
+    })();
+
+    // =============================================
+    // SUBJECT CHIPS (AI Prompt Generator)
+    // =============================================
+    var allSubjects = [
+      'Anatomy', 'Physiology', 'Biochemistry', 'Pathology',
+      'Pharmacology', 'Microbiology', 'Forensic Medicine', 'Community Medicine',
+      'General Medicine', 'General Surgery', 'Obstetrics & Gynaecology', 'Paediatrics',
+      'Ophthalmology', 'ENT', 'Orthopaedics', 'Dermatology',
+      'Psychiatry', 'Radiology', 'Anaesthesiology'
+    ];
+
+    function buildSubjectChips() {
+      var container = document.getElementById('subjectChips');
+      if (!container) return;
+      container.innerHTML = '';
+      allSubjects.forEach(function(subj) {
+        var chip = document.createElement('span');
+        chip.className = 'subject-chip';
+        chip.textContent = subj;
+        chip.onclick = function() {
+          this.classList.toggle('selected');
+          updateSelectedSubjects();
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    function updateSelectedSubjects() {
+      var chips = document.querySelectorAll('#subjectChips .subject-chip.selected');
+      var selected = [];
+      chips.forEach(function(c) { selected.push(c.textContent); });
+      document.getElementById('aiSelectedSubjects').value = selected.join(', ');
+    }
+
+    function getSelectedSubjects() {
+      return document.getElementById('aiSelectedSubjects').value;
+    }
+
+    // Initialize subject chips
+    buildSubjectChips();
+
+    // =============================================
+    // PROMPT TAB SWITCHING
+    // =============================================
+    function switchPromptTab(tab) {
+      var tabTopic = document.getElementById('tabTopic');
+      var tabNotes = document.getElementById('tabNotes');
+      var contentTopic = document.getElementById('tabContentTopic');
+      var contentNotes = document.getElementById('tabContentNotes');
+
+      if (tab === 'topic') {
+        tabTopic.classList.add('active');
+        tabNotes.classList.remove('active');
+        contentTopic.classList.add('active');
+        contentNotes.classList.remove('active');
+      } else {
+        tabNotes.classList.add('active');
+        tabTopic.classList.remove('active');
+        contentNotes.classList.add('active');
+        contentTopic.classList.remove('active');
+      }
+    }
+
+    // =============================================
+    // JSON LIVE VALIDATOR
+    // =============================================
+    function validateJSONLive() {
+      var textarea = document.getElementById('jsonInput');
+      var indicator = document.getElementById('jsonValidatorIndicator');
+      if (!textarea || !indicator) return;
+
+      var value = textarea.value.trim();
+      if (value.length === 0) {
+        textarea.classList.remove('valid-glow', 'invalid-glow');
+        indicator.textContent = '';
+        indicator.className = 'json-validator-indicator';
+        return;
+      }
+
+      try {
+        var parsed = JSON.parse(value);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          textarea.classList.add('valid-glow');
+          textarea.classList.remove('invalid-glow');
+          indicator.textContent = '✓ Valid JSON — ' + parsed.length + ' question(s) detected';
+          indicator.className = 'json-validator-indicator valid';
+        } else if (Array.isArray(parsed) && parsed.length === 0) {
+          textarea.classList.remove('valid-glow');
+          textarea.classList.add('invalid-glow');
+          indicator.textContent = '⚠ Array is empty — add at least 1 question object';
+          indicator.className = 'json-validator-indicator invalid';
+        } else {
+          textarea.classList.remove('valid-glow');
+          textarea.classList.add('invalid-glow');
+          indicator.textContent = '⚠ Must be an array of question objects [... ]';
+          indicator.className = 'json-validator-indicator invalid';
+        }
+      } catch (e) {
+        textarea.classList.remove('valid-glow');
+        textarea.classList.add('invalid-glow');
+        indicator.textContent = '✗ Invalid JSON — ' + e.message;
+        indicator.className = 'json-validator-indicator invalid';
+      }
+    }
+
+    // =============================================
+    // PASTE FROM CLIPBOARD
+    // =============================================
+    function pasteFromClipboard() {
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        showToast('Clipboard access not supported. Please paste manually.');
+        return;
+      }
+      navigator.clipboard.readText().then(function(text) {
+        var textarea = document.getElementById('jsonInput');
+        if (textarea && text) {
+          textarea.value = text;
+          validateJSONLive();
+          showToast('JSON pasted from clipboard!');
+        }
+      }).catch(function() {
+        showToast('Could not read clipboard. Please paste manually.');
+      });
+    }
+
+    // =============================================
+    // REVEAL QUIZ CONFIG
+    // =============================================
+    function revealQuizConfig() {
+      setTimeout(function() {
+        var configSection = document.getElementById('quizConfigSection');
+        var parseStatus = document.getElementById('parseStatus');
+        if (configSection && parseStatus && parseStatus.textContent.trim() !== '') {
+          configSection.style.display = 'block';
+          configSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    }
+
+    // =============================================
+    // RESET DAILY GOAL
+    // =============================================
+    function resetDailyGoal() {
+      if (confirm('Reset daily progress to 0? This will clear today\'s question count.')) {
+        localStorage.setItem('medquiz_daily_count', '0');
+        localStorage.setItem('medquiz_daily_date', new Date().toDateString());
+        document.getElementById('milestoneFill').style.width = '0%';
+        var goalInput = document.getElementById('dailyGoalInput');
+        var goal = goalInput ? parseInt(goalInput.value) || 100 : 100;
+        document.getElementById('milestoneText').textContent = '0 / ' + goal + ' Questions';
+        showToast('Daily progress reset.');
+      }
+    }
+
+    // =============================================
+    // AI PROMPT GENERATOR — TOPIC-BASED
+    // =============================================
+    function generateAIPrompt() {
+      var selectedSubjects = getSelectedSubjects();
+      var topic = document.getElementById('aiTopic').value.trim();
+      var numQuestions = document.getElementById('aiNumQuestions').value;
+      var standard = document.getElementById('aiStandard').value;
+      var extra = document.getElementById('aiExtraInstructions').value.trim();
+
+      if (!selectedSubjects && !topic) {
+        alert('Please select at least one subject or enter a topic.');
+        return;
+      }
+      if (!numQuestions || parseInt(numQuestions) < 1) {
+        alert('Please enter a valid number of questions.');
+        return;
+      }
+
+      var subjectPart = selectedSubjects ? 'on ' + selectedSubjects : '';
+      var topicPart = topic ? (selectedSubjects ? ' — specifically "' + topic + '"' : 'on "' + topic + '"') : '';
+
+      var prompt = 'Generate ' + numQuestions + ' medical MCQ questions in valid JSON format ' + subjectPart + topicPart + ' at ' + standard + '.';
+      if (extra) {
+        prompt += ' ' + extra + '.';
+      }
+      prompt += '\n\nEach question object must have these exact fields:\n';
+      prompt += '- "question": string\n';
+      prompt += '- "options": array of 4-5 strings\n';
+      prompt += '- "correct_option": string (must exactly match one option)\n';
+      prompt += '- "explanation": string (detailed medical explanation)\n';
+      prompt += '- "difficulty": number (1=easy to 5=hard)\n';
+      prompt += '- "subject": string\n';
+      prompt += '- "topic": string\n';
+      prompt += '- "tags": array of strings (e.g., ["PYQ","HYT"])\n';
+      prompt += '- "image_url": string (empty string if none)\n\n';
+      prompt += 'Output ONLY the raw JSON array. No markdown, no code fences, no extra text. Start with [ and end with ].';
+
+      document.getElementById('aiGeneratedPrompt').value = prompt;
+      document.getElementById('aiGeneratedPrompt').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyAIPrompt() {
+      copyTextToClipboard('aiGeneratedPrompt', 'copyPromptBtn');
+    }
+
+    function clearAIPromptFields() {
+      // Deselect all subject chips
+      document.querySelectorAll('#subjectChips .subject-chip.selected').forEach(function(c) {
+        c.classList.remove('selected');
+      });
+      document.getElementById('aiSelectedSubjects').value = '';
+      document.getElementById('aiTopic').value = '';
+      document.getElementById('aiNumQuestions').value = '10';
+      document.getElementById('aiStandard').value = 'NEET PG / INI-CET level';
+      document.getElementById('aiExtraInstructions').value = '';
+      document.getElementById('aiGeneratedPrompt').value = '';
+      updateSelectedSubjects();
+      showToast('All fields cleared.');
+    }
+
+    // =============================================
+    // AI PROMPT GENERATOR — NOTES-BASED
+    // =============================================
+    function generateAINotesPrompt() {
+      var notesContent = document.getElementById('aiNotesContent').value.trim();
+      var numQuestions = document.getElementById('aiNotesNumQuestions').value;
+      var standard = document.getElementById('aiNotesStandard').value;
+      var extra = document.getElementById('aiNotesExtraInstructions').value.trim();
+
+      if (!notesContent) {
+        alert('Please paste your study notes or content first.');
+        return;
+      }
+      if (!numQuestions || parseInt(numQuestions) < 1) {
+        alert('Please enter a valid number of questions.');
+        return;
+      }
+
+      var prompt = 'Based on the following study notes, generate ' + numQuestions + ' medical MCQ questions in valid JSON format at ' + standard + ' level.\n\n';
+      prompt += 'STUDY NOTES:\n"""\n' + notesContent + '\n"""\n\n';
+      if (extra) {
+        prompt += 'Additional instructions: ' + extra + '.\n\n';
+      }
+      prompt += 'Each question object must have these exact fields:\n';
+      prompt += '- "question": string\n';
+      prompt += '- "options": array of 4-5 strings\n';
+      prompt += '- "correct_option": string (must exactly match one option)\n';
+      prompt += '- "explanation": string (detailed medical explanation referencing the notes)\n';
+      prompt += '- "difficulty": number (1=easy to 5=hard)\n';
+      prompt += '- "subject": string (infer from the notes)\n';
+      prompt += '- "topic": string (infer from the notes)\n';
+      prompt += '- "tags": array of strings (e.g., ["PYQ","HYT"])\n';
+      prompt += '- "image_url": string (empty string if none)\n\n';
+      prompt += 'Output ONLY the raw JSON array. No markdown, no code fences, no extra text. Start with [ and end with ].';
+
+      document.getElementById('aiNotesGeneratedPrompt').value = prompt;
+      document.getElementById('aiNotesGeneratedPrompt').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyAINotesPrompt() {
+      copyTextToClipboard('aiNotesGeneratedPrompt', 'copyNotesPromptBtn');
+    }
+
+    function clearAINotesFields() {
+      document.getElementById('aiNotesContent').value = '';
+      document.getElementById('aiNotesNumQuestions').value = '10';
+      document.getElementById('aiNotesStandard').value = 'NEET PG / INI-CET level';
+      document.getElementById('aiNotesExtraInstructions').value = '';
+      document.getElementById('aiNotesGeneratedPrompt').value = '';
+      showToast('All fields cleared.');
+    }
+
+    // =============================================
+    // HELPER: Copy text to clipboard
+    // =============================================
+    function copyTextToClipboard(textareaId, btnId) {
+      var textarea = document.getElementById(textareaId);
+      var btn = document.getElementById(btnId);
+      if (!textarea || !textarea.value) {
+        alert('Click "Generate Prompt" first.');
+        return;
+      }
+      var promptText = textarea.value;
+      navigator.clipboard.writeText(promptText).then(function() {
+        var originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.background = 'var(--accent)';
+        btn.style.color = '#fff';
+        showToast('Prompt copied! Paste it into ChatGPT, Claude, or Gemini.');
+        setTimeout(function() {
+          btn.textContent = originalText;
+          btn.style.background = '';
+          btn.style.color = '';
+        }, 2000);
+      }).catch(function() {
+        textarea.select();
+        document.execCommand('copy');
+        showToast('Prompt copied! Paste it into your AI app.');
+      });
+    }
+
+    // =============================================
+    // TOAST HELPER
+    // =============================================
+    function showToast(msg) {
+      var toast = document.getElementById('toast');
+      if (toast) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(function() {
+          toast.classList.remove('show');
+        }, 3000);
+      }
+    }
+  </script>
+
+  <!-- ========== MAIN SCRIPT ========== -->
   <script src="js/script.js"></script>
 </body>
 </html>
