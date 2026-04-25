@@ -483,10 +483,8 @@
     /* Focus visible for custom toggle */
     .toggle-switch input:focus-visible + .toggle-track { box-shadow: 0 0 0 3px rgba(99,102,241,0.3); }
 
-    /* ── FIX 4: Hide stats-bar difficulty, show animated meter ── */
-    #statsBar .stat-item:last-child { display: none; }
-
     /* ── Difficulty Meter ── */
+    #statsBar .stat-item:last-child { display: none; }
     .difficulty-meter-wrap {
       margin-top: 14px; padding: 14px 16px;
       background: var(--bg-primary); border: 1px solid var(--border);
@@ -561,6 +559,13 @@
       <span class="nav-brand-text">MedQuiz Pro</span>
     </div>
     <div class="nav-actions">
+      <button class="nav-icon-btn" onclick="openModal('dailyGoalModal')" title="Daily Practice Goal" aria-label="Daily Goal">
+        <svg viewBox="0 0 36 36" width="22" height="22">
+          <circle cx="18" cy="18" r="14" fill="none" stroke="var(--border)" stroke-width="3"></circle>
+          <circle id="navGoalRing" cx="18" cy="18" r="14" fill="none" stroke="var(--accent-red)" stroke-width="3" stroke-dasharray="87.96" stroke-dashoffset="87.96" stroke-linecap="round" style="transition: stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1), stroke 0.8s ease; transform: rotate(-90deg); transform-origin: 50% 50%;"></circle>
+        </svg>
+      </button>
+      
       <button class="nav-icon-btn" onclick="openModal('bankModal')" title="Question Bank" aria-label="Question Bank">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <ellipse cx="12" cy="5" rx="9" ry="3"/>
@@ -863,21 +868,6 @@
           </div>
         </div>
 
-        <div class="milestone-bar" id="milestoneBar">
-          <div class="milestone-header">
-            <span>Daily Goal</span>
-            <span id="milestoneText">0 / 100 Questions</span>
-          </div>
-          <div class="milestone-progress-bg">
-            <div class="milestone-progress-fill" id="milestoneFill" style="width:0%"></div>
-          </div>
-          <div class="milestone-controls">
-            <input type="number" id="dailyGoalInput" min="1" max="500" value="100" class="goal-input custom-number-input" style="width: 80px; padding: 6px 10px;">
-            <button class="btn btn-ghost btn-xs" onclick="setDailyGoal()">Set Goal</button>
-            <button class="btn btn-ghost btn-xs" onclick="confirmResetDailyGoal()" title="Reset today's count">Reset</button>
-          </div>
-        </div>
-
         <div class="start-section" id="startSection">
           <button class="btn btn-primary btn-lg btn-full" onclick="startQuiz()">Start Quiz</button>
         </div>
@@ -985,6 +975,16 @@
               <span class="section-label">Number of Questions</span>
               <input type="number" id="aiNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="e.g. 10">
             </div>
+            
+            <div style="flex:1.5;min-width:140px;">
+              <span class="section-label">Question Format</span>
+              <select id="aiFormatTopic" class="custom-number-input" style="cursor:pointer; appearance:auto;">
+                <option value="standard" selected>Standard (100% Theory)</option>
+                <option value="mix">NEET Mix (~30% Images)</option>
+                <option value="image">Image-Based Only</option>
+              </select>
+            </div>
+
             <div style="flex:2;min-width:160px;">
               <span class="section-label">Exam Standard</span>
               <select id="aiStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -1001,7 +1001,7 @@
           </div>
           <div style="margin-bottom:14px;">
             <span class="section-label">Extra Instructions <span class="optional-tag">(optional)</span></span>
-            <input type="text" id="aiExtraInstructions" placeholder="e.g., focus on clinical vignettes, include image-based questions..." class="custom-number-input">
+            <input type="text" id="aiExtraInstructions" placeholder="e.g., focus on clinical vignettes..." class="custom-number-input">
           </div>
           <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
             <button class="btn btn-accent btn-sm" onclick="generateAIPrompt()" style="padding:10px 18px;font-weight:600;">Generate Prompt</button>
@@ -1024,6 +1024,16 @@
               <span class="section-label">Number of Questions</span>
               <input type="number" id="aiNotesNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="e.g. 10">
             </div>
+            
+            <div style="flex:1.5;min-width:140px;">
+              <span class="section-label">Question Format</span>
+              <select id="aiFormatNotes" class="custom-number-input" style="cursor:pointer; appearance:auto;">
+                <option value="standard" selected>Standard (100% Theory)</option>
+                <option value="mix">NEET Mix (~30% Images)</option>
+                <option value="image">Image-Based Only</option>
+              </select>
+            </div>
+
             <div style="flex:2;min-width:160px;">
               <span class="section-label">Exam Standard</span>
               <select id="aiNotesStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -1091,6 +1101,33 @@
 
       </div><div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('aiPromptModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="dailyGoalModal" role="dialog" aria-modal="true" aria-label="Daily Goal">
+    <div class="modal-box" style="max-width:420px; text-align:center;">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+        </svg>
+      </div>
+      <div class="modal-title">Daily Practice Goal</div>
+      <div class="modal-body" style="padding-bottom: 0;">
+        <div class="milestone-header" style="justify-content:center; gap: 10px;">
+          <span id="milestoneText" style="font-size:15px; font-weight:700; color:var(--text-primary);">0 / 100 Questions Today</span>
+        </div>
+        <div class="milestone-progress-bg" style="height:12px; margin:16px 0; border-radius: 6px; background: var(--border);">
+          <div class="milestone-progress-fill" id="milestoneFill" style="width:0%; height:100%; border-radius:6px; background:var(--gradient-success); transition:width 0.8s cubic-bezier(0.16,1,0.3,1);"></div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center; align-items:center; margin-top:24px;">
+          <input type="number" id="dailyGoalInput" min="1" max="500" value="100" class="custom-number-input" style="width: 100px; text-align:center; font-weight: 600;">
+          <button class="btn btn-primary btn-sm" onclick="setDailyGoal()">Update Goal</button>
+          <button class="btn btn-ghost btn-sm" onclick="confirmResetDailyGoal()" title="Reset today's count">Reset Progress</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('dailyGoalModal')">Close</button>
       </div>
     </div>
   </div>
@@ -1225,9 +1262,7 @@
   <script>
     'use strict';
 
-    // ── Modal System ──────────────────────────
     var _openModalCount = 0;
-
     function openModal(id) {
       var overlay = document.getElementById(id);
       if (!overlay) return;
@@ -1238,7 +1273,6 @@
       var focusable = overlay.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
       if (focusable.length) focusable[0].focus();
     }
-
     function closeModal(id) {
       var overlay = document.getElementById(id);
       if (!overlay) return;
@@ -1255,7 +1289,6 @@
       }
     });
 
-    // ── Custom Confirm ────────────────────────
     function showConfirm(message, onConfirm, title) {
       var msgEl   = document.getElementById('confirmModalMessage');
       var titleEl = document.getElementById('confirmModalTitle');
@@ -1295,66 +1328,16 @@
       );
     }
 
-    function confirmResetDailyGoal() {
-      showConfirm(
-        'Reset today\'s progress to 0? Your session count will be permanently cleared.',
-        function() {
-          var today = new Date().toISOString().slice(0, 10);
-          localStorage.setItem('medquiz_daily_count', '0');
-          localStorage.setItem('medquiz_daily_date',  new Date().toDateString());
-          if (typeof openDB === 'function') {
-            openDB().then(function(db) {
-              var tx    = db.transaction('milestones', 'readwrite');
-              var store = tx.objectStore('milestones');
-              store.put({ date: today, answered: 0 });
-              tx.oncomplete = function() {
-                _updateMilestoneDisplay(0);
-                showToast('Daily progress reset to zero.');
-              };
-            }).catch(function() {
-              _updateMilestoneDisplay(0);
-              showToast('Daily progress reset.');
-            });
-          } else {
-            _updateMilestoneDisplay(0);
-            showToast('Daily progress reset.');
-          }
-        },
-        'Reset Daily Progress?'
-      );
-    }
-
-    function _updateMilestoneDisplay(answered) {
-      var fill = document.getElementById('milestoneFill');
-      if (fill) fill.style.width = '0%';
-      var goalInput = document.getElementById('dailyGoalInput');
-      var goal      = goalInput ? (parseInt(goalInput.value) || 100) : 100;
-      var milestoneText = document.getElementById('milestoneText');
-      if (milestoneText) milestoneText.textContent = answered + ' / ' + goal + ' Questions Today';
-    }
-
-    // ── Optimized Particles for Mobile ─────────
+    // ── Particles ──
     (function() {
       var canvas = document.getElementById('particlesCanvas');
       if (!canvas) return;
       var ctx = canvas.getContext('2d');
       var particles = [], animationFrameId = null, w, h;
-
-      function getParticleCount() { 
-        // Optimized: Fewer particles on smaller screens to save battery
-        var divisor = window.innerWidth < 600 ? 50 : 28;
-        return Math.min(80, Math.max(15, Math.floor(window.innerWidth / divisor))); 
-      }
-      function resizeCanvas()     { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-      function createParticle()   {
-        return { x: Math.random()*w, y: Math.random()*h, size: Math.random()*2.5+0.8,
-                 speedX: (Math.random()-0.5)*0.4, speedY: -(Math.random()*0.6+0.2),
-                 opacity: Math.random()*0.5+0.15, pulse: Math.random()*Math.PI*2 };
-      }
-      function initParticles() {
-        particles.length = 0;
-        for (var i = 0; i < getParticleCount(); i++) particles.push(createParticle());
-      }
+      function getParticleCount() { var divisor = window.innerWidth < 600 ? 50 : 28; return Math.min(80, Math.max(15, Math.floor(window.innerWidth / divisor))); }
+      function resizeCanvas() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      function createParticle() { return { x: Math.random()*w, y: Math.random()*h, size: Math.random()*2.5+0.8, speedX: (Math.random()-0.5)*0.4, speedY: -(Math.random()*0.6+0.2), opacity: Math.random()*0.5+0.15, pulse: Math.random()*Math.PI*2 }; }
+      function initParticles() { particles.length = 0; for (var i = 0; i < getParticleCount(); i++) particles.push(createParticle()); }
       function animate() {
         ctx.clearRect(0, 0, w, h);
         var isDark = !document.body.classList.contains('light');
@@ -1363,26 +1346,23 @@
           var p = particles[i];
           p.x += p.speedX; p.y += p.speedY; p.pulse += 0.02;
           var alpha = Math.min(0.7, Math.max(0, p.opacity + Math.sin(p.pulse)*0.1));
-          if (p.y < -10)    { p.y = h+10; p.x = Math.random()*w; }
-          if (p.x < -10)    p.x = w+10;
-          if (p.x > w+10)   p.x = -10;
+          if (p.y < -10) { p.y = h+10; p.x = Math.random()*w; }
+          if (p.x < -10) p.x = w+10;
+          if (p.x > w+10) p.x = -10;
           ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
           ctx.fillStyle = 'rgba('+col+','+alpha+')'; ctx.fill();
-          if (p.size > 1.8) {
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.size*2.5, 0, Math.PI*2);
-            ctx.fillStyle = 'rgba('+col+','+(alpha*0.25)+')'; ctx.fill();
-          }
+          if (p.size > 1.8) { ctx.beginPath(); ctx.arc(p.x, p.y, p.size*2.5, 0, Math.PI*2); ctx.fillStyle = 'rgba('+col+','+(alpha*0.25)+')'; ctx.fill(); }
         }
         animationFrameId = requestAnimationFrame(animate);
       }
       function startAnimation() { if (!animationFrameId) animate(); }
-      function stopAnimation()  { if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; } }
+      function stopAnimation() { if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; } }
       document.addEventListener('visibilitychange', function() { document.hidden ? stopAnimation() : startAnimation(); });
       resizeCanvas(); initParticles(); startAnimation();
       window.addEventListener('resize', function() { resizeCanvas(); initParticles(); });
     })();
 
-    // ── Scroll ────────────────────────────────
+    // ── Scroll & UI Toggles ──
     window.addEventListener('scroll', function() {
       var scrollY = window.scrollY;
       var navbar  = document.getElementById('mainNavbar');
@@ -1391,115 +1371,23 @@
       if (btn) btn.classList.toggle('visible', scrollY > 400);
     });
     function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-
-    // ── Quiz Config Reveal ────────────────────
     function revealQuizConfig() {
       var s = document.getElementById('quizConfigSection');
       if (!s) return;
-      s.style.display = '';
-      s.style.removeProperty('display');
-      requestAnimationFrame(function() {
-        s.classList.add('revealed');
-        setTimeout(function() { s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
-      });
+      s.style.display = ''; s.style.removeProperty('display');
+      requestAnimationFrame(function() { s.classList.add('revealed'); setTimeout(function() { s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); });
     }
-    function hideQuizConfig() {
-      var s = document.getElementById('quizConfigSection');
-      if (s) s.classList.remove('revealed');
-    }
+    function hideQuizConfig() { var s = document.getElementById('quizConfigSection'); if (s) s.classList.remove('revealed'); }
 
-    // ── quizParsed event ──────────────────────
-    document.addEventListener('quizParsed', function(e) {
-      var detail    = (e && e.detail) ? e.detail : {};
-      var count     = detail.count     || 0;
-      var questions = detail.questions || [];
-
-      var parseStatus = document.getElementById('parseStatus');
-      if (parseStatus) {
-        var svgCheck = '<span class="status-check-svg">'
-          + '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">'
-          + '<circle class="check-circle" cx="12" cy="12" r="9"/>'
-          + '<polyline class="check-mark" points="7 12.5 10.5 16 17 9"/>'
-          + '</svg></span>';
-        parseStatus.innerHTML = svgCheck + ' <span style="color:var(--text-primary);font-weight:600;">'
-          + count + ' question' + (count !== 1 ? 's' : '') + ' loaded successfully</span>';
-      }
-
-      if (questions.length > 0) updateDifficultyMeter(questions);
-      revealQuizConfig();
-      resetLoadButton(true);
-    });
-
-    document.addEventListener('quizParseError', function() { resetLoadButton(false); });
-
-    // ── Difficulty Meter ───────────────
-    function updateDifficultyMeter(questions) {
-      var wrap  = document.getElementById('difficultyMeterWrap');
-      var fill  = document.getElementById('difficultyFill');
-      var badge = document.getElementById('difficultyBadge');
-      var label = document.getElementById('difficultyBadgeText');
-      if (!wrap || !fill || !badge || !label) return;
-      var total = 0, count = 0;
-      questions.forEach(function(q) {
-        var d = parseFloat(q.difficulty);
-        if (!isNaN(d) && d >= 1 && d <= 5) { total += d; count++; }
-      });
-      if (count === 0) { wrap.style.display = 'none'; return; }
-      var avg  = total / count;
-      wrap.style.display = 'block';
-      var pct  = ((avg - 1) / 4) * 100;
-      var tier, tierLabel, colorHex;
-      if (avg < 2.4)      { tier = 'easy';   tierLabel = 'Easy';      colorHex = '#22c55e'; }
-      else if (avg < 3.7) { tier = 'medium'; tierLabel = 'Moderate';  colorHex = '#f59e0b'; }
-      else                { tier = 'hard';   tierLabel = 'Difficult'; colorHex = '#ef4444'; }
-      fill.style.width = '0%';
-      fill.style.background = colorHex;
-      setTimeout(function() { fill.style.width = pct + '%'; }, 80);
-      badge.className   = 'difficulty-badge ' + tier;
-      label.textContent = tierLabel + ' (' + avg.toFixed(1) + '/5)';
-    }
-
-    // ── Shuffle Toggles ───────────────────────
-    window._shuffleQuestions = false;
-    window._shuffleOptions   = false;
-    window._questionTarget   = null;
-
-    function onShuffleToggle() {
-      window._shuffleQuestions = document.getElementById('shuffleQuestionsToggle').checked;
-      showToast(window._shuffleQuestions ? 'Questions will be shuffled each session.' : 'Question order preserved.');
-    }
-    function onShuffleOptionsToggle() {
-      window._shuffleOptions = document.getElementById('shuffleOptionsToggle').checked;
-      showToast(window._shuffleOptions ? 'Answer options will be randomised.' : 'Option order preserved.');
-    }
-
-    // ── How-to Guide Toggle ────────────
     function toggleHowToGuide() {
-      var btn     = document.getElementById('howToToggleBtn');
-      var content = document.getElementById('howToGuideContent');
+      var btn = document.getElementById('howToToggleBtn'), content = document.getElementById('howToGuideContent');
       if (!btn || !content) return;
-      var isOpen  = content.classList.contains('open');
-      if (isOpen) {
-        content.classList.remove('open');
-        btn.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
-      } else {
-        content.classList.add('open');
-        btn.classList.add('open');
-        btn.setAttribute('aria-expanded', 'true');
-      }
+      if (content.classList.contains('open')) { content.classList.remove('open'); btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); } 
+      else { content.classList.add('open'); btn.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
     }
 
-    // ── Lazy Subject Chips ────────────────────
     var _subjectChipsBuilt = false;
-    var allSubjects = [
-      'Anatomy','Physiology','Biochemistry','Pathology',
-      'Pharmacology','Microbiology','Forensic Medicine','Community Medicine',
-      'General Medicine','General Surgery','Obstetrics & Gynaecology','Paediatrics',
-      'Ophthalmology','ENT','Orthopaedics','Dermatology',
-      'Psychiatry','Radiology','Anaesthesiology'
-    ];
-
+    var allSubjects = ['Anatomy','Physiology','Biochemistry','Pathology','Pharmacology','Microbiology','Forensic Medicine','Community Medicine','General Medicine','General Surgery','Obstetrics & Gynaecology','Paediatrics','Ophthalmology','ENT','Orthopaedics','Dermatology','Psychiatry','Radiology','Anaesthesiology'];
     function buildSubjectChips() {
       if (_subjectChipsBuilt) return;
       var container = document.getElementById('subjectChips');
@@ -1507,368 +1395,187 @@
       container.innerHTML = '';
       allSubjects.forEach(function(subj) {
         var chip = document.createElement('span');
-        chip.className   = 'subject-chip';
-        chip.textContent = subj;
-        chip.setAttribute('role', 'button');
-        chip.setAttribute('tabindex', '0');
-        chip.setAttribute('aria-pressed', 'false');
-        chip.onclick = function() {
-          var sel = this.classList.toggle('selected');
-          this.setAttribute('aria-pressed', sel ? 'true' : 'false');
-          updateSelectedSubjects();
-        };
+        chip.className = 'subject-chip'; chip.textContent = subj;
+        chip.setAttribute('role', 'button'); chip.setAttribute('tabindex', '0'); chip.setAttribute('aria-pressed', 'false');
+        chip.onclick = function() { var sel = this.classList.toggle('selected'); this.setAttribute('aria-pressed', sel ? 'true' : 'false'); updateSelectedSubjects(); };
         chip.onkeydown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); } };
         container.appendChild(chip);
       });
       _subjectChipsBuilt = true;
     }
-
     function updateSelectedSubjects() {
-      var chips    = document.querySelectorAll('#subjectChips .subject-chip.selected');
-      var selected = [];
+      var chips = document.querySelectorAll('#subjectChips .subject-chip.selected'), selected = [];
       chips.forEach(function(c) { selected.push(c.textContent); });
       var hidden = document.getElementById('aiSelectedSubjects');
       if (hidden) hidden.value = selected.join(', ');
     }
-
-    function getSelectedSubjects() {
-      var hidden = document.getElementById('aiSelectedSubjects');
-      return hidden ? hidden.value : '';
-    }
-
+    function getSelectedSubjects() { var hidden = document.getElementById('aiSelectedSubjects'); return hidden ? hidden.value : ''; }
     function openAIPromptModal() { buildSubjectChips(); openModal('aiPromptModal'); }
-
-    // ── Prompt Tab Switching ──────────────────
     function switchPromptTab(tab) {
       var tT = document.getElementById('tabTopic'), tN = document.getElementById('tabNotes');
       var cT = document.getElementById('tabContentTopic'), cN = document.getElementById('tabContentNotes');
       if (!tT || !tN) return;
-      if (tab === 'topic') {
-        tT.classList.add('active');    tN.classList.remove('active');
-        cT.classList.add('active');    cN.classList.remove('active');
-      } else {
-        tN.classList.add('active');    tT.classList.remove('active');
-        cN.classList.add('active');    cT.classList.remove('active');
-      }
+      if (tab === 'topic') { tT.classList.add('active'); tN.classList.remove('active'); cT.classList.add('active'); cN.classList.remove('active'); } 
+      else { tN.classList.add('active'); tT.classList.remove('active'); cN.classList.add('active'); cT.classList.remove('active'); }
     }
 
-    // ── JSON Live Validator ───────────────────
-    var _jsonValidateTimer = null;
-    var REQUIRED_FIELDS    = ['question','options','correct_option','explanation'];
-
-    function validateJSONLive() {
-      clearTimeout(_jsonValidateTimer);
-      _jsonValidateTimer = setTimeout(function() { _doValidateJSON(); }, 300);
-    }
-
-    function _doValidateJSON() {
-      var textarea  = document.getElementById('jsonInput');
-      var textSpan  = document.getElementById('jsonValidatorText');
-      var indicator = document.getElementById('jsonValidatorIndicator');
-      var helpBtn   = document.getElementById('jsonHelpBtn');
-      if (!textarea || !indicator || !textSpan) return;
-      var value = textarea.value.trim();
-      if (value.length === 0) {
-        textarea.classList.remove('valid-glow','invalid-glow');
-        textSpan.textContent = ''; indicator.className = 'json-validator-indicator';
-        if (helpBtn) helpBtn.classList.remove('visible');
-        hideSchemaErrors(); return;
-      }
-      var parsed;
-      try { parsed = JSON.parse(value); }
-      catch (e) {
-        textarea.classList.remove('valid-glow'); textarea.classList.add('invalid-glow');
-        textSpan.textContent = 'Invalid JSON — ' + _friendlyJsonError(e.message);
-        indicator.className  = 'json-validator-indicator invalid';
-        if (helpBtn) helpBtn.classList.add('visible');
-        hideSchemaErrors(); return;
-      }
-      if (!Array.isArray(parsed)) {
-        textarea.classList.remove('valid-glow'); textarea.classList.add('invalid-glow');
-        textSpan.textContent = 'Must be an array of question objects [...]';
-        indicator.className  = 'json-validator-indicator invalid';
-        if (helpBtn) helpBtn.classList.add('visible');
-        hideSchemaErrors(); return;
-      }
-      if (parsed.length === 0) {
-        textarea.classList.remove('valid-glow'); textarea.classList.add('invalid-glow');
-        textSpan.textContent = 'Array is empty — add at least 1 question object';
-        indicator.className  = 'json-validator-indicator invalid';
-        if (helpBtn) helpBtn.classList.add('visible');
-        hideSchemaErrors(); return;
-      }
-      var schemaIssues = [];
-      parsed.forEach(function(q, i) {
-        var qNum = 'Q'+(i+1);
-        REQUIRED_FIELDS.forEach(function(field) {
-          if (q[field] === undefined || q[field] === null || q[field] === '')
-            schemaIssues.push(qNum+': missing or empty "'+field+'"');
-        });
-        if (q.options !== undefined && !Array.isArray(q.options))
-          schemaIssues.push(qNum+': "options" must be an array');
-        if (Array.isArray(q.options) && q.options.length < 2)
-          schemaIssues.push(qNum+': "options" must have at least 2 choices');
-        if (q.correct_option && Array.isArray(q.options) && q.options.indexOf(q.correct_option) === -1)
-          schemaIssues.push(qNum+': "correct_option" does not match any option exactly');
-      });
-      if (schemaIssues.length > 0) {
-        textarea.classList.remove('valid-glow'); textarea.classList.add('invalid-glow');
-        textSpan.textContent = parsed.length+' question(s) — '+schemaIssues.length+' field issue(s) found';
-        indicator.className  = 'json-validator-indicator warning';
-        if (helpBtn) helpBtn.classList.add('visible');
-        showSchemaErrors(schemaIssues);
-      } else {
-        textarea.classList.add('valid-glow'); textarea.classList.remove('invalid-glow');
-        textSpan.textContent = parsed.length+' question(s) detected — valid';
-        indicator.className  = 'json-validator-indicator valid';
-        if (helpBtn) helpBtn.classList.remove('visible');
-        hideSchemaErrors();
-      }
-    }
-
-    function _friendlyJsonError(msg) {
-      if (!msg) return 'check syntax';
-      if (msg.indexOf('Unexpected token') !== -1) return 'unexpected character — check for missing quotes or commas';
-      if (msg.indexOf('Unexpected end')   !== -1) return 'input is incomplete — missing closing ] or }';
-      if (msg.indexOf('Expected')         !== -1) return 'check for missing commas or brackets';
-      return 'check syntax near: ' + msg.substring(0, 40);
-    }
-
-    function showSchemaErrors(issues) {
-      var container = document.getElementById('schemaErrorList');
-      var list      = document.getElementById('schemaErrorItems');
-      if (!container || !list) return;
-      list.innerHTML = '';
-      issues.slice(0, 8).forEach(function(issue) { var li = document.createElement('li'); li.textContent = issue; list.appendChild(li); });
-      if (issues.length > 8) {
-        var li = document.createElement('li'); li.style.fontWeight = '600';
-        li.textContent = '… and '+(issues.length-8)+' more issue(s).'; list.appendChild(li);
-      }
-      container.classList.add('visible');
-    }
-
-    function hideSchemaErrors() {
-      var c = document.getElementById('schemaErrorList'); if (c) c.classList.remove('visible');
-    }
-
-    function toggleJSONHelp() {
-      var panel = document.getElementById('jsonHelpPanel');
-      if (panel) {
-        panel.classList.toggle('open');
-        if (panel.classList.contains('open')) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    }
-
-    // ── Load Button ───────────────────────────
-    function handleLoadQuestions(btn) {
-      if (btn.classList.contains('btn-loading')) return;
-      var textarea = document.getElementById('jsonInput');
-      if (!textarea || !textarea.value.trim()) { showToast('Please paste your JSON questions first.'); return; }
-      var originalHTML = btn.innerHTML;
-      btn.classList.add('btn-loading');
-      btn.innerHTML = '<span class="btn-spinner"></span>Loading...';
-      btn.setAttribute('data-original-html', originalHTML);
-      if (typeof parseJSON === 'function') parseJSON();
-      else setTimeout(function() { resetLoadButton(false); }, 1500);
-      setTimeout(function() {
-        var b = document.getElementById('loadQuestionsBtn');
-        if (b && b.classList.contains('btn-loading')) resetLoadButton(false);
-      }, 8000);
-    }
-
-    function resetLoadButton(success) {
-      var btn = document.getElementById('loadQuestionsBtn');
-      if (!btn) return;
-      btn.classList.remove('btn-loading');
-      if (success) {
-        btn.classList.add('btn-success-state');
-        btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><polyline points="20 6 9 17 4 12"/></svg>Questions Loaded';
-        setTimeout(function() {
-          btn.classList.remove('btn-success-state');
-          btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions';
-        }, 2500);
-      } else {
-        btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions';
-      }
-    }
-
-    // ── Paste from Clipboard (Modernized) ─────
-    function pasteFromClipboard() {
-      if (!window.isSecureContext) { showToast('Clipboard requires HTTPS. Please paste manually.'); return; }
-      if (!navigator.clipboard || !navigator.clipboard.readText) { showToast('Clipboard API not supported here. Please paste manually.'); return; }
-      navigator.clipboard.readText().then(function(text) {
-        var ta = document.getElementById('jsonInput');
-        if (ta && text) { ta.value = text; validateJSONLive(); showToast('Pasted from clipboard!'); }
-        else if (!text) showToast('Clipboard is empty.');
-      }).catch(function(err) {
-        showToast(err && err.name === 'NotAllowedError' ? 'Clipboard permission denied. Paste manually.' : 'Could not read clipboard. Paste manually.');
-      });
-    }
-
-    // ── AI Prompt Generator ───────────────────
+    // ── REWRITTEN AI PROMPT LOGIC FOR MIXED FORMAT ──
     function generateAIPrompt() {
       var selectedSubjects = getSelectedSubjects();
       var topic    = document.getElementById('aiTopic').value.trim();
-      var numQ     = document.getElementById('aiNumQuestions').value;
+      var numQ     = parseInt(document.getElementById('aiNumQuestions').value);
+      var format   = document.getElementById('aiFormatTopic').value;
       var standard = document.getElementById('aiStandard').value;
       var extra    = document.getElementById('aiExtraInstructions').value.trim();
 
       if (!selectedSubjects && !topic) { showToast('Please select at least one subject or enter a topic.'); return; }
-      if (!numQ || parseInt(numQ) < 1) { showToast('Please enter a valid number of questions.'); return; }
+      if (!numQ || numQ < 1) { showToast('Please enter a valid number of questions.'); return; }
 
       var subjectPart = selectedSubjects ? 'on ' + selectedSubjects : '';
       var topicPart   = topic ? (selectedSubjects ? ' — specifically "'+topic+'"' : 'on "'+topic+'"') : '';
 
       var prompt = 'You are an expert medical educator creating exam-standard MCQs for ' + standard + ' aspirants.\n\n';
-      prompt += 'Generate ' + numQ + ' medical MCQ questions ' + subjectPart + topicPart + '.\n\n';
-      prompt += 'STRICT RULES:\n';
-      prompt += '1. Each question must have EXACTLY 4 answer options (no more, no less).\n';
-      prompt += '2. The explanation must be IN-DEPTH and thorough — assume the student is encountering this topic for the first time. Include:\n';
-      prompt += '   - Why the correct answer is right (with mechanism/reasoning)\n';
-      prompt += '   - Why each wrong option is incorrect\n';
-      prompt += '   - Key clinical pearls, mnemonics, or exam tips where relevant\n';
-      prompt += '   - Relevant pathophysiology or pharmacology if applicable\n';
-      prompt += '3. Questions must be at ' + standard + ' difficulty level.\n';
-      prompt += '4. Questions should test clinical reasoning and application, not just recall.\n';
-      if (extra) prompt += '5. Additional instructions: ' + extra + '\n';
-      prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks, no extra text. Start with [ and end with ].\n\n';
-      prompt += 'Each object must have these exact fields:\n';
-      prompt += '{\n';
-      prompt += '  "question": "Full question text here",\n';
-      prompt += '  "options": ["Option A", "Option B", "Option C", "Option D"],\n';
-      prompt += '  "correct_option": "Must exactly match one of the 4 options above",\n';
-      prompt += '  "explanation": "In-depth explanation covering all options, mechanisms, and exam pearls",\n';
-      prompt += '  "difficulty": 3,\n';
-      prompt += '  "subject": "Subject name",\n';
-      prompt += '  "topic": "Specific topic",\n';
-      prompt += '  "tags": ["NEET PG", "HYT"],\n';
-      prompt += '  "image_url": ""\n';
-      prompt += '}';
+      
+      var rules = 'STRICT RULES:\n';
+      rules += '1. Each question must have EXACTLY 4 answer options (no more, no less).\n';
+      rules += '2. The explanation must be IN-DEPTH and thorough. Include:\n';
+      rules += '   - Why the correct answer is right (mechanism, reasoning)\n';
+      rules += '   - Why each wrong option is incorrect\n';
+      rules += '   - Key clinical pearls or mnemonics where relevant\n';
+      rules += '3. Questions must test clinical reasoning/application at ' + standard + ' difficulty level.\n';
 
-      document.getElementById('aiGeneratedPrompt').value = prompt;
-      document.getElementById('aiGeneratedPrompt').scrollIntoView({ behavior: 'smooth' });
+      if (format === 'standard') {
+        prompt += 'Generate ' + numQ + ' theoretical medical MCQ questions ' + subjectPart + topicPart + '.\n\n';
+        rules += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
+      } 
+      else if (format === 'image') {
+        prompt += 'Generate ' + numQ + ' image-based medical MCQ questions ' + subjectPart + topicPart + '.\n\n';
+        rules += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical/radiology/histology images relevant to the topic. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a clinical vignette that strictly requires visual analysis of the image to answer correctly. Verify the URL exists. DO NOT HALLUCINATE URLs.\n';
+      } 
+      else if (format === 'mix') {
+        var imgCount = Math.ceil(numQ * 0.3); // roughly 30% images
+        var theoryCount = numQ - imgCount;
+        prompt += 'Generate a total of ' + numQ + ' medical MCQ questions ' + subjectPart + topicPart + '. ';
+        prompt += 'You MUST provide exactly ' + theoryCount + ' theoretical questions and ' + imgCount + ' image-based questions.\n\n';
+        rules += '4. For the ' + imgCount + ' image-based questions, YOU MUST USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for clear medical images. Extract the raw image URL (.jpg or .png), place it in "image_url", and build a vignette around it. DO NOT hallucinate URLs. For the ' + theoryCount + ' theoretical questions, leave "image_url" blank.\n';
+      }
+
+      if (extra) rules += '5. Additional instructions: ' + extra + '\n';
+      prompt += rules;
+      
+      prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks. Start with [ and end with ].\n';
+      prompt += 'Each object must have these exact fields:\n{\n  "question": "Full question text here",\n  "options": ["Option A", "Option B", "Option C", "Option D"],\n  "correct_option": "Must exactly match one option",\n  "explanation": "In-depth explanation",\n  "difficulty": 3,\n  "subject": "Subject name",\n  "topic": "Specific topic",\n  "tags": ["NEET PG"],\n  "image_url": "URL if image-based, otherwise empty string"\n}';
+
+      var textarea = document.getElementById('aiGeneratedPrompt');
+      textarea.value = prompt;
+      textarea.scrollIntoView({ behavior: 'smooth' });
       showToast('Prompt generated! Copy and paste into any AI assistant.');
-    }
-
-    function copyAIPrompt() {
-      copyTextToClipboard('aiGeneratedPrompt', 'copyPromptBtn', 'Prompt copied! Paste into any AI assistant.');
-    }
-
-    function clearAIPromptFields() {
-      document.querySelectorAll('#subjectChips .subject-chip.selected').forEach(function(c) {
-        c.classList.remove('selected'); c.setAttribute('aria-pressed','false');
-      });
-      ['aiSelectedSubjects','aiTopic','aiExtraInstructions','aiGeneratedPrompt'].forEach(function(id) {
-        var el = document.getElementById(id); if (el) el.value = '';
-      });
-      var numQ = document.getElementById('aiNumQuestions'); if (numQ) numQ.value = '10';
-      var std  = document.getElementById('aiStandard');     if (std)  std.value  = 'NEET PG / INI-CET';
-      updateSelectedSubjects();
-      showToast('All fields cleared.');
     }
 
     function generateAINotesPrompt() {
       var notes    = document.getElementById('aiNotesContent').value.trim();
-      var numQ     = document.getElementById('aiNotesNumQuestions').value;
+      var numQ     = parseInt(document.getElementById('aiNotesNumQuestions').value);
+      var format   = document.getElementById('aiFormatNotes').value;
       var standard = document.getElementById('aiNotesStandard').value;
       var extra    = document.getElementById('aiNotesExtraInstructions').value.trim();
 
-      if (!notes)                        { showToast('Please paste your study notes first.'); return; }
-      if (!numQ || parseInt(numQ) < 1)   { showToast('Please enter a valid number of questions.'); return; }
+      if (!notes) { showToast('Please paste your study notes first.'); return; }
+      if (!numQ || numQ < 1) { showToast('Please enter a valid number of questions.'); return; }
 
       var prompt = 'You are an expert medical educator creating exam-standard MCQs for ' + standard + ' aspirants.\n\n';
-      prompt += 'Based on the following study notes, generate ' + numQ + ' medical MCQ questions.\n\n';
+      prompt += 'Based on the following study notes, generate a total of ' + numQ + ' medical MCQ questions.\n\n';
       prompt += 'STUDY NOTES:\n"""\n' + notes + '\n"""\n\n';
-      prompt += 'STRICT RULES:\n';
-      prompt += '1. Each question must have EXACTLY 4 answer options (no more, no less).\n';
-      prompt += '2. The explanation must be IN-DEPTH and thorough — assume the student is encountering this topic for the first time. Include:\n';
-      prompt += '   - Why the correct answer is right (with mechanism/reasoning)\n';
-      prompt += '   - Why each wrong option is incorrect\n';
-      prompt += '   - Key clinical pearls, mnemonics, or exam tips where relevant\n';
-      prompt += '   - Relevant pathophysiology or pharmacology if applicable\n';
-      prompt += '3. Questions must be at ' + standard + ' difficulty level.\n';
-      prompt += '4. Base questions strictly on the provided notes content.\n';
-      if (extra) prompt += '5. Additional instructions: ' + extra + '\n';
-      prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks, no extra text. Start with [ and end with ].\n\n';
-      prompt += 'Each object must have these exact fields:\n';
-      prompt += '{\n';
-      prompt += '  "question": "Full question text here",\n';
-      prompt += '  "options": ["Option A", "Option B", "Option C", "Option D"],\n';
-      prompt += '  "correct_option": "Must exactly match one of the 4 options above",\n';
-      prompt += '  "explanation": "In-depth explanation covering all options, mechanisms, and exam pearls",\n';
-      prompt += '  "difficulty": 3,\n';
-      prompt += '  "subject": "Subject name",\n';
-      prompt += '  "topic": "Specific topic",\n';
-      prompt += '  "tags": ["NEET PG", "HYT"],\n';
-      prompt += '  "image_url": ""\n';
-      prompt += '}';
+      
+      var rules = 'STRICT RULES:\n';
+      rules += '1. Each question must have EXACTLY 4 answer options (no more, no less).\n';
+      rules += '2. The explanation must be IN-DEPTH and thorough. Include:\n';
+      rules += '   - Why the correct answer is right\n';
+      rules += '   - Why each wrong option is incorrect\n';
+      rules += '   - Key clinical pearls relevant to the notes\n';
+      rules += '3. Base questions strictly on the provided notes content.\n';
 
-      document.getElementById('aiNotesGeneratedPrompt').value = prompt;
-      document.getElementById('aiNotesGeneratedPrompt').scrollIntoView({ behavior: 'smooth' });
+      if (format === 'standard') {
+        rules += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
+      } 
+      else if (format === 'image') {
+        rules += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical images relevant to the concepts in the notes. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a vignette that requires visual analysis. DO NOT HALLUCINATE URLs.\n';
+      } 
+      else if (format === 'mix') {
+        var imgCount = Math.ceil(numQ * 0.3);
+        var theoryCount = numQ - imgCount;
+        rules += '4. You MUST provide exactly ' + theoryCount + ' theoretical questions and ' + imgCount + ' image-based questions. For image-based questions, USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for relevant medical images. Extract the raw image URL (.jpg or .png) and place it in "image_url". DO NOT hallucinate URLs.\n';
+      }
+
+      if (extra) rules += '5. Additional instructions: ' + extra + '\n';
+      prompt += rules;
+      
+      prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks. Start with [ and end with ].\n';
+      prompt += 'Each object must have these exact fields:\n{\n  "question": "Full question text here",\n  "options": ["Option A", "Option B", "Option C", "Option D"],\n  "correct_option": "Must exactly match one option",\n  "explanation": "In-depth explanation",\n  "difficulty": 3,\n  "subject": "Subject name",\n  "topic": "Specific topic",\n  "tags": ["NEET PG"],\n  "image_url": "URL if image-based, otherwise empty string"\n}';
+
+      var textarea = document.getElementById('aiNotesGeneratedPrompt');
+      textarea.value = prompt;
+      textarea.scrollIntoView({ behavior: 'smooth' });
       showToast('Notes-based prompt generated! Copy and paste into any AI assistant.');
     }
 
-    function copyAINotesPrompt() {
-      copyTextToClipboard('aiNotesGeneratedPrompt', 'copyNotesPromptBtn', 'Prompt copied! Paste into any AI assistant.');
+    function copyAIPrompt() { copyTextToClipboard('aiGeneratedPrompt', 'copyPromptBtn', 'Prompt copied! Paste into any AI assistant.'); }
+    function clearAIPromptFields() {
+      document.querySelectorAll('#subjectChips .subject-chip.selected').forEach(function(c) { c.classList.remove('selected'); c.setAttribute('aria-pressed','false'); });
+      ['aiSelectedSubjects','aiTopic','aiExtraInstructions','aiGeneratedPrompt'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
+      var numQ = document.getElementById('aiNumQuestions'); if (numQ) numQ.value = '10';
+      var format = document.getElementById('aiFormatTopic'); if(format) format.value = 'standard';
+      updateSelectedSubjects(); showToast('All fields cleared.');
     }
-
+    function copyAINotesPrompt() { copyTextToClipboard('aiNotesGeneratedPrompt', 'copyNotesPromptBtn', 'Prompt copied! Paste into any AI assistant.'); }
     function clearAINotesFields() {
-      ['aiNotesContent','aiNotesExtraInstructions','aiNotesGeneratedPrompt'].forEach(function(id) {
-        var el = document.getElementById(id); if (el) el.value = '';
-      });
+      ['aiNotesContent','aiNotesExtraInstructions','aiNotesGeneratedPrompt'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
       var numQ = document.getElementById('aiNotesNumQuestions'); if (numQ) numQ.value = '10';
-      var std  = document.getElementById('aiNotesStandard');     if (std)  std.value  = 'NEET PG / INI-CET';
+      var format = document.getElementById('aiFormatNotes'); if(format) format.value = 'standard';
       showToast('All fields cleared.');
     }
 
-    // ── Clipboard Helper (Modernized to strict clipboard API) ─
     function copyTextToClipboard(textareaId, btnId, successMsg) {
       var textarea = document.getElementById(textareaId);
       var btn      = document.getElementById(btnId);
-      
-      if (!textarea || !textarea.value.trim()) { 
-        showToast('Click "Generate Prompt" first.'); 
-        return; 
-      }
-      
+      if (!textarea || !textarea.value.trim()) { showToast('Click "Generate Prompt" first.'); return; }
       var originalText = btn ? btn.textContent : '';
-      
       function onSuccess() {
-        if (btn) {
-          btn.textContent = 'Copied!'; 
-          btn.style.background = 'var(--accent)'; 
-          btn.style.color = '#fff';
-          setTimeout(function() { 
-            btn.textContent = originalText; 
-            btn.style.background = ''; 
-            btn.style.color = ''; 
-          }, 2000);
-        }
+        if (btn) { btn.textContent = 'Copied!'; btn.style.background = 'var(--accent)'; btn.style.color = '#fff'; setTimeout(function() { btn.textContent = originalText; btn.style.background = ''; btn.style.color = ''; }, 2000); }
         showToast(successMsg || 'Copied!');
       }
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(textarea.value)
-          .then(onSuccess)
-          .catch(function(err) {
-            console.error('Clipboard write failed:', err);
-            textarea.select();
-            showToast('Clipboard error. Text selected, please copy manually.');
-          });
-      } else { 
-        textarea.select(); 
-        showToast('Clipboard API not available. Text selected, please copy manually.');
-      }
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(textarea.value).then(onSuccess).catch(function(err) { textarea.select(); showToast('Clipboard error. Text selected, please copy manually.'); }); } 
+      else { textarea.select(); showToast('Clipboard API not available. Text selected, please copy manually.'); }
     }
 
-    // ── Toast ─────────────────────────────────
     function showToast(msg) {
       var toast = document.getElementById('toast');
       if (!toast) return;
-      toast.textContent = msg;
-      toast.classList.add('show');
+      toast.textContent = msg; toast.classList.add('show');
       clearTimeout(toast._timeout);
       toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 3000);
+    }
+    
+    // Fallback UI validation logic for JSON (visual glow)
+    var _jsonValidateTimer = null;
+    function validateJSONLive() { clearTimeout(_jsonValidateTimer); _jsonValidateTimer = setTimeout(_doValidateJSON, 300); }
+    function _doValidateJSON() {
+      var textarea = document.getElementById('jsonInput'), textSpan = document.getElementById('jsonValidatorText'), indicator = document.getElementById('jsonValidatorIndicator'), helpBtn = document.getElementById('jsonHelpBtn');
+      if (!textarea || !indicator || !textSpan) return;
+      var value = textarea.value.trim();
+      if (value.length === 0) { textarea.classList.remove('valid-glow','invalid-glow'); textSpan.textContent = ''; indicator.className = 'json-validator-indicator'; if (helpBtn) helpBtn.classList.remove('visible'); return; }
+      try { 
+        var parsed = JSON.parse(value); 
+        if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("Must be non-empty array");
+        textarea.classList.add('valid-glow'); textarea.classList.remove('invalid-glow');
+        textSpan.textContent = parsed.length + ' question(s) detected — valid';
+        indicator.className = 'json-validator-indicator valid';
+        if (helpBtn) helpBtn.classList.remove('visible');
+      } catch (e) {
+        textarea.classList.remove('valid-glow'); textarea.classList.add('invalid-glow');
+        textSpan.textContent = 'Invalid JSON format';
+        indicator.className = 'json-validator-indicator invalid';
+        if (helpBtn) helpBtn.classList.add('visible');
+      }
     }
   </script>
 
