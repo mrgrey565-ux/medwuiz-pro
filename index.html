@@ -447,10 +447,12 @@
 
     /* ── Quiz Config Reveal ── */
     .quiz-config-section {
-      max-height: 0; opacity: 0; overflow: hidden;
-      transition: max-height 0.6s cubic-bezier(0.16,1,0.3,1), opacity 0.45s ease;
+      display: none;
     }
-    .quiz-config-section.revealed { max-height: 4000px; opacity: 1; overflow: visible; }
+    .quiz-config-section.revealed {
+      display: block;
+      animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
 
     /* ── Shuffle Toggle ── */
     .settings-row {
@@ -1001,7 +1003,7 @@
           </div>
           <div style="margin-bottom:14px;">
             <span class="section-label">Extra Instructions <span class="optional-tag">(optional)</span></span>
-            <input type="text" id="aiExtraInstructions" placeholder="e.g., focus on clinical vignettes..." class="custom-number-input">
+            <input type="text" id="aiExtraInstructions" placeholder="e.g., focus on clinical vignettes, include image-based questions..." class="custom-number-input">
           </div>
           <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
             <button class="btn btn-accent btn-sm" onclick="generateAIPrompt()" style="padding:10px 18px;font-weight:600;">Generate Prompt</button>
@@ -1122,8 +1124,8 @@
         </div>
         <div style="display:flex;gap:10px;justify-content:center; align-items:center; margin-top:24px;">
           <input type="number" id="dailyGoalInput" min="1" max="500" value="100" class="custom-number-input" style="width: 100px; text-align:center; font-weight: 600;">
-          <button class="btn btn-primary btn-sm" onclick="setDailyGoal()">Update Goal</button>
-          <button class="btn btn-ghost btn-sm" onclick="confirmResetDailyGoal()" title="Reset today's count">Reset Progress</button>
+          <button class="btn btn-primary btn-sm" onclick="if(typeof setDailyGoal === 'function') setDailyGoal();">Update Goal</button>
+          <button class="btn btn-ghost btn-sm" onclick="if(typeof confirmResetDailyGoal === 'function') confirmResetDailyGoal();" title="Reset today's count">Reset Progress</button>
         </div>
       </div>
       <div class="modal-actions">
@@ -1143,7 +1145,7 @@
       <div class="modal-body" style="text-align:left">
         <div class="api-config-field">
           <label for="providerSelect">AI Provider</label>
-          <select id="providerSelect" onchange="onProviderChange()" class="custom-number-input" style="padding: 8px 12px; cursor: pointer;">
+          <select id="providerSelect" onchange="if(typeof onProviderChange==='function') onProviderChange()" class="custom-number-input" style="padding: 8px 12px; cursor: pointer;">
             <option value="pollinations">Pollinations AI — FREE, No Key Needed</option>
             <option value="gemini">Google Gemini (Requires API Key)</option>
           </select>
@@ -1176,7 +1178,7 @@
       </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('aiConfigModal')">Cancel</button>
-        <button class="btn btn-ai" onclick="saveAIConfig()">Save Settings</button>
+        <button class="btn btn-ai" onclick="if(typeof saveAIConfig==='function') saveAIConfig()">Save Settings</button>
       </div>
     </div>
   </div>
@@ -1235,7 +1237,7 @@
     </div>
   </div>
 
-  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="togglePomodoroWidget()" title="Focus Timer" aria-label="Pomodoro Focus Timer">
+  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()" title="Focus Timer" aria-label="Pomodoro Focus Timer">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="10"/>
       <polyline points="12 6 12 12 16 14"/>
@@ -1245,14 +1247,14 @@
     <div class="pomodoro-body">
       <div class="pomo-header">
         <span class="pomo-label" id="pomoLabel">FOCUS</span>
-        <button class="btn btn-ghost btn-xs" onclick="togglePomodoroWidget()" style="padding:4px 8px">&times;</button>
+        <button class="btn btn-ghost btn-xs" onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()" style="padding:4px 8px">&times;</button>
       </div>
       <div class="pomo-time" id="pomoTime">25:00</div>
       <div class="pomo-actions">
-        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="startPomodoro()">Start</button>
-        <button class="btn btn-ghost btn-xs" onclick="resetPomodoro()">Reset</button>
-        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(25)">25m</button>
-        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(50)">50m</button>
+        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="if(typeof startPomodoro==='function') startPomodoro()">Start</button>
+        <button class="btn btn-ghost btn-xs" onclick="if(typeof resetPomodoro==='function') resetPomodoro()">Reset</button>
+        <button class="btn btn-ghost btn-xs" onclick="if(typeof setPomodoroPreset==='function') setPomodoroPreset(25)">25m</button>
+        <button class="btn btn-ghost btn-xs" onclick="if(typeof setPomodoroPreset==='function') setPomodoroPreset(50)">50m</button>
       </div>
     </div>
   </div>
@@ -1262,6 +1264,7 @@
   <script>
     'use strict';
 
+    // ── Modal System ──
     var _openModalCount = 0;
     function openModal(id) {
       var overlay = document.getElementById(id);
@@ -1281,7 +1284,6 @@
       _openModalCount = Math.max(0, _openModalCount - 1);
       if (_openModalCount === 0) document.body.style.overflow = '';
     }
-
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         var activeModals = document.querySelectorAll('.modal-overlay.active');
@@ -1289,6 +1291,7 @@
       }
     });
 
+    // ── Custom Confirm ──
     function showConfirm(message, onConfirm, title) {
       var msgEl   = document.getElementById('confirmModalMessage');
       var titleEl = document.getElementById('confirmModalTitle');
@@ -1303,7 +1306,6 @@
       });
       openModal('confirmModal');
     }
-
     function confirmClearInput() {
       var textarea = document.getElementById('jsonInput');
       if (!textarea || !textarea.value.trim()) { showToast('Input is already empty.'); return; }
@@ -1325,6 +1327,28 @@
           showToast('Input cleared.');
         },
         'Clear All Questions?'
+      );
+    }
+    function confirmResetDailyGoal() {
+      showConfirm(
+        'Reset today\'s progress to 0? Your session count will be permanently cleared.',
+        function() {
+          var today = new Date().toISOString().slice(0, 10);
+          localStorage.setItem('medquiz_daily_count', '0');
+          localStorage.setItem('medquiz_daily_date',  new Date().toDateString());
+          if (typeof openDB === 'function') {
+            openDB().then(function(db) {
+              var tx    = db.transaction('milestones', 'readwrite');
+              var store = tx.objectStore('milestones');
+              store.put({ date: today, answered: 0 });
+              tx.oncomplete = function() {
+                if (typeof updateMilestoneBar === 'function') updateMilestoneBar();
+                showToast('Daily progress reset to zero.');
+              };
+            }).catch(function() { showToast('Daily progress reset.'); });
+          } else { showToast('Daily progress reset.'); }
+        },
+        'Reset Daily Progress?'
       );
     }
 
@@ -1371,14 +1395,70 @@
       if (btn) btn.classList.toggle('visible', scrollY > 400);
     });
     function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    
     function revealQuizConfig() {
       var s = document.getElementById('quizConfigSection');
       if (!s) return;
       s.style.display = ''; s.style.removeProperty('display');
-      requestAnimationFrame(function() { s.classList.add('revealed'); setTimeout(function() { s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); });
+      requestAnimationFrame(function() { 
+        s.classList.add('revealed'); 
+        setTimeout(function() { s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); 
+      });
     }
     function hideQuizConfig() { var s = document.getElementById('quizConfigSection'); if (s) s.classList.remove('revealed'); }
 
+    // ── Events ──
+    document.addEventListener('quizParsed', function(e) {
+      var detail    = (e && e.detail) ? e.detail : {};
+      var count     = detail.count     || 0;
+      var questions = detail.questions || [];
+
+      var parseStatus = document.getElementById('parseStatus');
+      if (parseStatus) {
+        var svgCheck = '<span class="status-check-svg"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle class="check-circle" cx="12" cy="12" r="9"/><polyline class="check-mark" points="7 12.5 10.5 16 17 9"/></svg></span>';
+        parseStatus.innerHTML = svgCheck + ' <span style="color:var(--text-primary);font-weight:600;">' + count + ' question' + (count !== 1 ? 's' : '') + ' loaded successfully</span>';
+      }
+
+      if (questions.length > 0) updateDifficultyMeter(questions);
+      revealQuizConfig();
+      resetLoadButton(true);
+    });
+
+    document.addEventListener('quizParseError', function() { resetLoadButton(false); });
+
+    function updateDifficultyMeter(questions) {
+      var wrap  = document.getElementById('difficultyMeterWrap');
+      var fill  = document.getElementById('difficultyFill');
+      var badge = document.getElementById('difficultyBadge');
+      var label = document.getElementById('difficultyBadgeText');
+      if (!wrap || !fill || !badge || !label) return;
+      var total = 0, count = 0;
+      questions.forEach(function(q) {
+        var d = parseFloat(q.difficulty);
+        if (!isNaN(d) && d >= 1 && d <= 5) { total += d; count++; }
+      });
+      if (count === 0) { wrap.style.display = 'none'; return; }
+      var avg  = total / count;
+      wrap.style.display = 'block';
+      var pct  = ((avg - 1) / 4) * 100;
+      var tier, tierLabel, colorHex;
+      if (avg < 2.4)      { tier = 'easy';   tierLabel = 'Easy';      colorHex = '#22c55e'; }
+      else if (avg < 3.7) { tier = 'medium'; tierLabel = 'Moderate';  colorHex = '#f59e0b'; }
+      else                { tier = 'hard';   tierLabel = 'Difficult'; colorHex = '#ef4444'; }
+      fill.style.width = '0%'; fill.style.background = colorHex;
+      setTimeout(function() { fill.style.width = pct + '%'; }, 80);
+      badge.className   = 'difficulty-badge ' + tier;
+      label.textContent = tierLabel + ' (' + avg.toFixed(1) + '/5)';
+    }
+
+    // ── Shuffle Toggles ──
+    window._shuffleQuestions = false;
+    window._shuffleOptions   = false;
+    window._questionTarget   = null;
+    function onShuffleToggle() { window._shuffleQuestions = document.getElementById('shuffleQuestionsToggle').checked; showToast(window._shuffleQuestions ? 'Questions will be shuffled each session.' : 'Question order preserved.'); }
+    function onShuffleOptionsToggle() { window._shuffleOptions = document.getElementById('shuffleOptionsToggle').checked; showToast(window._shuffleOptions ? 'Answer options will be randomised.' : 'Option order preserved.'); }
+
+    // ── How-to Guide ──
     function toggleHowToGuide() {
       var btn = document.getElementById('howToToggleBtn'), content = document.getElementById('howToGuideContent');
       if (!btn || !content) return;
@@ -1386,6 +1466,7 @@
       else { content.classList.add('open'); btn.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
     }
 
+    // ── Subjects & AI Prompts ──
     var _subjectChipsBuilt = false;
     var allSubjects = ['Anatomy','Physiology','Biochemistry','Pathology','Pharmacology','Microbiology','Forensic Medicine','Community Medicine','General Medicine','General Surgery','Obstetrics & Gynaecology','Paediatrics','Ophthalmology','ENT','Orthopaedics','Dermatology','Psychiatry','Radiology','Anaesthesiology'];
     function buildSubjectChips() {
@@ -1394,9 +1475,7 @@
       if (!container) return;
       container.innerHTML = '';
       allSubjects.forEach(function(subj) {
-        var chip = document.createElement('span');
-        chip.className = 'subject-chip'; chip.textContent = subj;
-        chip.setAttribute('role', 'button'); chip.setAttribute('tabindex', '0'); chip.setAttribute('aria-pressed', 'false');
+        var chip = document.createElement('span'); chip.className = 'subject-chip'; chip.textContent = subj; chip.setAttribute('role', 'button'); chip.setAttribute('tabindex', '0'); chip.setAttribute('aria-pressed', 'false');
         chip.onclick = function() { var sel = this.classList.toggle('selected'); this.setAttribute('aria-pressed', sel ? 'true' : 'false'); updateSelectedSubjects(); };
         chip.onkeydown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); } };
         container.appendChild(chip);
@@ -1419,7 +1498,6 @@
       else { tN.classList.add('active'); tT.classList.remove('active'); cN.classList.add('active'); cT.classList.remove('active'); }
     }
 
-    // ── REWRITTEN AI PROMPT LOGIC FOR MIXED FORMAT ──
     function generateAIPrompt() {
       var selectedSubjects = getSelectedSubjects();
       var topic    = document.getElementById('aiTopic').value.trim();
@@ -1555,27 +1633,100 @@
       toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 3000);
     }
     
-    // Fallback UI validation logic for JSON (visual glow)
+    // ── JSON Live Validator ──
     var _jsonValidateTimer = null;
     function validateJSONLive() { clearTimeout(_jsonValidateTimer); _jsonValidateTimer = setTimeout(_doValidateJSON, 300); }
     function _doValidateJSON() {
       var textarea = document.getElementById('jsonInput'), textSpan = document.getElementById('jsonValidatorText'), indicator = document.getElementById('jsonValidatorIndicator'), helpBtn = document.getElementById('jsonHelpBtn');
       if (!textarea || !indicator || !textSpan) return;
       var value = textarea.value.trim();
-      if (value.length === 0) { textarea.classList.remove('valid-glow','invalid-glow'); textSpan.textContent = ''; indicator.className = 'json-validator-indicator'; if (helpBtn) helpBtn.classList.remove('visible'); return; }
+      if (value.length === 0) { textarea.classList.remove('valid-glow','invalid-glow'); textSpan.textContent = ''; indicator.className = 'json-validator-indicator'; if (helpBtn) helpBtn.classList.remove('visible'); hideSchemaErrors(); return; }
       try { 
         var parsed = JSON.parse(value); 
         if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("Must be non-empty array");
-        textarea.classList.add('valid-glow'); textarea.classList.remove('invalid-glow');
-        textSpan.textContent = parsed.length + ' question(s) detected — valid';
-        indicator.className = 'json-validator-indicator valid';
-        if (helpBtn) helpBtn.classList.remove('visible');
+        var schemaIssues = [];
+        parsed.forEach(function(q, i) {
+          ['question','options','correct_option','explanation'].forEach(function(f) { if (!q[f]) schemaIssues.push('Q'+(i+1)+': missing "'+f+'"'); });
+          if (q.options && (!Array.isArray(q.options) || q.options.length < 2)) schemaIssues.push('Q'+(i+1)+': "options" must be array > 1');
+          if (q.correct_option && Array.isArray(q.options) && q.options.indexOf(q.correct_option) === -1) schemaIssues.push('Q'+(i+1)+': "correct_option" not in options');
+        });
+        if (schemaIssues.length > 0) {
+          textarea.classList.remove('valid-glow'); textarea.classList.add('invalid-glow');
+          textSpan.textContent = parsed.length + ' question(s) — ' + schemaIssues.length + ' issue(s)';
+          indicator.className = 'json-validator-indicator warning';
+          if (helpBtn) helpBtn.classList.add('visible');
+          showSchemaErrors(schemaIssues);
+        } else {
+          textarea.classList.add('valid-glow'); textarea.classList.remove('invalid-glow');
+          textSpan.textContent = parsed.length + ' question(s) detected — valid';
+          indicator.className = 'json-validator-indicator valid';
+          if (helpBtn) helpBtn.classList.remove('visible');
+          hideSchemaErrors();
+        }
       } catch (e) {
         textarea.classList.remove('valid-glow'); textarea.classList.add('invalid-glow');
         textSpan.textContent = 'Invalid JSON format';
         indicator.className = 'json-validator-indicator invalid';
         if (helpBtn) helpBtn.classList.add('visible');
+        hideSchemaErrors();
       }
+    }
+    function showSchemaErrors(issues) {
+      var container = document.getElementById('schemaErrorList'), list = document.getElementById('schemaErrorItems');
+      if (!container || !list) return;
+      list.innerHTML = '';
+      issues.slice(0, 8).forEach(function(issue) { var li = document.createElement('li'); li.textContent = issue; list.appendChild(li); });
+      if (issues.length > 8) { var li = document.createElement('li'); li.textContent = '… and '+(issues.length-8)+' more'; list.appendChild(li); }
+      container.classList.add('visible');
+    }
+    function hideSchemaErrors() { var c = document.getElementById('schemaErrorList'); if (c) c.classList.remove('visible'); }
+    function toggleJSONHelp() { var p = document.getElementById('jsonHelpPanel'); if (p) { p.classList.toggle('open'); if(p.classList.contains('open')) p.scrollIntoView({behavior:'smooth', block:'nearest'}); } }
+
+    // ── Load Button & Paste ──
+    function handleLoadQuestions(btn) {
+      if (btn.classList.contains('btn-loading')) return;
+      var textarea = document.getElementById('jsonInput');
+      if (!textarea || !textarea.value.trim()) { showToast('Please paste your JSON questions first.'); return; }
+      var originalHTML = btn.innerHTML;
+      btn.classList.add('btn-loading');
+      btn.innerHTML = '<span class="btn-spinner"></span>Loading...';
+      btn.setAttribute('data-original-html', originalHTML);
+      
+      // Wait for next frame so spinner renders, then call parseJSON
+      setTimeout(function() {
+        if (typeof parseJSON === 'function') {
+          parseJSON();
+        } else {
+          resetLoadButton(false);
+          showToast('System not fully loaded yet. Please wait a moment.');
+        }
+      }, 50);
+
+      // Safety fallback
+      setTimeout(function() { var b = document.getElementById('loadQuestionsBtn'); if (b && b.classList.contains('btn-loading')) resetLoadButton(false); }, 5000);
+    }
+
+    function resetLoadButton(success) {
+      var btn = document.getElementById('loadQuestionsBtn');
+      if (!btn) return;
+      btn.classList.remove('btn-loading');
+      if (success) {
+        btn.classList.add('btn-success-state');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><polyline points="20 6 9 17 4 12"/></svg>Questions Loaded';
+        setTimeout(function() { btn.classList.remove('btn-success-state'); btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions'; }, 2500);
+      } else {
+        btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions';
+      }
+    }
+
+    function pasteFromClipboard() {
+      if (!window.isSecureContext) { showToast('Clipboard requires HTTPS. Please paste manually.'); return; }
+      if (!navigator.clipboard || !navigator.clipboard.readText) { showToast('Clipboard API not supported here. Please paste manually.'); return; }
+      navigator.clipboard.readText().then(function(text) {
+        var ta = document.getElementById('jsonInput');
+        if (ta && text) { ta.value = text; validateJSONLive(); showToast('Pasted from clipboard!'); }
+        else if (!text) showToast('Clipboard is empty.');
+      }).catch(function(err) { showToast('Clipboard read failed. Paste manually.'); });
     }
   </script>
 
