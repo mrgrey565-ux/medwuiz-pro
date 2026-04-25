@@ -76,30 +76,17 @@ function initPWA() {
   
   const iconURL = canvas.toDataURL('image/png');
 
-  // 2. Generate and inject Manifest dynamically
-  const manifest = {
-    name: "MedQuiz Pro",
-    short_name: "MedQuiz",
-    start_url: "./index.html",
-    display: "standalone",
-    background_color: "#0a0e1a",
-    theme_color: "#0a0e1a",
-    icons: [{ src: iconURL, sizes: "512x512", type: "image/png", purpose: "any maskable" }]
-  };
-  
-  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-  const manifestURL = URL.createObjectURL(manifestBlob);
-
+  // 2. Link to static manifest (fixes 404 when installed)
   const link = document.createElement('link');
   link.rel = 'manifest';
-  link.href = manifestURL;
+  link.href = '/medwuiz-pro/manifest.json';
   document.head.appendChild(link);
 
-  // 3. Listen for the browser install prompt
+  // 3. Listen for the browser install prompt – store it, never auto‑show
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     window.deferredInstallPrompt = e;
-    showInstallBanner(iconURL);
+    // showInstallBanner(iconURL) is intentionally removed here
   });
 }
 
@@ -2191,22 +2178,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ── Service Worker ──
+  // ── Service Worker (fix: use real sw.js with correct scope) ──
   if ('serviceWorker' in navigator) {
-    const swCode = `
-      self.addEventListener('install', e => self.skipWaiting());
-      self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-      self.addEventListener('fetch', e => {
-        e.respondWith(
-          caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
-            const clone = resp.clone();
-            caches.open('medquiz-v1').then(c => c.put(e.request, clone));
-            return resp;
-          }).catch(() => caches.match(e.request)))
-        );
-      });`;
-    const blob  = new Blob([swCode], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl).catch(() => {});
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/medwuiz-pro/sw.js', {
+        scope: '/medwuiz-pro/'
+      }).then(reg => {
+        console.log('[SW] Registered, scope:', reg.scope);
+      }).catch(err => {
+        console.warn('[SW] Registration failed:', err);
+      });
+    });
   }
 });
