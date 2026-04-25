@@ -599,8 +599,11 @@
     .pomodoro-toggle { z-index: 950; }
     .pomodoro-widget { z-index: 960; }
 
-    /* Pomodoro action button SVGs (overrides script.js text content) */
-    .pomo-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+    /* Pomodoro action button SVGs */
+    .pomo-actions .btn {
+      display: inline-flex; align-items: center;
+      justify-content: center; gap: 4px;
+    }
     .pomo-actions .btn svg { width: 12px; height: 12px; flex-shrink: 0; }
 
     /* ── Toast — Premium feel ── */
@@ -654,6 +657,14 @@
       60%  { opacity: 1; }
       100% { transform: translateX(0);    opacity: 1; }
     }
+
+    /* ── Theme toggle transition (smooth SVG swap) ── */
+    #themeBtn svg {
+      transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    #themeBtn.theme-switching svg {
+      opacity: 0; transform: scale(0.7) rotate(30deg);
+    }
   </style>
 </head>
 <body>
@@ -681,20 +692,25 @@
           <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
         </svg>
       </button>
+
       <button class="nav-icon-btn" onclick="openModal('folderModal')" title="Review Folders" aria-label="Review Folders">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
         </svg>
       </button>
+
       <div class="ai-status connected" id="aiStatus" title="AI Integration Status">
         <span class="ai-status-dot"></span>
         <span id="aiStatusText">AI Ready</span>
       </div>
+
       <button class="nav-icon-btn" onclick="openModal('aiConfigModal')" title="AI Settings" aria-label="AI Settings">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       </button>
+
+      <!-- BUG #2 FIX: SVG preserved — toggleTheme() override in inline script handles swap -->
       <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn" aria-label="Toggle Theme">
         <svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5"/>
@@ -708,6 +724,7 @@
           <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
         </svg>
       </button>
+
       <button class="nav-icon-btn" onclick="openModal('helpModal')" title="Help & Shortcuts" aria-label="Help">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/>
@@ -854,7 +871,9 @@
         <div class="mode-selector" id="modeSelector">
           <h3>Choose Your Quiz Mode</h3>
           <div class="mode-cards">
-            <div class="mode-card" id="examModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('exam')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('exam');}">
+            <div class="mode-card" id="examModeCard" tabindex="0" role="button" aria-pressed="false"
+                 onclick="selectMode('exam')"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('exam');}">
               <span class="mode-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/>
@@ -864,7 +883,9 @@
               <div class="mode-name">Exam Mode</div>
               <div class="mode-desc">Timed · CBT-style · Final submit · Full review</div>
             </div>
-            <div class="mode-card" id="studyModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('study')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('study');}">
+            <div class="mode-card" id="studyModeCard" tabindex="0" role="button" aria-pressed="false"
+                 onclick="selectMode('study')"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('study');}">
               <span class="mode-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -874,7 +895,9 @@
               <div class="mode-name">Study Mode</div>
               <div class="mode-desc">No timer · Instant feedback · AI help · Learn deeply</div>
             </div>
-            <div class="mode-card" id="retakeModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('retake')" style="display:none" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('retake');}">
+            <div class="mode-card" id="retakeModeCard" tabindex="0" role="button" aria-pressed="false"
+                 onclick="selectMode('retake')" style="display:none"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('retake');}">
               <span class="mode-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="1 4 1 10 7 10"/>
@@ -926,7 +949,8 @@
               <div class="settings-row-sub">Randomise order each session</div>
             </div>
           </div>
-          <label class="toggle-switch" aria-label="Shuffle questions" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleQuestionsToggle').click();}">
+          <label class="toggle-switch" aria-label="Shuffle questions" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleQuestionsToggle').click();}">
             <input type="checkbox" id="shuffleQuestionsToggle" onchange="onShuffleToggle()">
             <span class="toggle-track"></span>
           </label>
@@ -947,7 +971,8 @@
               <div class="settings-row-sub">Randomise A/B/C/D order per question</div>
             </div>
           </div>
-          <label class="toggle-switch" aria-label="Shuffle answer options" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleOptionsToggle').click();}">
+          <label class="toggle-switch" aria-label="Shuffle answer options" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleOptionsToggle').click();}">
             <input type="checkbox" id="shuffleOptionsToggle" onchange="onShuffleOptionsToggle()">
             <span class="toggle-track"></span>
           </label>
@@ -989,6 +1014,8 @@
       <polyline points="18 15 12 9 6 15"/>
     </svg>
   </button>
+
+  <!-- ── MODALS ── -->
 
   <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
     <div class="modal-box" style="max-width:380px; text-align:center;">
@@ -1087,7 +1114,6 @@
               <span class="section-label">Number of Questions</span>
               <input type="number" id="aiNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="e.g. 10">
             </div>
-
             <div style="flex:1.5;min-width:140px;">
               <span class="section-label">Question Format</span>
               <select id="aiFormatTopic" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -1096,7 +1122,6 @@
                 <option value="image">Image-Based Only</option>
               </select>
             </div>
-
             <div style="flex:2;min-width:160px;">
               <span class="section-label">Exam Standard</span>
               <select id="aiStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -1136,7 +1161,6 @@
               <span class="section-label">Number of Questions</span>
               <input type="number" id="aiNotesNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="e.g. 10">
             </div>
-
             <div style="flex:1.5;min-width:140px;">
               <span class="section-label">Question Format</span>
               <select id="aiFormatNotes" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -1145,7 +1169,6 @@
                 <option value="image">Image-Based Only</option>
               </select>
             </div>
-
             <div style="flex:2;min-width:160px;">
               <span class="section-label">Exam Standard</span>
               <select id="aiNotesStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -1348,17 +1371,23 @@
     </div>
   </div>
 
-  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()" title="Focus Timer" aria-label="Pomodoro Focus Timer">
+  <!-- ── POMODORO ── -->
+  <button class="pomodoro-toggle" id="pomodoroToggle"
+          onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()"
+          title="Focus Timer" aria-label="Pomodoro Focus Timer">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="10"/>
       <polyline points="12 6 12 12 16 14"/>
     </svg>
   </button>
+
   <div class="pomodoro-widget" id="pomodoroWidget">
     <div class="pomodoro-body">
       <div class="pomo-header">
         <span class="pomo-label" id="pomoLabel">FOCUS</span>
-        <button class="btn btn-ghost btn-xs" onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()" style="padding:4px 8px" aria-label="Close pomodoro">
+        <button class="btn btn-ghost btn-xs"
+                onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()"
+                style="padding:4px 8px" aria-label="Close pomodoro">
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
@@ -1367,13 +1396,18 @@
       </div>
       <div class="pomo-time" id="pomoTime">25:00</div>
       <div class="pomo-actions">
-        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="if(typeof startPomodoro==='function') startPomodoro()" aria-label="Start or pause">
+        <!-- BUG #5 FIX: SVG play icon rendered in HTML, maintained by updatePomoStartButton() -->
+        <button class="btn btn-green btn-xs" id="pomoStartBtn"
+                onclick="if(typeof startPomodoro==='function') startPomodoro()"
+                aria-label="Start or pause">
           <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="6 4 20 12 6 20 6 4"/>
           </svg>
           Start
         </button>
-        <button class="btn btn-ghost btn-xs" onclick="if(typeof resetPomodoro==='function') resetPomodoro()" aria-label="Reset timer">
+        <button class="btn btn-ghost btn-xs"
+                onclick="if(typeof resetPomodoro==='function') resetPomodoro()"
+                aria-label="Reset timer">
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="1 4 1 10 7 10"/>
             <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
@@ -1391,36 +1425,95 @@
   <script>
     'use strict';
 
-    // ═══════════════════════════════════════════════
-    // SVG ICON LIBRARY (matches website style)
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // SVG ICON LIBRARY (matches website style — no emojis)
+    // ═══════════════════════════════════════════════════════
     const SVG_ICONS = {
-      play:  '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
-      pause: '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
+      play: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
+      pause: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
       success: '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12.5 11 15.5 16 9.5"/></svg>',
       warning: '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
       error:   '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
       info:    '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
-      sun: '<svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+      sun:  '<svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
       moon: '<svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
     };
 
-    // ═══════════════════════════════════════════════
-    // MODAL SYSTEM
-    // ═══════════════════════════════════════════════
+    // SVG strings for sun/moon without the id (used inside themeBtn to avoid duplicate ids)
+    const THEME_SVG = {
+      sun:  '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+      moon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+    };
+
+    // ═══════════════════════════════════════════════════════
+    // BUG #2 COMPLETE FIX — toggleTheme() override
+    // Preserves SVG, adds smooth transition, syncs with
+    // script.js theme logic without breaking it
+    // ═══════════════════════════════════════════════════════
+    function _setThemeIcon(isDark) {
+      const btn = document.getElementById('themeBtn');
+      if (!btn) return;
+      // Animate out
+      btn.classList.add('theme-switching');
+      setTimeout(function() {
+        // Swap SVG — dark mode shows sun (to switch to light), light mode shows moon
+        btn.innerHTML = isDark ? THEME_SVG.sun : THEME_SVG.moon;
+        btn.setAttribute('title', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+        btn.setAttribute('aria-label', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+        // Animate in
+        btn.classList.remove('theme-switching');
+      }, 150);
+    }
+
+    window.toggleTheme = function() {
+      // Determine current theme state
+      const isCurrentlyDark = !document.body.classList.contains('light') &&
+                               document.documentElement.getAttribute('data-theme') !== 'light';
+      // Toggle body class (matches script.js pattern)
+      document.body.classList.toggle('light');
+      document.documentElement.setAttribute('data-theme',
+        document.body.classList.contains('light') ? 'light' : 'dark'
+      );
+      // Persist
+      try {
+        localStorage.setItem('medquiz_theme',
+          document.body.classList.contains('light') ? 'light' : 'dark'
+        );
+      } catch(e) {}
+      // After toggle: isCurrentlyDark was true → now light → show moon
+      // isCurrentlyDark was false → now dark → show sun
+      _setThemeIcon(!document.body.classList.contains('light'));
+      // Update meta theme-color
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) {
+        metaTheme.setAttribute('content',
+          document.body.classList.contains('light') ? '#ffffff' : '#0a0e1a'
+        );
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════
+    // MODAL SYSTEM (Bug #1 — supports both .active and .show)
+    // ═══════════════════════════════════════════════════════
     let _openModalCount = 0;
+
     function openModal(id) {
       const overlay = document.getElementById(id);
       if (!overlay) return;
       _openModalCount++;
       document.body.style.overflow = 'hidden';
-      // Use both classes to be 100% compatible with style.css and inline CSS
       overlay.classList.add('active');
       overlay.classList.add('show');
-      overlay.onclick = function(e) { if (e.target === overlay) closeModal(id); };
-      const focusable = overlay.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+      overlay.onclick = function(e) {
+        if (e.target === overlay) closeModal(id);
+      };
+      // Focus first focusable element for accessibility
+      const focusable = overlay.querySelectorAll(
+        'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
+      );
       if (focusable.length) focusable[0].focus();
     }
+
     function closeModal(id) {
       const overlay = document.getElementById(id);
       if (!overlay) return;
@@ -1430,66 +1523,90 @@
       _openModalCount = Math.max(0, _openModalCount - 1);
       if (_openModalCount === 0) document.body.style.overflow = '';
     }
+
+    // Escape key closes top-most modal
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        const activeModals = document.querySelectorAll('.modal-overlay.active, .modal-overlay.show');
-        if (activeModals.length) closeModal(activeModals[activeModals.length - 1].id);
-      }
+      if (e.key !== 'Escape') return;
+      const activeModals = document.querySelectorAll('.modal-overlay.active, .modal-overlay.show');
+      if (activeModals.length) closeModal(activeModals[activeModals.length - 1].id);
     });
 
-    // Expose globally for script.js compatibility
-    window.openModal = openModal;
+    // Expose globally so script.js can call them
+    window.openModal  = openModal;
     window.closeModal = closeModal;
 
-    // ═══════════════════════════════════════════════
-    // PREMIUM TOAST OVERRIDE (BUG #6 — SVG icons, no emoji)
-    // ═══════════════════════════════════════════════
-    // Map common emoji prefixes from script.js to SVG types
+    // ═══════════════════════════════════════════════════════
+    // PREMIUM TOAST (Bug #6 — SVG icons, no emoji)
+    // ═══════════════════════════════════════════════════════
     const EMOJI_TO_TYPE = {
-      '✅':'success','✔':'success','✔️':'success','🎉':'success','🏆':'success','💾':'success','📥':'success','🔄':'info','🔍':'info','📁':'success','🎯':'success','🍅':'info','☕':'info','📊':'info','💡':'info','🤖':'info','📌':'info','📚':'info','⭐':'info','🚩':'warning','⚖️':'info','⏱':'info','⏱️':'info','⏭':'info','🏦':'info','✕':'error','✖':'info','✨':'info','📈':'info','💪':'info','👍':'info','❌':'error','⚠️':'warning','⚠':'warning'
+      '✅':'success','✔':'success','✔️':'success',
+      '🎉':'success','🏆':'success','💾':'success',
+      '📥':'success','📁':'success','🎯':'success',
+      '🔄':'info','🔍':'info','📊':'info','💡':'info',
+      '🤖':'info','📌':'info','📚':'info','⭐':'info',
+      '☕':'info','🍅':'info','⏱':'info','⏱️':'info',
+      '⏭':'info','🏦':'info','✨':'info','📈':'info',
+      '💪':'info','👍':'info','🌙':'info','☀️':'info',
+      '🚩':'warning','⚖️':'warning',
+      '❌':'error','✕':'error','✖':'error',
+      '⚠️':'warning','⚠':'warning'
     };
 
     function premiumShowToast(msg, dur) {
       const toast = document.getElementById('toast');
       if (!toast) return;
       const text = String(msg || '');
-      // Detect leading emoji and strip it
+
+      // Strip leading emoji and map to type
       let type = 'info';
-      let cleanText = text;
-      // Try matching first 1-2 chars (some emojis are surrogate pairs)
-      const firstTwo = text.slice(0, 2).trim();
-      const firstOne = text.slice(0, 1);
-      if (EMOJI_TO_TYPE[firstTwo]) {
-        type = EMOJI_TO_TYPE[firstTwo];
-        cleanText = text.slice(2).trim();
-      } else if (EMOJI_TO_TYPE[firstOne]) {
-        type = EMOJI_TO_TYPE[firstOne];
-        cleanText = text.slice(1).trim();
+      let cleanText = text.trimStart();
+
+      // Check multi-char emoji first (e.g. ✔️ is 2 chars)
+      const twoChar = cleanText.slice(0, 2);
+      const oneChar = cleanText.slice(0, 1);
+
+      if (EMOJI_TO_TYPE[twoChar] !== undefined) {
+        type = EMOJI_TO_TYPE[twoChar];
+        cleanText = cleanText.slice(2).trimStart();
+      } else if (EMOJI_TO_TYPE[oneChar] !== undefined) {
+        type = EMOJI_TO_TYPE[oneChar];
+        cleanText = cleanText.slice(1).trimStart();
       }
-      // Remove any leftover leading emoji-like chars (surrogate pairs)
-      cleanText = cleanText.replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]+\s*/u, '');
-      // Apply type class
-      toast.classList.remove('toast-success','toast-warning','toast-error','toast-info');
-      toast.classList.add('toast-' + type);
-      const iconSvg = SVG_ICONS[type] || SVG_ICONS.info;
-      toast.innerHTML = iconSvg + '<span>' + cleanText + '</span>';
+
+      // Catch any remaining leading Unicode emoji (surrogate pairs etc.)
+      cleanText = cleanText.replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\s]+/u, '').trimStart();
+
+      // Set type-specific border class
+      toast.className = 'toast toast-' + type;
+
+      // Render SVG icon + text
+      const iconHtml = SVG_ICONS[type] || SVG_ICONS.info;
+      toast.innerHTML = iconHtml + '<span>' + cleanText + '</span>';
+
+      // Show
       toast.classList.add('show');
-      clearTimeout(toast._timeout);
-      toast._timeout = setTimeout(function() {
+      clearTimeout(toast._toastTimeout);
+      toast._toastTimeout = setTimeout(function() {
         toast.classList.remove('show');
       }, dur || 3000);
     }
+
+    // Override script.js showToast globally
     window.showToast = premiumShowToast;
 
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // CUSTOM CONFIRM MODAL
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     function showConfirm(message, onConfirm, title) {
       const msgEl   = document.getElementById('confirmModalMessage');
       const titleEl = document.getElementById('confirmModalTitle');
       const okBtn   = document.getElementById('confirmOkBtn');
-      if (titleEl) titleEl.textContent = title || 'Are you sure?';
-      if (msgEl)   msgEl.textContent   = message || 'This action cannot be undone.';
+      if (!msgEl || !titleEl || !okBtn) return;
+
+      titleEl.textContent = title   || 'Are you sure?';
+      msgEl.textContent   = message || 'This action cannot be undone.';
+
+      // Clone button to remove any previous event listeners
       const newOkBtn = okBtn.cloneNode(true);
       okBtn.parentNode.replaceChild(newOkBtn, okBtn);
       newOkBtn.addEventListener('click', function() {
@@ -1499,23 +1616,28 @@
       openModal('confirmModal');
     }
 
+    // Bug #4 fix: only confirmClearInput() — no old clearInput()
     function confirmClearInput() {
       const textarea = document.getElementById('jsonInput');
-      if (!textarea || !textarea.value.trim()) { showToast('Input is already empty.'); return; }
+      if (!textarea || !textarea.value.trim()) {
+        showToast('Input is already empty.');
+        return;
+      }
       showConfirm(
         'Clear all pasted questions? This cannot be undone.',
         function() {
-          textarea.value = '';
+          const ta = document.getElementById('jsonInput');
+          const ps = document.getElementById('parseStatus');
+          const qp = document.getElementById('qPreview');
+          const sf = document.getElementById('smartFilters');
+          const dm = document.getElementById('difficultyMeterWrap');
+          if (ta) ta.value = '';
           validateJSONLive();
           hideSchemaErrors();
           hideQuizConfig();
-          const ps = document.getElementById('parseStatus');
           if (ps) ps.innerHTML = '';
-          const qp = document.getElementById('qPreview');
           if (qp) qp.style.display = 'none';
-          const sf = document.getElementById('smartFilters');
           if (sf) sf.style.display = 'none';
-          const dm = document.getElementById('difficultyMeterWrap');
           if (dm) dm.style.display = 'none';
           showToast('Input cleared.');
         },
@@ -1525,11 +1647,11 @@
 
     function confirmResetDailyGoal() {
       showConfirm(
-        'Reset today\'s progress to 0? Your session count will be permanently cleared.',
+        "Reset today's progress to 0? Your session count will be permanently cleared.",
         function() {
-          const today = new Date().toISOString().slice(0, 10);
           localStorage.setItem('medquiz_daily_count', '0');
           localStorage.setItem('medquiz_daily_date',  new Date().toDateString());
+          const today = new Date().toISOString().slice(0, 10);
           if (typeof openDB === 'function') {
             openDB().then(function(db) {
               const tx    = db.transaction('milestones', 'readwrite');
@@ -1540,98 +1662,137 @@
                 showToast('Daily progress reset to zero.');
               };
             }).catch(function() { showToast('Daily progress reset.'); });
-          } else { showToast('Daily progress reset.'); }
+          } else {
+            showToast('Daily progress reset.');
+          }
         },
         'Reset Daily Progress?'
       );
     }
 
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // PARTICLE BACKGROUND
-    // ═══════════════════════════════════════════════
-    (function() {
+    // ═══════════════════════════════════════════════════════
+    (function initParticles() {
       const canvas = document.getElementById('particlesCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const particles = [];
-      let animationFrameId = null, w, h;
+      let animationFrameId = null;
+      let w, h;
 
-      function getParticleCount() {
-        const divisor = window.innerWidth < 600 ? 50 : 28;
-        return Math.min(80, Math.max(15, Math.floor(window.innerWidth / divisor)));
+      function getCount() {
+        return Math.min(80, Math.max(15,
+          Math.floor(window.innerWidth / (window.innerWidth < 600 ? 50 : 28))
+        ));
       }
-      function resizeCanvas() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-      function createParticle() {
+
+      function resize() {
+        w = canvas.width  = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+
+      function makeParticle() {
         return {
-          x: Math.random()*w, y: Math.random()*h,
-          size: Math.random()*2.5+0.8,
-          speedX: (Math.random()-0.5)*0.4,
-          speedY: -(Math.random()*0.6+0.2),
-          opacity: Math.random()*0.5+0.15,
-          pulse: Math.random()*Math.PI*2
+          x:      Math.random() * w,
+          y:      Math.random() * h,
+          size:   Math.random() * 2.5 + 0.8,
+          speedX: (Math.random() - 0.5) * 0.4,
+          speedY: -(Math.random() * 0.6 + 0.2),
+          opacity: Math.random() * 0.5 + 0.15,
+          pulse:  Math.random() * Math.PI * 2
         };
       }
-      function initParticles() {
+
+      function init() {
         particles.length = 0;
-        for (let i = 0; i < getParticleCount(); i++) particles.push(createParticle());
+        const count = getCount();
+        for (let i = 0; i < count; i++) particles.push(makeParticle());
       }
+
       function animate() {
         ctx.clearRect(0, 0, w, h);
         const isDark = !document.body.classList.contains('light');
         const col    = isDark ? '255,255,255' : '99,102,241';
+
         for (let i = 0; i < particles.length; i++) {
           const p = particles[i];
-          p.x += p.speedX; p.y += p.speedY; p.pulse += 0.02;
-          const alpha = Math.min(0.7, Math.max(0, p.opacity + Math.sin(p.pulse)*0.1));
-          if (p.y < -10) { p.y = h+10; p.x = Math.random()*w; }
-          if (p.x < -10) p.x = w+10;
+          p.x     += p.speedX;
+          p.y     += p.speedY;
+          p.pulse += 0.02;
+
+          const alpha = Math.min(0.7, Math.max(0, p.opacity + Math.sin(p.pulse) * 0.1));
+
+          if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+          if (p.x < -10)  p.x = w + 10;
           if (p.x > w+10) p.x = -10;
-          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-          ctx.fillStyle = 'rgba('+col+','+alpha+')'; ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(' + col + ',' + alpha + ')';
+          ctx.fill();
+
           if (p.size > 1.8) {
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.size*2.5, 0, Math.PI*2);
-            ctx.fillStyle = 'rgba('+col+','+(alpha*0.25)+')'; ctx.fill();
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(' + col + ',' + (alpha * 0.25) + ')';
+            ctx.fill();
           }
         }
         animationFrameId = requestAnimationFrame(animate);
       }
-      function startAnimation() { if (!animationFrameId) animate(); }
-      function stopAnimation() { if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; } }
-      document.addEventListener('visibilitychange', function() { document.hidden ? stopAnimation() : startAnimation(); });
-      resizeCanvas(); initParticles(); startAnimation();
-      window.addEventListener('resize', function() { resizeCanvas(); initParticles(); });
+
+      function start() { if (!animationFrameId) animate(); }
+      function stop()  {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      }
+
+      document.addEventListener('visibilitychange', function() {
+        document.hidden ? stop() : start();
+      });
+
+      resize(); init(); start();
+      window.addEventListener('resize', function() { resize(); init(); });
     })();
 
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // SCROLL & UI HELPERS
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     window.addEventListener('scroll', function() {
-      const scrollY = window.scrollY;
-      const navbar  = document.getElementById('mainNavbar');
-      if (navbar) navbar.classList.toggle('scrolled', scrollY > 10);
-      const btn = document.getElementById('backToTopBtn');
-      if (btn) btn.classList.toggle('visible', scrollY > 400);
-    });
-    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      const y      = window.scrollY;
+      const navbar = document.getElementById('mainNavbar');
+      const topBtn = document.getElementById('backToTopBtn');
+      if (navbar) navbar.classList.toggle('scrolled', y > 10);
+      if (topBtn) topBtn.classList.toggle('visible', y > 400);
+    }, { passive: true });
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     function revealQuizConfig() {
-      const s = document.getElementById('quizConfigSection');
-      if (!s) return;
-      s.style.display = '';
-      s.style.removeProperty('display');
+      const section = document.getElementById('quizConfigSection');
+      if (!section) return;
+      section.style.removeProperty('display');
       requestAnimationFrame(function() {
-        s.classList.add('revealed');
-        setTimeout(function() { s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
+        section.classList.add('revealed');
+        setTimeout(function() {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
       });
     }
+
     function hideQuizConfig() {
-      const s = document.getElementById('quizConfigSection');
-      if (s) s.classList.remove('revealed');
+      const section = document.getElementById('quizConfigSection');
+      if (section) section.classList.remove('revealed');
     }
 
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // QUIZ PARSED EVENTS
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     document.addEventListener('quizParsed', function(e) {
       const detail    = (e && e.detail) ? e.detail : {};
       const count     = detail.count     || 0;
@@ -1639,8 +1800,18 @@
 
       const parseStatus = document.getElementById('parseStatus');
       if (parseStatus) {
-        const svgCheck = '<span class="status-check-svg"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle class="check-circle" cx="12" cy="12" r="9"/><polyline class="check-mark" points="7 12.5 10.5 16 17 9"/></svg></span>';
-        parseStatus.innerHTML = svgCheck + ' <span style="color:var(--text-primary);font-weight:600;">' + count + ' question' + (count !== 1 ? 's' : '') + ' loaded successfully</span>';
+        const svgCheck = [
+          '<span class="status-check-svg">',
+          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none"',
+          ' stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">',
+          '<circle class="check-circle" cx="12" cy="12" r="9"/>',
+          '<polyline class="check-mark" points="7 12.5 10.5 16 17 9"/>',
+          '</svg></span>'
+        ].join('');
+        parseStatus.innerHTML =
+          svgCheck +
+          ' <span style="color:var(--text-primary);font-weight:600;">' +
+          count + ' question' + (count !== 1 ? 's' : '') + ' loaded successfully</span>';
       }
 
       if (questions.length > 0) updateDifficultyMeter(questions);
@@ -1648,11 +1819,13 @@
       resetLoadButton(true);
     });
 
-    document.addEventListener('quizParseError', function() { resetLoadButton(false); });
+    document.addEventListener('quizParseError', function() {
+      resetLoadButton(false);
+    });
 
-    // ═══════════════════════════════════════════════
-    // DIFFICULTY METER (with counter-up animation)
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // DIFFICULTY METER with counter-up animation
+    // ═══════════════════════════════════════════════════════
     function updateDifficultyMeter(questions) {
       const wrap  = document.getElementById('difficultyMeterWrap');
       const fill  = document.getElementById('difficultyFill');
@@ -1661,84 +1834,100 @@
       if (!wrap || !fill || !badge || !label) return;
 
       let total = 0, count = 0;
-      questions.forEach(function(q) {
-        const d = parseFloat(q.difficulty);
+      for (let i = 0; i < questions.length; i++) {
+        const d = parseFloat(questions[i].difficulty);
         if (!isNaN(d) && d >= 1 && d <= 5) { total += d; count++; }
-      });
+      }
       if (count === 0) { wrap.style.display = 'none'; return; }
 
-      const avg  = total / count;
+      const avg = total / count;
       wrap.style.display = 'block';
-      const pct  = ((avg - 1) / 4) * 100;
+
+      const pct = ((avg - 1) / 4) * 100;
       let tier, tierLabel, colorHex;
       if (avg < 2.4)      { tier = 'easy';   tierLabel = 'Easy';      colorHex = '#22c55e'; }
       else if (avg < 3.7) { tier = 'medium'; tierLabel = 'Moderate';  colorHex = '#f59e0b'; }
       else                { tier = 'hard';   tierLabel = 'Difficult'; colorHex = '#ef4444'; }
 
-      fill.style.width = '0%';
+      // Reset fill then animate
+      fill.style.width      = '0%';
       fill.style.background = colorHex;
       setTimeout(function() { fill.style.width = pct + '%'; }, 80);
+
       badge.className = 'difficulty-badge ' + tier;
 
-      // Counter-up animation for the average score
+      // Counter-up animation for the score number
       animateCounterUp(label, 0, avg, 900, function(val) {
         return tierLabel + ' (' + val.toFixed(1) + '/5)';
       });
     }
 
     function animateCounterUp(el, from, to, duration, formatter) {
-      const start = performance.now();
+      const startTime = performance.now();
       function tick(now) {
-        const elapsed = now - start;
+        const elapsed  = now - startTime;
         const progress = Math.min(1, elapsed / duration);
         // easeOutCubic
         const eased = 1 - Math.pow(1 - progress, 3);
-        const value = from + (to - from) * eased;
-        el.textContent = formatter(value);
-        if (progress < 1) requestAnimationFrame(tick);
-        else el.textContent = formatter(to);
+        el.textContent = formatter(from + (to - from) * eased);
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          el.textContent = formatter(to);
+        }
       }
       requestAnimationFrame(tick);
     }
 
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // SHUFFLE TOGGLES
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     window._shuffleQuestions = false;
     window._shuffleOptions   = false;
-    window._questionTarget   = null;
+
     function onShuffleToggle() {
-      window._shuffleQuestions = document.getElementById('shuffleQuestionsToggle').checked;
-      showToast(window._shuffleQuestions ? 'Questions will be shuffled each session.' : 'Question order preserved.');
-    }
-    function onShuffleOptionsToggle() {
-      window._shuffleOptions = document.getElementById('shuffleOptionsToggle').checked;
-      showToast(window._shuffleOptions ? 'Answer options will be randomised.' : 'Option order preserved.');
+      const chk = document.getElementById('shuffleQuestionsToggle');
+      window._shuffleQuestions = chk ? chk.checked : false;
+      showToast(window._shuffleQuestions
+        ? 'Questions will be shuffled each session.'
+        : 'Question order preserved.'
+      );
     }
 
-    // ═══════════════════════════════════════════════
-    // HOW-TO GUIDE
-    // ═══════════════════════════════════════════════
+    function onShuffleOptionsToggle() {
+      const chk = document.getElementById('shuffleOptionsToggle');
+      window._shuffleOptions = chk ? chk.checked : false;
+      showToast(window._shuffleOptions
+        ? 'Answer options will be randomised.'
+        : 'Option order preserved.'
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // HOW-TO GUIDE TOGGLE
+    // ═══════════════════════════════════════════════════════
     function toggleHowToGuide() {
-      const btn = document.getElementById('howToToggleBtn');
+      const btn     = document.getElementById('howToToggleBtn');
       const content = document.getElementById('howToGuideContent');
       if (!btn || !content) return;
-      if (content.classList.contains('open')) {
-        content.classList.remove('open');
-        btn.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
-      } else {
-        content.classList.add('open');
-        btn.classList.add('open');
-        btn.setAttribute('aria-expanded', 'true');
-      }
+      const isOpen = content.classList.contains('open');
+      content.classList.toggle('open', !isOpen);
+      btn.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', (!isOpen).toString());
     }
 
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // SUBJECTS & AI PROMPTS
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     let _subjectChipsBuilt = false;
-    const allSubjects = ['Anatomy','Physiology','Biochemistry','Pathology','Pharmacology','Microbiology','Forensic Medicine','Community Medicine','General Medicine','General Surgery','Obstetrics & Gynaecology','Paediatrics','Ophthalmology','ENT','Orthopaedics','Dermatology','Psychiatry','Radiology','Anaesthesiology'];
+    const allSubjects = [
+      'Anatomy','Physiology','Biochemistry','Pathology',
+      'Pharmacology','Microbiology','Forensic Medicine',
+      'Community Medicine','General Medicine','General Surgery',
+      'Obstetrics & Gynaecology','Paediatrics','Ophthalmology',
+      'ENT','Orthopaedics','Dermatology','Psychiatry',
+      'Radiology','Anaesthesiology'
+    ];
 
     function buildSubjectChips() {
       if (_subjectChipsBuilt) return;
@@ -1747,26 +1936,26 @@
       container.innerHTML = '';
       allSubjects.forEach(function(subj) {
         const chip = document.createElement('span');
-        chip.className = 'subject-chip';
+        chip.className   = 'subject-chip';
         chip.textContent = subj;
         chip.setAttribute('role', 'button');
         chip.setAttribute('tabindex', '0');
         chip.setAttribute('aria-pressed', 'false');
-        chip.onclick = function() {
-          const sel = this.classList.toggle('selected');
-          this.setAttribute('aria-pressed', sel ? 'true' : 'false');
+        chip.addEventListener('click', function() {
+          const selected = chip.classList.toggle('selected');
+          chip.setAttribute('aria-pressed', selected ? 'true' : 'false');
           updateSelectedSubjects();
-        };
-        chip.onkeydown = function(e) {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
-        };
+        });
+        chip.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chip.click(); }
+        });
         container.appendChild(chip);
       });
       _subjectChipsBuilt = true;
     }
 
     function updateSelectedSubjects() {
-      const chips = document.querySelectorAll('#subjectChips .subject-chip.selected');
+      const chips    = document.querySelectorAll('#subjectChips .subject-chip.selected');
       const selected = [];
       chips.forEach(function(c) { selected.push(c.textContent); });
       const hidden = document.getElementById('aiSelectedSubjects');
@@ -1778,40 +1967,58 @@
       return hidden ? hidden.value : '';
     }
 
-    function openAIPromptModal() { buildSubjectChips(); openModal('aiPromptModal'); }
+    function openAIPromptModal() {
+      buildSubjectChips();
+      openModal('aiPromptModal');
+    }
 
     function switchPromptTab(tab) {
       const tT = document.getElementById('tabTopic');
       const tN = document.getElementById('tabNotes');
       const cT = document.getElementById('tabContentTopic');
       const cN = document.getElementById('tabContentNotes');
-      if (!tT || !tN) return;
+      if (!tT || !tN || !cT || !cN) return;
       if (tab === 'topic') {
-        tT.classList.add('active'); tN.classList.remove('active');
-        cT.classList.add('active'); cN.classList.remove('active');
+        tT.classList.add('active');    tN.classList.remove('active');
+        cT.classList.add('active');    cN.classList.remove('active');
       } else {
-        tN.classList.add('active'); tT.classList.remove('active');
-        cN.classList.add('active'); cT.classList.remove('active');
+        tN.classList.add('active');    tT.classList.remove('active');
+        cN.classList.add('active');    cT.classList.remove('active');
       }
     }
 
     function generateAIPrompt() {
       const selectedSubjects = getSelectedSubjects();
-      const topic    = document.getElementById('aiTopic').value.trim();
-      const numQ     = parseInt(document.getElementById('aiNumQuestions').value);
-      const format   = document.getElementById('aiFormatTopic').value;
-      const standard = document.getElementById('aiStandard').value;
-      const extra    = document.getElementById('aiExtraInstructions').value.trim();
+      const topicEl    = document.getElementById('aiTopic');
+      const numQEl     = document.getElementById('aiNumQuestions');
+      const formatEl   = document.getElementById('aiFormatTopic');
+      const standardEl = document.getElementById('aiStandard');
+      const extraEl    = document.getElementById('aiExtraInstructions');
+      const outputEl   = document.getElementById('aiGeneratedPrompt');
+      if (!topicEl || !numQEl || !formatEl || !standardEl || !outputEl) return;
 
-      if (!selectedSubjects && !topic) { showToast('Please select at least one subject or enter a topic.'); return; }
-      if (!numQ || numQ < 1) { showToast('Please enter a valid number of questions.'); return; }
+      const topic    = topicEl.value.trim();
+      const numQ     = parseInt(numQEl.value);
+      const format   = formatEl.value;
+      const standard = standardEl.value;
+      const extra    = extraEl ? extraEl.value.trim() : '';
+
+      if (!selectedSubjects && !topic) {
+        showToast('Please select at least one subject or enter a topic.');
+        return;
+      }
+      if (!numQ || numQ < 1) {
+        showToast('Please enter a valid number of questions.');
+        return;
+      }
 
       const subjectPart = selectedSubjects ? 'on ' + selectedSubjects : '';
-      const topicPart   = topic ? (selectedSubjects ? ' — specifically "'+topic+'"' : 'on "'+topic+'"') : '';
+      const topicPart   = topic
+        ? (selectedSubjects ? ' — specifically "' + topic + '"' : 'on "' + topic + '"')
+        : '';
 
       let prompt = 'You are an expert medical educator creating exam-standard MCQs for ' + standard + ' aspirants.\n\n';
-
-      let rules = 'STRICT RULES:\n';
+      let rules  = 'STRICT RULES:\n';
       rules += '1. Each question must have EXACTLY 4 answer options (no more, no less).\n';
       rules += '2. The explanation must be IN-DEPTH and thorough. Include:\n';
       rules += '   - Why the correct answer is right (mechanism, reasoning)\n';
@@ -1821,42 +2028,46 @@
 
       if (format === 'standard') {
         prompt += 'Generate ' + numQ + ' theoretical medical MCQ questions ' + subjectPart + topicPart + '.\n\n';
-        rules += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
-      }
-      else if (format === 'image') {
+        rules  += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
+      } else if (format === 'image') {
         prompt += 'Generate ' + numQ + ' image-based medical MCQ questions ' + subjectPart + topicPart + '.\n\n';
-        rules += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical/radiology/histology images relevant to the topic. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a clinical vignette that strictly requires visual analysis of the image to answer correctly. Verify the URL exists. DO NOT HALLUCINATE URLs.\n';
-      }
-      else if (format === 'mix') {
-        const imgCount = Math.ceil(numQ * 0.3);
+        rules  += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical/radiology/histology images relevant to the topic. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a clinical vignette that strictly requires visual analysis of the image to answer correctly. Verify the URL exists. DO NOT HALLUCINATE URLs.\n';
+      } else if (format === 'mix') {
+        const imgCount    = Math.ceil(numQ * 0.3);
         const theoryCount = numQ - imgCount;
         prompt += 'Generate a total of ' + numQ + ' medical MCQ questions ' + subjectPart + topicPart + '. ';
         prompt += 'You MUST provide exactly ' + theoryCount + ' theoretical questions and ' + imgCount + ' image-based questions.\n\n';
-        rules += '4. For the ' + imgCount + ' image-based questions, YOU MUST USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for clear medical images. Extract the raw image URL (.jpg or .png), place it in "image_url", and build a vignette around it. DO NOT hallucinate URLs. For the ' + theoryCount + ' theoretical questions, leave "image_url" blank.\n';
+        rules  += '4. For the ' + imgCount + ' image-based questions, YOU MUST USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for clear medical images. Extract the raw image URL (.jpg or .png), place it in "image_url", and build a vignette around it. DO NOT hallucinate URLs. For the ' + theoryCount + ' theoretical questions, leave "image_url" blank.\n';
       }
 
       if (extra) rules += '5. Additional instructions: ' + extra + '\n';
       prompt += rules;
-
       prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks. Start with [ and end with ].\n';
       prompt += 'Each object must have these exact fields:\n{\n  "question": "Full question text here",\n  "options": ["Option A", "Option B", "Option C", "Option D"],\n  "correct_option": "Must exactly match one option",\n  "explanation": "In-depth explanation",\n  "difficulty": 3,\n  "subject": "Subject name",\n  "topic": "Specific topic",\n  "tags": ["NEET PG"],\n  "image_url": "URL if image-based, otherwise empty string"\n}';
 
-      const textarea = document.getElementById('aiGeneratedPrompt');
-      textarea.value = prompt;
-      // Subtle highlight pulse animation
-      textarea.classList.remove('ai-pulse');
-      void textarea.offsetWidth; // restart animation
-      textarea.classList.add('ai-pulse');
-      textarea.scrollIntoView({ behavior: 'smooth' });
+      outputEl.value = prompt;
+      // Subtle pulse animation to draw attention to the output
+      outputEl.classList.remove('ai-pulse');
+      void outputEl.offsetWidth; // force reflow to restart animation
+      outputEl.classList.add('ai-pulse');
+      outputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       showToast('Prompt generated! Copy and paste into any AI assistant.');
     }
 
     function generateAINotesPrompt() {
-      const notes    = document.getElementById('aiNotesContent').value.trim();
-      const numQ     = parseInt(document.getElementById('aiNotesNumQuestions').value);
-      const format   = document.getElementById('aiFormatNotes').value;
-      const standard = document.getElementById('aiNotesStandard').value;
-      const extra    = document.getElementById('aiNotesExtraInstructions').value.trim();
+      const notesEl    = document.getElementById('aiNotesContent');
+      const numQEl     = document.getElementById('aiNotesNumQuestions');
+      const formatEl   = document.getElementById('aiFormatNotes');
+      const standardEl = document.getElementById('aiNotesStandard');
+      const extraEl    = document.getElementById('aiNotesExtraInstructions');
+      const outputEl   = document.getElementById('aiNotesGeneratedPrompt');
+      if (!notesEl || !numQEl || !formatEl || !standardEl || !outputEl) return;
+
+      const notes    = notesEl.value.trim();
+      const numQ     = parseInt(numQEl.value);
+      const format   = formatEl.value;
+      const standard = standardEl.value;
+      const extra    = extraEl ? extraEl.value.trim() : '';
 
       if (!notes) { showToast('Please paste your study notes first.'); return; }
       if (!numQ || numQ < 1) { showToast('Please enter a valid number of questions.'); return; }
@@ -1875,57 +2086,61 @@
 
       if (format === 'standard') {
         rules += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
-      }
-      else if (format === 'image') {
+      } else if (format === 'image') {
         rules += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical images relevant to the concepts in the notes. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a vignette that requires visual analysis. DO NOT HALLUCINATE URLs.\n';
-      }
-      else if (format === 'mix') {
-        const imgCount = Math.ceil(numQ * 0.3);
+      } else if (format === 'mix') {
+        const imgCount    = Math.ceil(numQ * 0.3);
         const theoryCount = numQ - imgCount;
         rules += '4. You MUST provide exactly ' + theoryCount + ' theoretical questions and ' + imgCount + ' image-based questions. For image-based questions, USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for relevant medical images. Extract the raw image URL (.jpg or .png) and place it in "image_url". DO NOT hallucinate URLs.\n';
       }
 
       if (extra) rules += '5. Additional instructions: ' + extra + '\n';
       prompt += rules;
-
       prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks. Start with [ and end with ].\n';
       prompt += 'Each object must have these exact fields:\n{\n  "question": "Full question text here",\n  "options": ["Option A", "Option B", "Option C", "Option D"],\n  "correct_option": "Must exactly match one option",\n  "explanation": "In-depth explanation",\n  "difficulty": 3,\n  "subject": "Subject name",\n  "topic": "Specific topic",\n  "tags": ["NEET PG"],\n  "image_url": "URL if image-based, otherwise empty string"\n}';
 
-      const textarea = document.getElementById('aiNotesGeneratedPrompt');
-      textarea.value = prompt;
-      textarea.classList.remove('ai-pulse');
-      void textarea.offsetWidth;
-      textarea.classList.add('ai-pulse');
-      textarea.scrollIntoView({ behavior: 'smooth' });
+      outputEl.value = prompt;
+      outputEl.classList.remove('ai-pulse');
+      void outputEl.offsetWidth;
+      outputEl.classList.add('ai-pulse');
+      outputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       showToast('Notes-based prompt generated! Copy and paste into any AI assistant.');
     }
 
-    function copyAIPrompt() { copyTextToClipboard('aiGeneratedPrompt', 'copyPromptBtn', 'Prompt copied! Paste into any AI assistant.'); }
+    function copyAIPrompt() {
+      copyTextToClipboard('aiGeneratedPrompt', 'copyPromptBtn', 'Prompt copied! Paste into any AI assistant.');
+    }
+    function copyAINotesPrompt() {
+      copyTextToClipboard('aiNotesGeneratedPrompt', 'copyNotesPromptBtn', 'Prompt copied! Paste into any AI assistant.');
+    }
+
     function clearAIPromptFields() {
       document.querySelectorAll('#subjectChips .subject-chip.selected').forEach(function(c) {
         c.classList.remove('selected');
-        c.setAttribute('aria-pressed','false');
+        c.setAttribute('aria-pressed', 'false');
       });
-      ['aiSelectedSubjects','aiTopic','aiExtraInstructions','aiGeneratedPrompt'].forEach(function(id) {
+      const fields = ['aiSelectedSubjects','aiTopic','aiExtraInstructions','aiGeneratedPrompt'];
+      fields.forEach(function(id) {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });
-      const numQ = document.getElementById('aiNumQuestions');
-      if (numQ) numQ.value = '10';
+      const numQ   = document.getElementById('aiNumQuestions');
       const format = document.getElementById('aiFormatTopic');
+      if (numQ)   numQ.value   = '10';
       if (format) format.value = 'standard';
       updateSelectedSubjects();
       showToast('All fields cleared.');
     }
-    function copyAINotesPrompt() { copyTextToClipboard('aiNotesGeneratedPrompt', 'copyNotesPromptBtn', 'Prompt copied! Paste into any AI assistant.'); }
+
     function clearAINotesFields() {
-      ['aiNotesContent','aiNotesExtraInstructions','aiNotesGeneratedPrompt'].forEach(function(id) {
+      const fields = ['aiNotesContent','aiNotesExtraInstructions','aiNotesGeneratedPrompt'];
+      fields.forEach(function(id) {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });
-      const numQ = document.getElementById('aiNotesNumQuestions');
-      if (numQ) numQ.value = '10';
+      const numQ   = document.getElementById('aiNotesNumQuestions');
       const format = document.getElementById('aiFormatNotes');
+      if (numQ)   numQ.value   = '10';
       if (format) format.value = 'standard';
       showToast('All fields cleared.');
     }
@@ -1933,124 +2148,157 @@
     function copyTextToClipboard(textareaId, btnId, successMsg) {
       const textarea = document.getElementById(textareaId);
       const btn      = document.getElementById(btnId);
-      if (!textarea || !textarea.value.trim()) { showToast('Click "Generate Prompt" first.'); return; }
-      const originalText = btn ? btn.textContent : '';
+      if (!textarea || !textarea.value.trim()) {
+        showToast('Click "Generate Prompt" first.');
+        return;
+      }
+      const originalText = btn ? btn.textContent.trim() : '';
+
       function onSuccess() {
         if (btn) {
           btn.textContent = 'Copied!';
           btn.style.background = 'var(--accent)';
-          btn.style.color = '#fff';
+          btn.style.color      = '#fff';
           setTimeout(function() {
-            btn.textContent = originalText;
+            btn.textContent      = originalText;
             btn.style.background = '';
-            btn.style.color = '';
+            btn.style.color      = '';
           }, 2000);
         }
         showToast(successMsg || 'Copied!');
       }
+
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(textarea.value).then(onSuccess).catch(function() {
           textarea.select();
-          showToast('Clipboard error. Text selected, please copy manually.');
+          showToast('Clipboard error. Text selected — copy manually.');
         });
       } else {
         textarea.select();
-        showToast('Clipboard API not available. Text selected, please copy manually.');
+        showToast('Clipboard API not available. Text selected — copy manually.');
       }
     }
 
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // JSON LIVE VALIDATOR
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     let _jsonValidateTimer = null;
+
     function validateJSONLive() {
       clearTimeout(_jsonValidateTimer);
       _jsonValidateTimer = setTimeout(_doValidateJSON, 300);
     }
+
     function _doValidateJSON() {
       const textarea  = document.getElementById('jsonInput');
       const textSpan  = document.getElementById('jsonValidatorText');
       const indicator = document.getElementById('jsonValidatorIndicator');
       const helpBtn   = document.getElementById('jsonHelpBtn');
       if (!textarea || !indicator || !textSpan) return;
+
       const value = textarea.value.trim();
       if (value.length === 0) {
-        textarea.classList.remove('valid-glow','invalid-glow');
+        textarea.classList.remove('valid-glow', 'invalid-glow');
         textSpan.textContent = '';
-        indicator.className = 'json-validator-indicator';
+        indicator.className  = 'json-validator-indicator';
         if (helpBtn) helpBtn.classList.remove('visible');
         hideSchemaErrors();
         return;
       }
+
+      let parsed;
       try {
-        const parsed = JSON.parse(value);
-        if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("Must be non-empty array");
-        const schemaIssues = [];
-        parsed.forEach(function(q, i) {
-          ['question','options','correct_option','explanation'].forEach(function(f) {
-            if (!q[f]) schemaIssues.push('Q'+(i+1)+': missing "'+f+'"');
-          });
-          if (q.options && (!Array.isArray(q.options) || q.options.length < 2))
-            schemaIssues.push('Q'+(i+1)+': "options" must be array > 1');
-          if (q.correct_option && Array.isArray(q.options) && q.options.indexOf(q.correct_option) === -1)
-            schemaIssues.push('Q'+(i+1)+': "correct_option" not in options');
-        });
-        if (schemaIssues.length > 0) {
-          textarea.classList.remove('valid-glow');
-          textarea.classList.add('invalid-glow');
-          textSpan.textContent = parsed.length + ' question(s) — ' + schemaIssues.length + ' issue(s)';
-          indicator.className = 'json-validator-indicator warning';
-          if (helpBtn) helpBtn.classList.add('visible');
-          showSchemaErrors(schemaIssues);
-        } else {
-          textarea.classList.add('valid-glow');
-          textarea.classList.remove('invalid-glow');
-          textSpan.textContent = parsed.length + ' question(s) detected — valid';
-          indicator.className = 'json-validator-indicator valid';
-          if (helpBtn) helpBtn.classList.remove('visible');
-          hideSchemaErrors();
-        }
+        parsed = JSON.parse(value);
       } catch (e) {
         textarea.classList.remove('valid-glow');
         textarea.classList.add('invalid-glow');
         textSpan.textContent = 'Invalid JSON format';
-        indicator.className = 'json-validator-indicator invalid';
+        indicator.className  = 'json-validator-indicator invalid';
         if (helpBtn) helpBtn.classList.add('visible');
+        hideSchemaErrors();
+        return;
+      }
+
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        textarea.classList.remove('valid-glow');
+        textarea.classList.add('invalid-glow');
+        textSpan.textContent = 'Must be a non-empty JSON array';
+        indicator.className  = 'json-validator-indicator invalid';
+        if (helpBtn) helpBtn.classList.add('visible');
+        hideSchemaErrors();
+        return;
+      }
+
+      // Schema validation
+      const schemaIssues = [];
+      const required = ['question','options','correct_option','explanation'];
+      parsed.forEach(function(q, i) {
+        const label = 'Q' + (i + 1);
+        required.forEach(function(f) {
+          if (!q[f]) schemaIssues.push(label + ': missing "' + f + '"');
+        });
+        if (q.options && (!Array.isArray(q.options) || q.options.length < 2)) {
+          schemaIssues.push(label + ': "options" must be an array with 2+ items');
+        }
+        if (q.correct_option && Array.isArray(q.options) &&
+            q.options.indexOf(q.correct_option) === -1) {
+          schemaIssues.push(label + ': "correct_option" does not match any option');
+        }
+      });
+
+      if (schemaIssues.length > 0) {
+        textarea.classList.remove('valid-glow');
+        textarea.classList.add('invalid-glow');
+        textSpan.textContent = parsed.length + ' question(s) — ' + schemaIssues.length + ' issue(s)';
+        indicator.className  = 'json-validator-indicator warning';
+        if (helpBtn) helpBtn.classList.add('visible');
+        showSchemaErrors(schemaIssues);
+      } else {
+        textarea.classList.add('valid-glow');
+        textarea.classList.remove('invalid-glow');
+        textSpan.textContent = parsed.length + ' question(s) detected — valid';
+        indicator.className  = 'json-validator-indicator valid';
+        if (helpBtn) helpBtn.classList.remove('visible');
         hideSchemaErrors();
       }
     }
+
     function showSchemaErrors(issues) {
       const container = document.getElementById('schemaErrorList');
       const list      = document.getElementById('schemaErrorItems');
       if (!container || !list) return;
       list.innerHTML = '';
-      issues.slice(0, 8).forEach(function(issue) {
+      const shown = issues.slice(0, 8);
+      shown.forEach(function(issue) {
         const li = document.createElement('li');
         li.textContent = issue;
         list.appendChild(li);
       });
       if (issues.length > 8) {
         const li = document.createElement('li');
-        li.textContent = '… and '+(issues.length-8)+' more';
+        li.textContent = '… and ' + (issues.length - 8) + ' more';
         list.appendChild(li);
       }
       container.classList.add('visible');
     }
+
     function hideSchemaErrors() {
       const c = document.getElementById('schemaErrorList');
       if (c) c.classList.remove('visible');
     }
+
     function toggleJSONHelp() {
-      const p = document.getElementById('jsonHelpPanel');
-      if (p) {
-        p.classList.toggle('open');
-        if (p.classList.contains('open')) p.scrollIntoView({behavior:'smooth', block:'nearest'});
+      const panel = document.getElementById('jsonHelpPanel');
+      if (!panel) return;
+      panel.classList.toggle('open');
+      if (panel.classList.contains('open')) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
 
-    // ═══════════════════════════════════════════════
-    // LOAD BUTTON & PASTE
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // LOAD BUTTON & PASTE FROM CLIPBOARD
+    // ═══════════════════════════════════════════════════════
     function handleLoadQuestions(btn) {
       if (btn.classList.contains('btn-loading')) return;
       const textarea = document.getElementById('jsonInput');
@@ -2059,19 +2307,20 @@
         return;
       }
       const originalHTML = btn.innerHTML;
+      btn.setAttribute('data-original-html', originalHTML);
       btn.classList.add('btn-loading');
       btn.innerHTML = '<span class="btn-spinner"></span>Loading...';
-      btn.setAttribute('data-original-html', originalHTML);
 
       setTimeout(function() {
         if (typeof parseJSON === 'function') {
           parseJSON();
         } else {
           resetLoadButton(false);
-          showToast('System not fully loaded yet. Please wait a moment.');
+          showToast('System not fully loaded. Please wait a moment.');
         }
       }, 50);
 
+      // Safety timeout — reset if stuck
       setTimeout(function() {
         const b = document.getElementById('loadQuestionsBtn');
         if (b && b.classList.contains('btn-loading')) resetLoadButton(false);
@@ -2084,7 +2333,13 @@
       btn.classList.remove('btn-loading');
       if (success) {
         btn.classList.add('btn-success-state');
-        btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><polyline points="20 6 9 17 4 12"/></svg>Questions Loaded';
+        btn.innerHTML = [
+          '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"',
+          ' stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"',
+          ' style="vertical-align:-2px;margin-right:5px;">',
+          '<polyline points="20 6 9 17 4 12"/></svg>',
+          'Questions Loaded'
+        ].join('');
         setTimeout(function() {
           btn.classList.remove('btn-success-state');
           btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions';
@@ -2117,70 +2372,105 @@
       });
     }
 
-    // ═══════════════════════════════════════════════
-    // BUG #3 FIX — setTimerPreset with explicit event
-    // ═══════════════════════════════════════════════
-    // Override script.js setTimerPreset to safely capture event from inline onclick
-    window.setTimerPreset = function(eventOrSec, maybeSec) {
-      // Support both old (sec) and new (event, sec) signatures
+    // ═══════════════════════════════════════════════════════
+    // BUG #3 FIX — setTimerPreset (safe event handling)
+    // Overrides script.js version. Supports onclick="setTimerPreset(event, sec)"
+    // ═══════════════════════════════════════════════════════
+    window.setTimerPreset = function(evtOrSec, maybeSec) {
       let evt, sec;
-      if (typeof eventOrSec === 'number') {
-        sec = eventOrSec;
-        evt = window.event;
+      if (typeof evtOrSec === 'number') {
+        // Old signature: setTimerPreset(sec) — shouldn't happen with new HTML but safe fallback
+        sec = evtOrSec;
+        evt = null;
       } else {
-        evt = eventOrSec;
+        // New signature: setTimerPreset(event, sec)
+        evt = evtOrSec;
         sec = maybeSec;
       }
+
       window.timePerQuestion = sec;
-      // Update active class on presets
-      document.querySelectorAll('.timer-preset').forEach(function(p) { p.classList.remove('active'); });
-      if (evt && evt.target) {
-        // Find the actual button (target may be a child)
+
+      // Update active state on all preset buttons
+      document.querySelectorAll('.timer-preset').forEach(function(p) {
+        p.classList.remove('active');
+      });
+
+      // Find the clicked button safely
+      if (evt && evt.currentTarget) {
+        evt.currentTarget.classList.add('active');
+      } else if (evt && evt.target) {
         let btn = evt.target;
-        while (btn && !btn.classList.contains('timer-preset')) { btn = btn.parentElement; }
+        // Walk up in case a child element was clicked
+        while (btn && !btn.classList.contains('timer-preset')) {
+          btn = btn.parentElement;
+        }
         if (btn) btn.classList.add('active');
       }
+
+      // Clear custom input
       const customInput = document.getElementById('customMinutes');
       if (customInput) customInput.value = '';
+
+      // Update timer display if script.js provides it
       if (typeof updateTimerDisplay === 'function') updateTimerDisplay();
     };
 
-    // ═══════════════════════════════════════════════
-    // BUG #5 FIX — Pomodoro SVG icons (override script.js)
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // BUG #5 FIX — Pomodoro SVG start/pause button
+    // Clean implementation: no double-write, no fragile observer
+    // ═══════════════════════════════════════════════════════
     function updatePomoStartButton(isRunning) {
       const btn = document.getElementById('pomoStartBtn');
       if (!btn) return;
       if (isRunning) {
-        btn.innerHTML = SVG_ICONS.pause.replace('toast-icon-svg', '').replace('width="', 'width="12" data-w="') + 'Pause';
-        // simpler approach: build directly
-        btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>Pause';
+        btn.innerHTML = [
+          '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"',
+          ' stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">',
+          '<rect x="6" y="4" width="4" height="16" rx="1"/>',
+          '<rect x="14" y="4" width="4" height="16" rx="1"/>',
+          '</svg>Pause'
+        ].join('');
       } else {
-        btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>Start';
+        btn.innerHTML = [
+          '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"',
+          ' stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">',
+          '<polygon points="6 4 20 12 6 20 6 4"/>',
+          '</svg>Start'
+        ].join('');
       }
     }
 
-    // Watch for text changes on pomodoro start button (script.js will set ▶/⏸ text)
-    // Use MutationObserver to convert script.js text to SVG icons
+    // Expose so script.js can call it directly
+    window.updatePomoStartButton = updatePomoStartButton;
+
+    // MutationObserver: watches for script.js writing text to the button
+    // and converts it back to SVG. Fires only when SVG is absent (text-only state).
     document.addEventListener('DOMContentLoaded', function() {
       const pomoBtn = document.getElementById('pomoStartBtn');
       if (!pomoBtn) return;
 
-      const obs = new MutationObserver(function(mutations) {
-        const txt = pomoBtn.textContent || '';
-        // Detect pause state (▶ Start text from script.js)
-        if (txt.indexOf('Start') !== -1 && pomoBtn.querySelector('svg') === null) {
-          updatePomoStartButton(false);
-        } else if (txt.indexOf('Pause') !== -1 && pomoBtn.querySelector('svg') === null) {
-          updatePomoStartButton(true);
+      let _observerLocked = false; // prevent re-entrant loops
+
+      const obs = new MutationObserver(function() {
+        if (_observerLocked) return;
+        // If the button has no SVG child, script.js wrote text — restore SVG
+        if (!pomoBtn.querySelector('svg')) {
+          _observerLocked = true;
+          const txt = pomoBtn.textContent || '';
+          // '▶' or 'Start' → play state; '⏸' or 'Pause' → pause state
+          const isPause = txt.indexOf('Pause') !== -1 || txt.indexOf('⏸') !== -1;
+          updatePomoStartButton(isPause);
+          // Unlock after a microtask so the DOM settles
+          Promise.resolve().then(function() { _observerLocked = false; });
         }
       });
+
       obs.observe(pomoBtn, { childList: true, characterData: true, subtree: true });
     });
 
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // JSON TEXTAREA — One-time first-focus shimmer
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function() {
       const ta = document.getElementById('jsonInput');
       if (!ta) return;
@@ -2189,22 +2479,51 @@
         if (shimmered) return;
         shimmered = true;
         ta.classList.add('first-focus-shimmer');
-        setTimeout(function() { ta.classList.remove('first-focus-shimmer'); }, 1500);
-      }, { once: false });
+        setTimeout(function() {
+          ta.classList.remove('first-focus-shimmer');
+        }, 1500);
+      });
     });
 
-    // ═══════════════════════════════════════════════
-    // MODE CARD — iOS-style tap glow
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // MODE CARD — iOS-style tap glow on touch/pointer
+    // ═══════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function() {
-      const cards = document.querySelectorAll('.mode-card');
-      cards.forEach(function(card) {
+      document.querySelectorAll('.mode-card').forEach(function(card) {
         card.addEventListener('pointerdown', function() {
           card.classList.add('tap-glow');
           setTimeout(function() { card.classList.remove('tap-glow'); }, 600);
         });
       });
     });
+
+    // ═══════════════════════════════════════════════════════
+    // THEME INIT — Restore saved theme on load without
+    // calling toggleTheme() (avoids double-toggle bug)
+    // ═══════════════════════════════════════════════════════
+    (function initTheme() {
+      let saved;
+      try { saved = localStorage.getItem('medquiz_theme'); } catch(e) {}
+      const prefersDark = window.matchMedia &&
+                          window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = saved ? saved === 'dark' : prefersDark !== false;
+
+      if (!isDark) {
+        // Apply light theme
+        document.body.classList.add('light');
+        document.documentElement.setAttribute('data-theme', 'light');
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute('content', '#ffffff');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+
+      // Set correct icon without animation (page load)
+      document.addEventListener('DOMContentLoaded', function() {
+        _setThemeIcon(isDark);
+      });
+    })();
+
   </script>
 
   <script src="https://js.puter.com/v2/"></script>
