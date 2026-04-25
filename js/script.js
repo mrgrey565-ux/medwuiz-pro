@@ -35,12 +35,111 @@ let flashcardIdx = 0;
 
 let ocrFile = null;
 
+// Cleaned up AI config — purely Pollinations now
 let aiConfig = {
   provider: 'pollinations',
-  apiKey: '',
-  model: 'gemini-2.5-flash',
   pollinationsModel: 'openai'
 };
+
+// ═══════════════════════════════════════════════
+// PREMIUM HAPTIC FEEDBACK (MICRO-INTERACTIONS)
+// ═══════════════════════════════════════════════
+function vibrate(duration = 30) {
+  // Gracefully fail if the browser/device doesn't support vibration
+  if (navigator && navigator.vibrate) {
+    navigator.vibrate(duration);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// PWA / ADD TO HOME SCREEN ENGINE
+// ═══════════════════════════════════════════════
+function initPWA() {
+  // 1. Generate the premium gradient icon dynamically
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; 
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  
+  // Create purple gradient matching landing page
+  const grad = ctx.createLinearGradient(0, 0, 512, 512);
+  grad.addColorStop(0, '#6366f1'); // Indigo/Accent
+  grad.addColorStop(1, '#a855f7'); // Purple
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 512);
+  
+  // Add Brain Logo
+  ctx.font = '240px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🧠', 256, 280); // Slight offset to visually center the emoji
+  
+  const iconURL = canvas.toDataURL('image/png');
+
+  // 2. Generate and inject Manifest dynamically
+  const manifest = {
+    name: "MedQuiz Pro",
+    short_name: "MedQuiz",
+    start_url: "./index.html",
+    display: "standalone",
+    background_color: "#0a0e1a",
+    theme_color: "#0a0e1a",
+    icons: [{ src: iconURL, sizes: "512x512", type: "image/png", purpose: "any maskable" }]
+  };
+  
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const manifestURL = URL.createObjectURL(manifestBlob);
+
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = manifestURL;
+  document.head.appendChild(link);
+
+  // 3. Listen for the browser install prompt
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.deferredInstallPrompt = e;
+    showInstallBanner(iconURL);
+  });
+}
+
+function showInstallBanner(iconUrl) {
+  if(document.getElementById('pwa-install-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'pwa-install-banner';
+  banner.style.cssText = `
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4); z-index: 9999; width: 90%; max-width: 380px;
+    animation: chipFadeIn 0.6s cubic-bezier(0.16,1,0.3,1);
+  `;
+  
+  banner.innerHTML = `
+    <img src="${iconUrl}" style="width:46px;height:46px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+    <div style="flex:1">
+      <div style="font-weight:700;font-size:15px;color:var(--text-primary);">MedQuiz Pro</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Add to Home Screen</div>
+    </div>
+    <button id="pwaInstallBtn" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:600;font-size:13px;cursor:pointer;transition:transform 0.2s;">Install</button>
+    <button id="pwaCloseBtn" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;padding:0 4px;margin-left:4px;">&times;</button>
+  `;
+  document.body.appendChild(banner);
+
+  document.getElementById('pwaInstallBtn').onclick = async () => {
+    vibrate(30);
+    banner.style.display = 'none';
+    if (window.deferredInstallPrompt) {
+      window.deferredInstallPrompt.prompt();
+      const { outcome } = await window.deferredInstallPrompt.userChoice;
+      window.deferredInstallPrompt = null;
+    }
+  };
+  
+  document.getElementById('pwaCloseBtn').onclick = () => {
+    banner.remove();
+  };
+}
 
 // ═══════════════════════════════════════════════
 // INDEXEDDB HELPERS
@@ -121,8 +220,8 @@ function showToast(msg, dur = 2500) {
   setTimeout(() => t.classList.remove('show'), dur);
 }
 
-// Support both .show (quiz/results pages) and .active (home page)
 function openModal(id) {
+  vibrate(20); // Soft vibration for opening modals
   const el = document.getElementById(id);
   if (!el) return;
   el.classList.add('show');
@@ -147,6 +246,7 @@ function closeModal(id) {
 }
 
 function toggleTheme() {
+  vibrate(30); // Tactile feedback
   const isLight = document.body.classList.contains('light') ||
                   document.documentElement.getAttribute('data-theme') === 'light';
   if (isLight) {
@@ -167,92 +267,43 @@ function updateThemeIcon() {
   const svg = document.getElementById('themeIconSvg');
   if (!svg) return;
   if (isLight) {
-    // Moon — click to go dark
-    svg.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
-      fill="none" stroke="currentColor" stroke-width="2"
-      stroke-linecap="round" stroke-linejoin="round"/>`;
+    svg.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
   } else {
-    // Sun — click to go light
-    svg.innerHTML = `
-      <circle cx="12" cy="12" r="5"/>
-      <line x1="12" y1="1"  x2="12" y2="3"/>
-      <line x1="12" y1="21" x2="12" y2="23"/>
-      <line x1="4.22" y1="4.22"   x2="5.64"  y2="5.64"/>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-      <line x1="1"  y1="12" x2="3"  y2="12"/>
-      <line x1="21" y1="12" x2="23" y2="12"/>
-      <line x1="4.22" y1="19.78"  x2="5.64"  y2="18.36"/>
-      <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>`;
+    svg.innerHTML = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
   }
 }
 
+// Stripped down to just Pollinations
 function onProviderChange() {
-  const providerSelect = document.getElementById('providerSelect');
-  if (!providerSelect) return;
-  const provider     = providerSelect.value;
-  const pollConfig   = document.getElementById('pollinationsConfig');
+  const pollConfig = document.getElementById('pollinationsConfig');
   const geminiConfig = document.getElementById('geminiConfig');
-  if (pollConfig)   pollConfig.style.display   = provider === 'pollinations' ? 'block' : 'none';
-  if (geminiConfig) geminiConfig.style.display = provider === 'gemini'       ? 'block' : 'none';
+  if (pollConfig) pollConfig.style.display = 'block';
+  if (geminiConfig) geminiConfig.style.display = 'none';
 }
 
 function saveAIConfig() {
-  const providerSelect          = document.getElementById('providerSelect');
+  vibrate(30);
   const pollinationsModelSelect = document.getElementById('pollinationsModelSelect');
-  const apiKeyInput             = document.getElementById('apiKeyInput');
-  const modelSelect             = document.getElementById('modelSelect');
-  if (providerSelect)          aiConfig.provider          = providerSelect.value;
+  aiConfig.provider = 'pollinations'; // Force pollinations
   if (pollinationsModelSelect) aiConfig.pollinationsModel = pollinationsModelSelect.value;
-  if (apiKeyInput)             aiConfig.apiKey            = apiKeyInput.value.trim();
-  if (modelSelect)             aiConfig.model             = modelSelect.value;
+  
   localStorage.setItem('medquiz_ai_config', JSON.stringify(aiConfig));
   updateAIStatus();
   closeModal('aiConfigModal');
-  showToast(
-    aiConfig.provider === 'pollinations'
-      ? 'Pollinations AI enabled!'
-      : (aiConfig.apiKey ? 'Gemini AI enabled!' : 'AI disabled — no key set')
-  );
+  showToast('Pollinations AI settings saved! (Free & Unlimited)');
 }
 
 function updateAIStatus() {
   const status = document.getElementById('aiStatus');
   const text   = document.getElementById('aiStatusText');
   if (!status || !text) return;
-  if (aiConfig.provider === 'pollinations' || aiConfig.apiKey) {
-    status.classList.add('connected');
-    text.textContent = 'AI Ready';
-  } else {
-    status.classList.remove('connected');
-    text.textContent = 'AI Off';
-  }
+  // Always ready because pollinations requires no key
+  status.classList.add('connected');
+  text.textContent = 'AI Ready';
 }
 
 async function callAI(prompt) {
-  const provider = aiConfig.provider || 'pollinations';
-
-  if (provider === 'gemini') {
-    if (!aiConfig.apiKey)
-      throw new Error('Gemini API key not set. Click the star icon to configure, or switch to Pollinations (free).');
-    const url  = `https://generativelanguage.googleapis.com/v1beta/models/${aiConfig.model}:generateContent?key=${aiConfig.apiKey}`;
-    const body = {
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
-    };
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
-  }
-
-  // Pollinations
+  // Purely Pollinations
   const model = aiConfig.pollinationsModel || 'openai';
   const url   = 'https://text.pollinations.ai/openai';
   const body  = {
@@ -287,6 +338,7 @@ async function callAI(prompt) {
     return typeof data === 'string' ? data : JSON.stringify(data);
   } catch (e) {
     try {
+      // Fallback simple GET request
       const simpleUrl = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=${model}&private=true`;
       const simpleRes = await fetch(simpleUrl);
       if (!simpleRes.ok) throw new Error(`Pollinations error: HTTP ${simpleRes.status}`);
@@ -301,6 +353,7 @@ async function callAI(prompt) {
 // SAMPLE & STORAGE
 // ═══════════════════════════════════════════════
 function loadSample() {
+  vibrate(30);
   const sample = [
     {
       question: "A body recovered from a river shows fine froth at mouth and nostrils. Which finding most strongly supports antemortem drowning?",
@@ -342,6 +395,7 @@ function loadSample() {
 }
 
 function loadFromStorage() {
+  vibrate(30);
   const saved = localStorage.getItem('medquiz_last_json');
   if (saved) {
     const input = document.getElementById('jsonInput');
@@ -356,6 +410,7 @@ function loadFromStorage() {
 }
 
 function clearInput() {
+  vibrate(40);
   const input = document.getElementById('jsonInput');
   if (input) input.value = '';
   _hideAllConfigSections();
@@ -528,6 +583,7 @@ function parseJSON() {
   const raw = rawInput.value.trim();
 
   if (!raw) {
+    vibrate(100); // Error vibration
     _showParseStatus(status, 'error', 'Please paste your JSON questions first.');
     return;
   }
@@ -564,6 +620,7 @@ function parseJSON() {
     });
 
     if (valid.length === 0) {
+      vibrate(100); // Error vibration
       _showParseStatus(status, 'error',
         `No valid questions found. ${errors.length} error(s): ${errors.slice(0, 3).join(' | ')}`
       );
@@ -571,6 +628,7 @@ function parseJSON() {
       return;
     }
 
+    vibrate([30, 50, 30]); // Success double-buzz
     questions = valid;
     localStorage.setItem('medquiz_last_json', raw);
 
@@ -578,7 +636,6 @@ function parseJSON() {
     if (errors.length) statusMsg += ` (${errors.length} skipped)`;
     _showParseStatus(status, 'success', statusMsg);
 
-    // FIX: renderPreview without question chip list
     renderPreview();
 
     // Fire custom event — triggers revealQuizConfig() in index.html
@@ -586,15 +643,12 @@ function parseJSON() {
       detail: { count: valid.length, questions: valid }
     }));
 
-    // Show smart filters
     const smartFilters = document.getElementById('smartFilters');
     if (smartFilters) smartFilters.style.display = 'flex';
 
-    // Retake card
     const retakeCard = document.getElementById('retakeModeCard');
     if (retakeCard) retakeCard.style.display = hasRetakeData() ? 'block' : 'none';
 
-    // Reset mode selection
     selectedMode = null;
     const examCard  = document.getElementById('examModeCard');
     const studyCard = document.getElementById('studyModeCard');
@@ -602,7 +656,6 @@ function parseJSON() {
     if (studyCard)  studyCard.classList.remove('selected');
     if (retakeCard) retakeCard.classList.remove('selected');
 
-    // Hide start until mode chosen
     const startSection  = document.getElementById('startSection');
     const timerConfig   = document.getElementById('timerConfig');
     const scoringConfig = document.getElementById('scoringConfig');
@@ -611,6 +664,7 @@ function parseJSON() {
     if (scoringConfig) scoringConfig.classList.remove('show');
 
   } catch (e) {
+    vibrate(100);
     _showParseStatus(status, 'error', `Invalid JSON: ${e.message}`);
     document.dispatchEvent(new CustomEvent('quizParseError'));
   }
@@ -624,7 +678,6 @@ function _showParseStatus(el, type, msg) {
   el.style.removeProperty('display');
 }
 
-// Render stats only — NO question chip list
 function renderPreview() {
   const preview  = document.getElementById('qPreview');
   const chipList = document.getElementById('qChipList');
@@ -637,10 +690,6 @@ function renderPreview() {
 
   const subjects = [...new Set(questions.map(q => q.subject).filter(Boolean))];
   const topics   = [...new Set(questions.map(q => q.topic).filter(Boolean))];
-  const withDiff = questions.filter(q => q.difficulty);
-  const avgDiff  = withDiff.length
-    ? (withDiff.reduce((a, q) => a + q.difficulty, 0) / withDiff.length).toFixed(1)
-    : null;
 
   if (statsBar) {
     statsBar.innerHTML = `
@@ -662,6 +711,7 @@ function renderPreview() {
 }
 
 function toggleSmartFilter(tag, el) {
+  vibrate(20);
   if (smartFilterTag === tag) {
     smartFilterTag = null;
     el.classList.remove('active');
@@ -676,6 +726,7 @@ function toggleSmartFilter(tag, el) {
 }
 
 function resetSmartFilters() {
+  vibrate(20);
   smartFilterTag = null;
   document.querySelectorAll('.smart-filter-chip[data-tag]').forEach(c => c.classList.remove('active'));
   showToast('All questions shown.');
@@ -715,6 +766,7 @@ function _applyShuffleAndTarget(qs) {
 // MODE & SCORING
 // ═══════════════════════════════════════════════
 function selectMode(mode) {
+  vibrate(30);
   selectedMode = mode;
 
   const examCard   = document.getElementById('examModeCard');
@@ -737,6 +789,7 @@ function selectMode(mode) {
 }
 
 function setTimerPreset(sec) {
+  vibrate(20);
   timePerQuestion = sec;
   document.querySelectorAll('.timer-preset').forEach(p => p.classList.remove('active'));
   if (event && event.target) event.target.classList.add('active');
@@ -746,6 +799,7 @@ function setTimerPreset(sec) {
 }
 
 function setCustomTimer() {
+  vibrate(20);
   const minInput = document.getElementById('customMinutes');
   const min      = parseInt(minInput ? minInput.value : '');
   if (!min || min < 1) { showToast('Enter valid minutes.'); return; }
@@ -764,6 +818,7 @@ function updateTimerDisplay() {
 }
 
 function toggleScoringModel() {
+  vibrate(20);
   useNegativeMarking = document.getElementById('negMarkingCheck').checked;
   const badge = document.getElementById('scoringBadge');
   if (badge) badge.style.display = useNegativeMarking ? 'inline' : 'none';
@@ -771,6 +826,7 @@ function toggleScoringModel() {
 }
 
 function startQuiz() {
+  vibrate(40);
   if (!selectedMode) { showToast('Please select a quiz mode first.'); return; }
   if (selectedMode === 'retake') { startRetake(); return; }
 
@@ -796,6 +852,7 @@ function startQuiz() {
 // QUESTION BANK
 // ═══════════════════════════════════════════════
 async function saveToBank() {
+  vibrate(50);
   if (!questions.length) { showToast('No questions loaded!'); return; }
   const nameInput = document.getElementById('bankNameInput');
   const name = nameInput
@@ -832,6 +889,7 @@ async function loadBankList() {
 }
 
 async function loadBank(name) {
+  vibrate(40);
   const bank = await dbGet('banks', name);
   if (bank && bank.questions) {
     const input = document.getElementById('jsonInput');
@@ -843,6 +901,7 @@ async function loadBank(name) {
 }
 
 async function deleteBank(name) {
+  vibrate(40);
   await dbDelete('banks', name);
   showToast(`Bank "${name}" deleted.`);
   loadBankList();
@@ -862,6 +921,7 @@ async function saveToFolder(qIdx) {
   if (!folder.questions.some(fq => fq.question === q.question)) {
     folder.questions.push({ ...q, savedAt: new Date().toISOString(), originalIdx: qIdx });
     await dbPut('folders', folder);
+    vibrate(40);
     showToast(`Saved to "${folderName.trim()}".`);
   } else {
     showToast('Already in that folder.');
@@ -888,6 +948,7 @@ async function loadFolderUI() {
 }
 
 function viewFolder(name) {
+  vibrate(20);
   const container = document.getElementById('folderQuestions');
   dbGet('folders', name).then(f => { if (f) viewFolderContent(f, container); });
 }
@@ -907,6 +968,7 @@ function viewFolderContent(folder, container) {
 }
 
 async function removeFromFolder(folderName, idx) {
+  vibrate(30);
   const folder = await dbGet('folders', folderName);
   if (folder) {
     folder.questions.splice(idx, 1);
@@ -917,6 +979,7 @@ async function removeFromFolder(folderName, idx) {
 }
 
 async function createFolder() {
+  vibrate(40);
   const nameInput = document.getElementById('newFolderName');
   const name      = nameInput ? nameInput.value.trim() : '';
   if (!name) { showToast('Enter a folder name.'); return; }
@@ -1231,10 +1294,8 @@ function renderStudyQuestion() {
   if (studyFinishBtn) studyFinishBtn.style.display  = 'none';
   if (aiExplainPanel) aiExplainPanel.classList.remove('show');
   if (aiPromptChips)  aiPromptChips.style.display  = 'none';
-  if (aiExplainBtn) {
-    aiExplainBtn.style.display =
-      (aiConfig.provider === 'pollinations' || aiConfig.apiKey) ? 'inline-flex' : 'none';
-  }
+  // Pollinations is always ready
+  if (aiExplainBtn) aiExplainBtn.style.display = 'inline-flex';
 
   const meta = document.getElementById('studyQuestionMeta');
   if (meta) {
@@ -1440,6 +1501,7 @@ function togglePomodoroWidget() {
 }
 
 function setPomodoroPreset(min) {
+  vibrate(20);
   pomodoroSeconds = min * 60;
   pomodoroIsBreak = false;
   updatePomodoroDisplay();
@@ -1453,6 +1515,7 @@ function updatePomodoroDisplay() {
 }
 
 function startPomodoro() {
+  vibrate(30);
   if (pomodoroRunning) {
     clearInterval(pomodoroInterval);
     pomodoroRunning = false;
@@ -1476,11 +1539,13 @@ function startPomodoro() {
         pomodoroSeconds = POMODORO_BREAK;
         pomodoroIsBreak = true;
         if (pomoLabel) pomoLabel.textContent = 'BREAK';
+        vibrate([200, 100, 200, 100, 200]); // Long buzz for break
         showToast('Focus session done! Take a 5-minute break.');
       } else {
         pomodoroSeconds = POMODORO_FOCUS;
         pomodoroIsBreak = false;
         if (pomoLabel) pomoLabel.textContent = 'FOCUS';
+        vibrate([200, 100, 200]);
         showToast('Break over! Ready to focus again?');
       }
       updatePomodoroDisplay();
@@ -1489,6 +1554,7 @@ function startPomodoro() {
 }
 
 function resetPomodoro() {
+  vibrate(20);
   clearInterval(pomodoroInterval);
   pomodoroRunning  = false;
   pomodoroSeconds  = POMODORO_FOCUS;
@@ -1502,7 +1568,6 @@ function resetPomodoro() {
 
 // ═══════════════════════════════════════════════
 // MILESTONE / DAILY GOAL
-// Bug 1 Fix: always reads fresh from IndexedDB
 // ═══════════════════════════════════════════════
 async function loadDailyGoal() {
   const saved = localStorage.getItem('medquiz_daily_goal');
@@ -1513,6 +1578,7 @@ async function loadDailyGoal() {
 }
 
 function setDailyGoal() {
+  vibrate(20);
   const input = document.getElementById('dailyGoalInput');
   const val   = parseInt(input ? input.value : '');
   if (!val || val < 1) { showToast('Enter a valid goal number.'); return; }
@@ -1532,13 +1598,10 @@ async function updateMilestone(answeredToday = 0) {
   await updateMilestoneBar();
 }
 
-// BUG 1 FIX: Always reads fresh value from IndexedDB on every call.
-// Reset writes {answered:0} to DB so page refresh loads 0.
 async function updateMilestoneBar() {
   const bar = document.getElementById('milestoneBar');
   if (!bar) return;
   const today    = new Date().toISOString().slice(0, 10);
-  // Always fetch fresh from DB — never use a cached value
   const existing = (await dbGet('milestones', today)) || { date: today, answered: 0 };
   const answered = existing.answered || 0;
   const pct      = Math.min(100, Math.round((answered / dailyGoal) * 100));
@@ -1713,10 +1776,8 @@ function showResults() {
   if (printDate) printDate.textContent = `Generated on ${new Date().toLocaleString()}`;
 
   const aiAssessBtn = document.getElementById('aiAssessBtn');
-  if (aiAssessBtn) {
-    aiAssessBtn.style.display =
-      (aiConfig.provider === 'pollinations' || aiConfig.apiKey) ? 'inline-flex' : 'none';
-  }
+  if (aiAssessBtn) aiAssessBtn.style.display = 'inline-flex';
+  
   const aiAssessment = document.getElementById('aiAssessment');
   if (aiAssessment) aiAssessment.classList.remove('show');
 
@@ -2102,20 +2163,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   updateThemeIcon();
 
-  // ── AI Config ──
+  // ── Initialize Add To Home Screen PWA ──
+  initPWA();
+
+  // ── Clean up old API Keys from Storage ──
   const savedConfig = localStorage.getItem('medquiz_ai_config');
   if (savedConfig) {
-    try { const loaded = JSON.parse(savedConfig); aiConfig = { ...aiConfig, ...loaded }; }
-    catch(e) {}
+    try { 
+      const loaded = JSON.parse(savedConfig); 
+      // Force it to pollinations to overwrite any old Gemini selections
+      aiConfig = { provider: 'pollinations', pollinationsModel: loaded.pollinationsModel || 'openai' }; 
+      localStorage.setItem('medquiz_ai_config', JSON.stringify(aiConfig));
+    } catch(e) {}
   }
+  
   const providerSelect          = document.getElementById('providerSelect');
   const pollinationsModelSelect = document.getElementById('pollinationsModelSelect');
-  const apiKeyInput             = document.getElementById('apiKeyInput');
-  const modelSelect             = document.getElementById('modelSelect');
-  if (providerSelect)          providerSelect.value          = aiConfig.provider          || 'pollinations';
-  if (pollinationsModelSelect) pollinationsModelSelect.value = aiConfig.pollinationsModel || 'openai';
-  if (apiKeyInput)             apiKeyInput.value             = aiConfig.apiKey            || '';
-  if (modelSelect)             modelSelect.value             = aiConfig.model             || 'gemini-2.5-flash';
+  
+  if (providerSelect)          providerSelect.value          = 'pollinations';
+  if (pollinationsModelSelect) pollinationsModelSelect.value = aiConfig.pollinationsModel;
+  
   onProviderChange();
   updateAIStatus();
 
