@@ -2,174 +2,2212 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <meta name="theme-color" content="#0a0e1a">
-  <title>Exam Mode — MedQuiz Pro</title>
+  <meta name="description" content="MedQuiz Pro — Advanced Medical Quiz Platform for Serious Learners">
+  <meta name="author" content="Dr. Satya Ranjan Banerjee">
+  <meta property="og:title" content="MedQuiz Pro — Medical MCQ Platform">
+  <meta property="og:description" content="AI-assisted medical quiz platform. Paste questions, track progress, and master your exams.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+
+  <!-- ── PWA: Standalone App Behaviour (No auto-install prompt) ── -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MedQuiz Pro">
+  <meta name="application-name" content="MedQuiz Pro">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <title>MedQuiz Pro — Medical MCQ Quiz Platform</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system,
+                   BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* ── Micro-interactions & Premium Feel ── */
+    button, .mode-card, .subject-chip, .paste-btn, .how-to-toggle, .nav-icon-btn, .nav-brand {
+      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    /* Squish effect on click/tap for tactile feedback */
+    button:active:not(:disabled):not(.btn-loading),
+    .paste-btn:active,
+    .nav-icon-btn:active,
+    .nav-brand:active,
+    .subject-chip:active {
+      transform: scale(0.95);
+    }
+
+    .mode-card:active {
+      transform: scale(0.98);
+    }
+
+    /* Smooth focus rings for accessibility and premium input feel */
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible,
+    button:focus-visible,
+    .subject-chip:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+      border-color: var(--accent) !important;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: sticky; top: 0; z-index: 1000;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(10,14,26,0.85);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .navbar.scrolled {
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      background: rgba(10,14,26,0.95);
+    }
+    .nav-brand { cursor: pointer; user-select: none; }
+
+    /* ── Particles ── */
+    #particlesCanvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── Hero ── */
+    .hero { position: relative; z-index: 1; }
+    .hero > * { position: relative; z-index: 1; }
+
+    /* Subtle GPU-accelerated hero parallax (battery-friendly, CSS-only) */
+    .hero-logo {
+      animation: heroLogoEntrance 0.8s cubic-bezier(0.16,1,0.3,1) forwards,
+                 heroLogoFloat 6s ease-in-out 0.8s infinite;
+      will-change: transform;
+    }
+    .hero h1 {
+      animation: heroTitleEntrance 0.8s cubic-bezier(0.16,1,0.3,1) 0.15s forwards;
+      opacity: 0; transform: translateY(16px);
+    }
+    @keyframes heroLogoEntrance {
+      0%   { transform: scale(0.7) translateY(0); opacity: 0; }
+      100% { transform: scale(1) translateY(0);   opacity: 1; }
+    }
+    @keyframes heroLogoFloat {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50%      { transform: scale(1) translateY(-4px); }
+    }
+    @keyframes heroTitleEntrance {
+      0%   { opacity: 0; transform: translateY(16px); }
+      100% { opacity: 1; transform: translateY(0);    }
+    }
+
+    /* Creator credit */
+    .creator-credit {
+      display: block; font-size: 12px; font-style: italic;
+      color: var(--text-muted); margin-top: 6px; letter-spacing: 0.2px;
+      opacity: 0;
+      animation: heroTitleEntrance 0.8s cubic-bezier(0.16,1,0.3,1) 0.25s forwards;
+    }
+    .creator-credit svg {
+      display: inline-block; vertical-align: -2px; margin-right: 2px;
+    }
+
+    /* ── Feature Chips ── */
+    .feature-chip {
+      opacity: 0; transform: translateY(12px);
+      animation: chipFadeIn 0.5s ease forwards;
+      position: relative;
+    }
+    .feature-chip:nth-child(1) { animation-delay: 0.30s; }
+    .feature-chip:nth-child(2) { animation-delay: 0.35s; }
+    .feature-chip:nth-child(3) { animation-delay: 0.40s; }
+    .feature-chip:nth-child(4) { animation-delay: 0.45s; }
+    .feature-chip:nth-child(5) { animation-delay: 0.50s; }
+    .feature-chip:nth-child(6) { animation-delay: 0.55s; }
+    .feature-chip:nth-child(7) { animation-delay: 0.60s; }
+    .feature-chip:nth-child(8) { animation-delay: 0.65s; }
+    @keyframes chipFadeIn { to { opacity: 1; transform: translateY(0); } }
+
+    /* ── JSON Validation ── */
+    .json-textarea { transition: border-color 0.35s ease, box-shadow 0.35s ease; }
+    @keyframes validPulse {
+      0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.25), 0 0 24px rgba(34,197,94,0.10); }
+      50%      { box-shadow: 0 0 0 5px rgba(34,197,94,0.35), 0 0 32px rgba(34,197,94,0.18); }
+    }
+    @keyframes invalidPulse {
+      0%,100% { box-shadow: 0 0 0 3px rgba(239,68,68,0.25), 0 0 24px rgba(239,68,68,0.10); }
+      50%      { box-shadow: 0 0 0 5px rgba(239,68,68,0.35), 0 0 32px rgba(239,68,68,0.18); }
+    }
+    .json-textarea.valid-glow {
+      border-color: #22c55e !important;
+      animation: validPulse 2.4s ease-in-out infinite;
+    }
+    .json-textarea.invalid-glow {
+      border-color: #ef4444 !important;
+      animation: invalidPulse 2s ease-in-out infinite;
+    }
+
+    /* JSON textarea — subtle one-time shimmer on first focus */
+    .json-textarea.first-focus-shimmer {
+      position: relative;
+    }
+    .json-textarea.first-focus-shimmer::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(110deg,
+        transparent 30%,
+        rgba(99,102,241,0.08) 50%,
+        transparent 70%);
+      background-size: 200% 100%;
+      pointer-events: none;
+      border-radius: inherit;
+      animation: shimmerSweep 1.4s ease-out forwards;
+    }
+    @keyframes shimmerSweep {
+      0%   { background-position: 200% 0; opacity: 0; }
+      30%  { opacity: 1; }
+      100% { background-position: -100% 0; opacity: 0; }
+    }
+
+    .json-validator-indicator {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; margin-top: 6px; min-height: 20px;
+      font-weight: 500; letter-spacing: 0.1px; transition: all 0.3s ease;
+    }
+    .json-validator-indicator.valid   { color: #16a34a; }
+    .json-validator-indicator.invalid { color: #dc2626; }
+    .json-validator-indicator.warning { color: #d97706; }
+
+    .json-help-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 1.5px solid currentColor; background: none;
+      color: inherit; font-size: 11px; font-weight: 700;
+      cursor: pointer; margin-left: 4px; padding: 0; line-height: 1;
+      opacity: 0; transform: scale(0.8); transition: all 0.2s ease;
+      flex-shrink: 0; font-family: inherit;
+    }
+    .json-help-btn.visible { opacity: 1; transform: scale(1); }
+    .json-help-btn:hover { background: currentColor; color: #fff; transform: scale(1.1); }
+
+    .json-help-panel {
+      display: none; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 16px; margin-top: 8px; font-size: 12px;
+      line-height: 1.7; color: var(--text-secondary);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .json-help-panel.open { display: block; animation: chipFadeIn 0.3s ease forwards; }
+    .json-help-panel h4 {
+      margin: 0 0 8px 0; font-size: 13px;
+      color: var(--text-primary); font-weight: 700;
+    }
+    .json-help-panel code {
+      background: var(--bg-primary); padding: 2px 6px;
+      border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--accent);
+    }
+    .json-help-panel .help-step {
+      display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start;
+    }
+    .json-help-panel .help-step-num {
+      flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #fff; font-size: 11px;
+      font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Schema Error List */
+    .schema-error-list {
+      margin-top: 6px; padding: 10px 12px;
+      background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; font-size: 11px; color: #dc2626;
+      line-height: 1.8; max-height: 120px; overflow-y: auto; display: none;
+    }
+    .schema-error-list.visible { display: block; animation: chipFadeIn 0.3s ease forwards; }
+    .schema-error-list ul { margin: 0; padding-left: 16px; }
+    .schema-error-list li { margin-bottom: 2px; }
+
+    /* ── Mode Cards ── */
+    .mode-card { border-left: 4px solid transparent; cursor: pointer; position: relative; overflow: hidden; }
+    #examModeCard   { border-left-color: #3b82f6; }
+    #studyModeCard  { border-left-color: #22c55e; }
+    #retakeModeCard { border-left-color: #f59e0b; }
+    .mode-card.selected { border-left-width: 5px; background: rgba(99, 102, 241, 0.05); }
+
+    /* iOS-style tap glow on mode cards (mobile-friendly, subtle) */
+    .mode-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(99,102,241,0.18), transparent 70%);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s ease;
+      border-radius: inherit;
+    }
+    .mode-card.tap-glow::after { opacity: 1; }
+
+    /* ── Config Divider ── */
+    .config-divider {
+      display: flex; align-items: center; gap: 12px; margin: 20px 0 18px 0;
+    }
+    .config-divider::before,
+    .config-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: var(--border); opacity: 0.6;
+    }
+    .config-divider span {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.4px; color: var(--text-muted); white-space: nowrap;
+    }
+    .filter-label {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+      color: var(--text-secondary); text-transform: uppercase;
+    }
+
+    /* ── Parse Status SVG ── */
+    .parse-status { font-weight: 500; letter-spacing: 0.1px; }
+    .status-check-svg { display: inline-block; vertical-align: -3px; margin-right: 4px; }
+    .status-check-svg .check-circle {
+      stroke-dasharray: 56.5487; stroke-dashoffset: 56.5487;
+      animation: drawCheckCircle 0.6s ease 0.1s forwards;
+    }
+    .status-check-svg .check-mark {
+      stroke-dasharray: 16; stroke-dashoffset: 16;
+      animation: drawCheckMark 0.35s ease 0.45s forwards;
+    }
+    @keyframes drawCheckCircle { to { stroke-dashoffset: 0; } }
+    @keyframes drawCheckMark   { to { stroke-dashoffset: 0; } }
+
+    /* ── Paste Button ── */
+    .paste-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 10px; font-size: 11px; font-family: inherit;
+      font-weight: 500; color: var(--text-secondary);
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 6px; cursor: pointer;
+    }
+    .paste-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Action Row ── */
+    .action-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .action-row .btn-primary { width: 100%; justify-content: center; }
+    @media (min-width: 480px) {
+      .action-row .btn-primary { width: auto; flex: 0 0 auto; }
+    }
+    .action-row .action-group {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      flex: 1; min-width: 0;
+    }
+    .action-separator { color: var(--text-muted); font-size: 14px; user-select: none; flex-shrink: 0; }
+
+    /* ── Load Button States ── */
+    .btn-loading { position: relative; pointer-events: none; opacity: 0.85; }
+    .btn-loading .btn-spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      border-radius: 50%; animation: btnSpin 0.7s linear infinite;
+      margin-right: 6px; vertical-align: -2px; flex-shrink: 0;
+    }
+    @keyframes btnSpin { to { transform: rotate(360deg); } }
+    .btn-success-state {
+      background: #16a34a !important; border-color: #16a34a !important;
+      pointer-events: none;
+    }
+
+    /* ── FIX 2: Remove mobile start bar entirely ── */
+    .mobile-start-bar { display: none !important; }
+
+    /* ── Back to Top ── */
+    .back-to-top {
+      position: fixed; bottom: 88px; right: 24px; z-index: 900;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-primary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transform: translateY(20px); pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+    .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .back-to-top:hover { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(-4px); }
+    .back-to-top:active { transform: scale(0.9) translateY(0); }
+
+    /* ── Subject Chips ── */
+    .subject-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .subject-chip {
+      padding: 5px 10px; font-size: 11px; font-family: inherit;
+      font-weight: 500; border-radius: 16px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-secondary);
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    .subject-chip.selected {
+      background: var(--accent); color: #fff; border-color: var(--accent);
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+    }
+    .subject-chip:hover:not(.selected) { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Prompt Tabs ── */
+    .prompt-tabs { display: flex; gap: 0; margin-bottom: 18px; border-bottom: 2px solid var(--border); }
+    .prompt-tab {
+      flex: 1; padding: 10px 16px; font-size: 13px; font-weight: 600;
+      font-family: inherit; background: none; border: none;
+      color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+      text-align: center; border-bottom: 2px solid transparent; margin-bottom: -2px;
+    }
+    .prompt-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .prompt-tab:hover  { color: var(--text-primary); }
+    .prompt-tab-content { display: none; animation: chipFadeIn 0.3s ease forwards; }
+    .prompt-tab-content.active { display: block; }
+
+    /* ── Custom Inputs ── */
+    .custom-number-input {
+      width: 100%; padding: 10px 12px; background: var(--bg-primary);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text-primary); font-family: inherit; font-size: 13px;
+      box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .custom-number-input:focus {
+      border-color: var(--accent); outline: none;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
+    }
+
+    /* AI prompt textarea — subtle highlight pulse on generation */
+    .custom-number-input.ai-pulse {
+      animation: aiPromptPulse 1.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes aiPromptPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(168,85,247,0); border-color: var(--border); }
+      30%  { box-shadow: 0 0 0 4px rgba(168,85,247,0.18); border-color: rgba(168,85,247,0.55); }
+      100% { box-shadow: 0 0 0 0 rgba(168,85,247,0); border-color: var(--border); }
+    }
+
+    .section-label {
+      display: block; font-size: 11px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 5px;
+      text-transform: uppercase; letter-spacing: 0.6px;
+    }
+    .section-label .optional-tag {
+      font-weight: 400; text-transform: none;
+      color: var(--text-muted); letter-spacing: 0;
+    }
+
+    /* ── AI Guide Box ── */
+    .ai-guide-box {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px; font-size: 12px;
+      line-height: 1.7; color: var(--text-secondary);
+    }
+    .ai-guide-box strong { color: var(--text-primary); }
+    .ai-guide-box .llm-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .ai-guide-box .llm-tag {
+      padding: 4px 10px; font-size: 11px; font-weight: 600;
+      border-radius: 14px; background: var(--bg-primary);
+      border: 1px solid var(--border); color: var(--text-primary); white-space: nowrap;
+    }
+
+    /* ── How to Use — Collapsible ── */
+    .how-to-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; font-size: 12px; font-weight: 600;
+      font-family: inherit; background: var(--bg-primary);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text-secondary); cursor: pointer;
+      margin-bottom: 0; width: 100%;
+      justify-content: space-between;
+    }
+    .how-to-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .how-to-toggle .toggle-arrow {
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); font-size: 10px; flex-shrink: 0;
+    }
+    .how-to-toggle.open .toggle-arrow { transform: rotate(180deg); }
+    .how-to-guide-content {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
+      opacity: 0;
+    }
+    .how-to-guide-content.open {
+      max-height: 400px; opacity: 1;
+    }
+    .how-to-guide-inner {
+      margin-top: 10px; padding-top: 4px;
+    }
+
+    /* ── Modals (Compatibility shim: support both .active AND .show) ── */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; z-index: 2000;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+      padding: 16px; box-sizing: border-box;
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active,
+    .modal-overlay.show { display: flex; opacity: 1; }
+
+    .modal-box {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px 22px 18px 22px;
+      width: 100%; max-width: 520px; max-height: 85vh;
+      overflow-y: auto; overscroll-behavior: contain;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4); position: relative;
+      transform: translateY(20px) scale(0.98); opacity: 0;
+      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .modal-overlay.active .modal-box,
+    .modal-overlay.show   .modal-box { transform: translateY(0) scale(1); opacity: 1; }
+
+    .modal-icon {
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 8px auto; width: 44px; height: 44px;
+      overflow: visible; flex-shrink: 0;
+    }
+    .modal-icon svg { display: block; }
+    .modal-title {
+      text-align: center; font-size: 18px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 16px; letter-spacing: 0.1px;
+    }
+    .modal-body { color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+    .modal-actions {
+      display: flex; justify-content: center; gap: 8px;
+      margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border);
+    }
+    .modal-actions .btn { min-width: 80px; padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    @media (max-width: 600px) {
+      .modal-overlay { align-items: flex-end; padding: 0; }
+      .modal-box {
+        max-height: 88vh; border-radius: 20px 20px 0 0;
+        width: 100%; max-width: 100%;
+        padding-bottom: max(18px, env(safe-area-inset-bottom));
+        transform: translateY(100%);
+      }
+      .modal-overlay.active .modal-box,
+      .modal-overlay.show   .modal-box { transform: translateY(0); }
+    }
+
+    /* Confirm Modal */
+    .confirm-modal-message {
+      text-align: center; font-size: 14px; color: var(--text-secondary);
+      line-height: 1.6; margin: 0 0 4px 0; padding: 0 8px;
+    }
+    .confirm-modal-icon-wrap {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(239,68,68,0.1);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px auto;
+    }
+    .btn-confirm-danger {
+      background: #ef4444; color: #fff; border: none; border-radius: 8px;
+      padding: 10px 20px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+    }
+    .btn-confirm-danger:hover { background: #dc2626; }
+
+    /* ── Quiz Config Reveal ── */
+    .quiz-config-section { display: none; }
+    .quiz-config-section.revealed {
+      display: block;
+      animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    /* ── Shuffle Toggle ── */
+    .settings-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; background: var(--bg-primary);
+      border: 1px solid var(--border); border-radius: 10px;
+      margin-bottom: 8px; transition: border-color 0.2s;
+    }
+    .settings-row:hover { border-color: var(--accent); }
+    .settings-row-label { display: flex; align-items: center; gap: 10px; }
+    .settings-row-label svg { color: var(--text-muted); flex-shrink: 0; }
+    .settings-row-text { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .settings-row-sub  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute; inset: 0; border-radius: 24px;
+      background: var(--border); cursor: pointer; transition: background 0.25s ease;
+    }
+    .toggle-track::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%; background: #fff;
+      transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); }
+    .toggle-switch input:focus-visible + .toggle-track { box-shadow: 0 0 0 3px rgba(99,102,241,0.3); }
+
+    /* ── Difficulty Meter ── */
+    #statsBar .stat-item:last-child { display: none; }
+    .difficulty-meter-wrap {
+      margin-top: 14px; padding: 14px 16px;
+      background: var(--bg-primary); border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .difficulty-meter-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .difficulty-meter-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text-muted);
+    }
+    .difficulty-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 20px; font-size: 12px;
+      font-weight: 700; letter-spacing: 0.3px; border: 1.5px solid transparent;
+      transition: all 0.5s ease;
+    }
+    .difficulty-badge.easy   { background: rgba(34,197,94,0.12);  color: #16a34a; border-color: rgba(34,197,94,0.3);  }
+    .difficulty-badge.medium { background: rgba(245,158,11,0.12); color: #d97706; border-color: rgba(245,158,11,0.3); }
+    .difficulty-badge.hard   { background: rgba(239,68,68,0.12);  color: #dc2626; border-color: rgba(239,68,68,0.3);  }
+    .difficulty-badge-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      animation: diffPulse 2s ease-in-out infinite; flex-shrink: 0;
+    }
+    .easy   .difficulty-badge-dot { background: #16a34a; }
+    .medium .difficulty-badge-dot { background: #d97706; }
+    .hard   .difficulty-badge-dot { background: #dc2626; }
+    @keyframes diffPulse {
+      0%,100% { transform: scale(1);   opacity: 1;   }
+      50%      { transform: scale(1.4); opacity: 0.6; }
+    }
+    .difficulty-track {
+      height: 7px; border-radius: 6px; background: var(--border);
+      overflow: hidden; position: relative;
+    }
+    .difficulty-fill {
+      height: 100%; border-radius: 6px; width: 0%;
+      transition: width 0.9s cubic-bezier(0.16,1,0.3,1), background 0.5s ease;
+    }
+    .difficulty-ticks {
+      display: flex; justify-content: space-between; margin-top: 5px;
+    }
+    .difficulty-tick { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+
+    /* ── Pomodoro z-index ── */
+    .pomodoro-toggle { z-index: 950; }
+    .pomodoro-widget { z-index: 960; }
+
+    /* Pomodoro action button SVGs (overrides script.js text content) */
+    .pomo-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+    .pomo-actions .btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    /* ── Toast — Premium feel ── */
+    .toast {
+      z-index: 3000;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: rgba(21, 28, 46, 0.92) !important;
+      border: 1px solid rgba(99, 102, 241, 0.25) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                  0 0 0 1px rgba(255, 255, 255, 0.04) inset !important;
+      transition: opacity 0.35s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.45s cubic-bezier(0.16,1,0.3,1) !important;
+      display: inline-flex !important;
+      align-items: center; gap: 8px;
+    }
+    [data-theme="light"] .toast {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      color: var(--text-primary) !important;
+    }
+    .toast.toast-success { border-color: rgba(34, 197, 94, 0.4) !important; }
+    .toast.toast-warning { border-color: rgba(245, 158, 11, 0.4) !important; }
+    .toast.toast-error   { border-color: rgba(239, 68, 68, 0.4) !important; }
+    .toast.toast-info    { border-color: rgba(99, 102, 241, 0.35) !important; }
+    .toast .toast-icon-svg {
+      width: 16px; height: 16px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .toast.toast-success .toast-icon-svg { color: #22c55e; }
+    .toast.toast-warning .toast-icon-svg { color: #f59e0b; }
+    .toast.toast-error   .toast-icon-svg { color: #ef4444; }
+    .toast.toast-info    .toast-icon-svg { color: #6366f1; }
+
+    /* ── Skip Link ── */
+    .skip-link {
+      position: absolute; top: -100px; left: 16px;
+      padding: 8px 16px; background: var(--accent); color: #fff;
+      border-radius: 0 0 8px 8px; font-weight: 600; font-size: 13px;
+      text-decoration: none; transition: top 0.2s; z-index: 9999;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Mobile Nav Drawer — Smooth slide-in from right (BUG #7 fix) ── */
+    .mobile-nav-drawer {
+      animation: slideInRight 0.42s cubic-bezier(0.22, 1, 0.36, 1) !important;
+      will-change: transform;
+    }
+    @keyframes slideInRight {
+      0%   { transform: translateX(100%); opacity: 0.4; }
+      60%  { opacity: 1; }
+      100% { transform: translateX(0);    opacity: 1; }
+    }
+  </style>
 </head>
 <body>
-  <!-- Navbar (simplified for exam) -->
-  <nav class="navbar no-print">
-    <div class="nav-brand" onclick="window.location.href='index.html'">
+
+  <a href="#mainHomeCard" class="skip-link">Skip to main content</a>
+  <canvas id="particlesCanvas" aria-hidden="true"></canvas>
+
+  <nav class="navbar no-print" id="mainNavbar">
+    <div class="nav-brand" tabindex="0" onclick="window.location.href='index.html'" title="MedQuiz Pro Home" aria-label="MedQuiz Pro Home">
       <div class="nav-logo">🧠</div>
       <span class="nav-brand-text">MedQuiz Pro</span>
     </div>
     <div class="nav-actions">
-      <button class="btn btn-ghost btn-sm" onclick="confirmGoHome()">🏠 Home</button>
+      <button class="nav-icon-btn" onclick="openModal('dailyGoalModal')" title="Daily Practice Goal" aria-label="Daily Goal">
+        <svg viewBox="0 0 36 36" width="22" height="22">
+          <circle cx="18" cy="18" r="14" fill="none" stroke="var(--border)" stroke-width="3"></circle>
+          <circle id="navGoalRing" cx="18" cy="18" r="14" fill="none" stroke="var(--accent-red)" stroke-width="3" stroke-dasharray="87.96" stroke-dashoffset="87.96" stroke-linecap="round" style="transition: stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1), stroke 0.8s ease; transform: rotate(-90deg); transform-origin: 50% 50%;"></circle>
+        </svg>
+      </button>
+
+      <button class="nav-icon-btn" onclick="openModal('bankModal')" title="Question Bank" aria-label="Question Bank">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+        </svg>
+      </button>
+      <button class="nav-icon-btn" onclick="openModal('folderModal')" title="Review Folders" aria-label="Review Folders">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+      </button>
+      <div class="ai-status connected" id="aiStatus" title="AI Integration Status">
+        <span class="ai-status-dot"></span>
+        <span id="aiStatusText">AI Ready</span>
+      </div>
+      <button class="nav-icon-btn" onclick="openModal('aiConfigModal')" title="AI Settings" aria-label="AI Settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </button>
+      <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn" aria-label="Toggle Theme">
+        <svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1"  x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22"   x2="5.64"  y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1"  y1="12" x2="3"  y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78"  x2="5.64"  y2="18.36"/>
+          <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+      <button class="nav-icon-btn" onclick="openModal('helpModal')" title="Help & Shortcuts" aria-label="Help">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </button>
     </div>
   </nav>
 
-  <div id="examScreen" class="screen active">
-    <div class="quiz-header no-print">
-      <div class="quiz-header-left">
-        <span class="quiz-title">Exam</span>
-        <span class="mode-badge exam">⏱ Exam Mode</span>
-        <span id="scoringBadge" style="font-size:11px;color:var(--text-muted);display:none">+4/-1</span>
+  <div id="homeScreen" class="screen active">
+
+    <div class="hero" id="heroSection">
+      <div class="hero-logo">🧠</div>
+      <h1>MedQuiz Pro</h1>
+      <span class="creator-credit">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        by Dr. Satya Ranjan Banerjee — Burdwan Medical College, Batch 2022–'23
+      </span>
+      <div class="features-strip">
+        <div class="feature-chip">Exam Mode</div>
+        <div class="feature-chip">Study Mode</div>
+        <div class="feature-chip">AI Explanations</div>
+        <div class="feature-chip">Smart Analytics</div>
+        <div class="feature-chip">Spaced Repetition</div>
+        <div class="feature-chip">Activity Heatmap</div>
+        <div class="feature-chip">AI Prompt Generator</div>
+        <div class="feature-chip">Mobile-Friendly</div>
       </div>
-      <div class="quiz-header-right">
-        <span id="perQuestionTimer" style="font-size:12px;color:var(--text-muted);display:none"></span>
-        <div class="timer-box" id="timerBox">
-          <span class="timer-icon">⏳</span>
-          <div class="timer-display" id="timerDisplay">00:00</div>
-          <button class="timer-pause-btn" onclick="togglePause()" title="Pause">⏸</button>
+    </div>
+
+    <div class="home-card" id="mainHomeCard">
+      <div class="card-title">
+        <span class="card-title-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </span>
+        <span>Build Your Question Bank</span>
+        <button class="paste-btn" onclick="pasteFromClipboard()" title="Paste JSON from clipboard" style="margin-left:auto;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Paste
+        </button>
+      </div>
+
+      <p class="hint">
+        Paste your questions in JSON format, load a sample set, or use the <strong>AI Prompt Generator</strong> to create questions with any AI assistant.
+        Required fields: <code>question</code>, <code>options</code>, <code>correct_option</code>, <code>explanation</code>.
+      </p>
+
+      <textarea
+        class="json-textarea"
+        id="jsonInput"
+        placeholder='[
+  {
+    "question": "Which finding most strongly supports antemortem drowning?",
+    "options": ["Cutis anserina", "Washerwoman hands", "Fine persistent froth in airways", "Water in stomach"],
+    "correct_option": "Fine persistent froth in airways",
+    "explanation": "Fine, persistent froth indicates active respiration in water...",
+    "difficulty": 3,
+    "subject": "Forensic Medicine",
+    "topic": "Asphyxial Deaths",
+    "tags": ["PYQ","HYT"],
+    "image_url": ""
+  }
+]'
+        oninput="validateJSONLive()"
+        aria-label="JSON question input"
+      ></textarea>
+
+      <div class="json-validator-indicator" id="jsonValidatorIndicator" aria-live="polite">
+        <span id="jsonValidatorText"></span>
+        <button class="json-help-btn" id="jsonHelpBtn" onclick="toggleJSONHelp()" title="JSON formatting help" aria-label="JSON help">?</button>
+      </div>
+
+      <div class="schema-error-list" id="schemaErrorList" role="alert" aria-live="polite">
+        <ul id="schemaErrorItems"></ul>
+      </div>
+
+      <div class="json-help-panel" id="jsonHelpPanel">
+        <h4>How to Write Valid JSON for MedQuiz Pro</h4>
+        <div class="help-step">
+          <span class="help-step-num">1</span>
+          <span>Start with <code>[</code> and end with <code>]</code> — questions inside an <strong>array</strong>.</span>
         </div>
-        <button class="nav-toggle-btn" onclick="toggleMobileNav()">📋 <span id="navBtnCount">Nav</span></button>
+        <div class="help-step">
+          <span class="help-step-num">2</span>
+          <span>Each question is an <strong>object</strong> wrapped in <code>{ }</code>. Separate multiple objects with commas.</span>
+        </div>
+        <div class="help-step">
+          <span class="help-step-num">3</span>
+          <span>Required: <code>"question"</code>, <code>"options"</code> (4 strings), <code>"correct_option"</code> (must match exactly), <code>"explanation"</code>.</span>
+        </div>
+        <div class="help-step">
+          <span class="help-step-num">4</span>
+          <span>Always use <strong>double quotes</strong> <code>"like this"</code>. Check for missing or extra commas.</span>
+        </div>
+        <div class="help-step">
+          <span class="help-step-num">5</span>
+          <span>Use the <strong>AI Prompt Generator</strong> button to auto-generate perfect JSON.</span>
+        </div>
       </div>
-    </div>
 
-    <div class="progress-wrap no-print">
-      <div class="progress-info">
-        <span id="examProgressText">Question 1 of 1</span>
-        <span id="examAnsweredText">0 Answered</span>
+      <div class="action-row" style="margin-top:12px;">
+        <button class="btn btn-primary" id="loadQuestionsBtn" onclick="handleLoadQuestions(this)">Load Questions</button>
+        <span class="action-separator">·</span>
+        <div class="action-group">
+          <button class="btn btn-ghost btn-sm" onclick="loadSample()">Sample</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadFromStorage()">Saved</button>
+          <button class="btn btn-ghost btn-sm" onclick="confirmClearInput()">Clear</button>
+        </div>
+        <span class="action-separator">·</span>
+        <button class="btn btn-accent btn-sm" onclick="openAIPromptModal()">AI Generate</button>
       </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="examProgressBar" style="width:0%"></div>
-      </div>
-    </div>
 
-    <div class="exam-body">
-      <div class="exam-question-panel">
-        <div class="question-card" id="examQuestionCard">
-          <div class="question-meta" id="examQuestionMeta"></div>
-          <img class="question-image" id="examQuestionImage" alt="Question image">
-          <div class="question-number" id="examQNumber"></div>
-          <div class="question-text" id="examQuestionText"></div>
-          <div class="options-list" id="examOptionsList"></div>
-          <div class="exam-action-bar">
-            <button class="flag-btn" id="flagBtn" onclick="toggleFlag()">🚩 Flag</button>
-            <button class="flag-btn" onclick="clearAnswer()" title="Clear current answer">✖ Clear</button>
-            <button class="flag-btn" onclick="saveToFolder(currentQ)" title="Save to review folder">📁 Save</button>
-            <div class="nav-arrows">
-              <button class="nav-arrow" id="examPrevBtn" onclick="examNavigate(-1)" title="Previous (←)">←</button>
-              <button class="nav-arrow" id="examNextBtn" onclick="examNavigate(1)" title="Next (→)">→</button>
+      <div class="smart-filters" id="smartFilters" style="display:none">
+        <span class="filter-label">Quick Filters</span>
+        <button class="smart-filter-chip" data-tag="HYT" onclick="toggleSmartFilter('HYT',this)">HYT Only</button>
+        <button class="smart-filter-chip" data-tag="PYQ" onclick="toggleSmartFilter('PYQ',this)">PYQ Only</button>
+        <button class="smart-filter-chip" data-tag="ALL" onclick="resetSmartFilters()">All</button>
+      </div>
+
+      <div class="parse-status" id="parseStatus" aria-live="polite"></div>
+
+      <div class="q-preview" id="qPreview">
+        <h3 id="qPreviewTitle"></h3>
+        <div class="q-chip-list" id="qChipList" style="display:none"></div>
+        <div class="stats-bar" id="statsBar"></div>
+      </div>
+
+      <div id="quizConfigSection" class="quiz-config-section">
+
+        <div class="config-divider"><span>Quiz Settings</span></div>
+
+        <div class="mode-selector" id="modeSelector">
+          <h3>Choose Your Quiz Mode</h3>
+          <div class="mode-cards">
+            <div class="mode-card" id="examModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('exam')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('exam');}">
+              <span class="mode-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </span>
+              <div class="mode-name">Exam Mode</div>
+              <div class="mode-desc">Timed · CBT-style · Final submit · Full review</div>
+            </div>
+            <div class="mode-card" id="studyModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('study')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('study');}">
+              <span class="mode-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+              </span>
+              <div class="mode-name">Study Mode</div>
+              <div class="mode-desc">No timer · Instant feedback · AI help · Learn deeply</div>
+            </div>
+            <div class="mode-card" id="retakeModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('retake')" style="display:none" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('retake');}">
+              <span class="mode-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                </svg>
+              </span>
+              <div class="mode-name">Targeted Retake</div>
+              <div class="mode-desc">Wrong/skipped only · Focus weak areas</div>
             </div>
           </div>
         </div>
-        <div class="submit-section no-print" id="submitSection">
-          <p>⚠️ Review all questions before submitting. Flagged questions are highlighted. Use <kbd>←</kbd> <kbd>→</kbd> or <kbd>1</kbd>-<kbd>5</kbd> to navigate/select.</p>
-          <button class="btn btn-red btn-lg" onclick="showSubmitModal()">📤 Submit Exam</button>
+
+        <div class="timer-config" id="timerConfig">
+          <label>Exam Timer</label>
+          <div class="timer-presets">
+            <button class="timer-preset" onclick="setTimerPreset(event, 0)">No Limit</button>
+            <button class="timer-preset" onclick="setTimerPreset(event, 30)">30s/Q</button>
+            <button class="timer-preset" onclick="setTimerPreset(event, 60)">1 min/Q</button>
+            <button class="timer-preset active" onclick="setTimerPreset(event, 90)">1.5 min/Q</button>
+            <button class="timer-preset" onclick="setTimerPreset(event, 120)">2 min/Q</button>
+          </div>
+          <div class="custom-time">
+            <input type="number" id="customMinutes" min="0" placeholder="Custom (min)" class="custom-number-input" style="width: auto;">
+            <button class="btn btn-ghost btn-sm" onclick="setCustomTimer()">Set Custom</button>
+            <span class="timer-display-text" id="timerDisplay2">Total: —</span>
+          </div>
+        </div>
+
+        <div class="scoring-config" id="scoringConfig">
+          <label>
+            <input type="checkbox" id="negMarkingCheck" onchange="toggleScoringModel()">
+            Enable +4/−1 Negative Marking (NEET-style)
+          </label>
+          <span class="scoring-hint">Correct: +4 · Wrong: −1 · Skipped: 0</span>
+        </div>
+
+        <div class="config-divider" style="margin-top:18px;"><span>Question Settings</span></div>
+
+        <div class="settings-row" id="shuffleSettingRow">
+          <div class="settings-row-label">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 3 21 3 21 8"/>
+              <line x1="4" y1="20" x2="21" y2="3"/>
+              <polyline points="21 16 21 21 16 21"/>
+              <line x1="15" y1="15" x2="21" y2="21"/>
+            </svg>
+            <div>
+              <div class="settings-row-text">Shuffle Questions</div>
+              <div class="settings-row-sub">Randomise order each session</div>
+            </div>
+          </div>
+          <label class="toggle-switch" aria-label="Shuffle questions" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleQuestionsToggle').click();}">
+            <input type="checkbox" id="shuffleQuestionsToggle" onchange="onShuffleToggle()">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+
+        <div class="settings-row" id="shuffleOptionsRow">
+          <div class="settings-row-label">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="8"  y1="6"  x2="21" y2="6"/>
+              <line x1="8"  y1="12" x2="21" y2="12"/>
+              <line x1="8"  y1="18" x2="21" y2="18"/>
+              <line x1="3"  y1="6"  x2="3.01" y2="6"/>
+              <line x1="3"  y1="12" x2="3.01" y2="12"/>
+              <line x1="3"  y1="18" x2="3.01" y2="18"/>
+            </svg>
+            <div>
+              <div class="settings-row-text">Shuffle Answer Options</div>
+              <div class="settings-row-sub">Randomise A/B/C/D order per question</div>
+            </div>
+          </div>
+          <label class="toggle-switch" aria-label="Shuffle answer options" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleOptionsToggle').click();}">
+            <input type="checkbox" id="shuffleOptionsToggle" onchange="onShuffleOptionsToggle()">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+
+        <div class="difficulty-meter-wrap" id="difficultyMeterWrap" style="display:none;">
+          <div class="difficulty-meter-header">
+            <span class="difficulty-meter-label">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px;">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              Avg. Difficulty
+            </span>
+            <span class="difficulty-badge" id="difficultyBadge">
+              <span class="difficulty-badge-dot"></span>
+              <span id="difficultyBadgeText">—</span>
+            </span>
+          </div>
+          <div class="difficulty-track">
+            <div class="difficulty-fill" id="difficultyFill"></div>
+          </div>
+          <div class="difficulty-ticks">
+            <span class="difficulty-tick">Easy</span>
+            <span class="difficulty-tick">Medium</span>
+            <span class="difficulty-tick">Hard</span>
+          </div>
+        </div>
+
+        <div class="start-section" id="startSection">
+          <button class="btn btn-primary btn-lg btn-full" onclick="startQuiz()">Start Quiz</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()" title="Back to top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+
+  <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal-box" style="max-width:380px; text-align:center;">
+      <div class="confirm-modal-icon-wrap">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9"  x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="modal-title" id="confirmModalTitle" style="margin-bottom:8px; font-size:16px;">Are you sure?</div>
+      <p class="confirm-modal-message" id="confirmModalMessage">This action cannot be undone.</p>
+      <div class="modal-actions" style="justify-content:center; gap:10px;">
+        <button class="btn btn-ghost" id="confirmCancelBtn" onclick="closeModal('confirmModal')">Cancel</button>
+        <button class="btn-confirm-danger" id="confirmOkBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="bankModal" role="dialog" aria-modal="true" aria-label="Question Bank">
+    <div class="modal-box" style="max-width:600px">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+        </svg>
+      </div>
+      <div class="modal-title">Local Question Bank</div>
+      <div class="modal-body" style="text-align:left">
+        <div class="bank-list" id="bankList"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="bankNameInput" placeholder="Bank name..." class="custom-number-input" style="flex:1; min-width:120px">
+          <button class="btn btn-primary btn-sm" onclick="saveToBank()">Save Current</button>
         </div>
       </div>
-      <div class="exam-nav-panel no-print">
-        <div class="nav-panel-title">Question Navigator</div>
-        <div class="nav-grid" id="navGrid"></div>
-        <div class="nav-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--bg-card);border:1px solid var(--border)"></div>Not visited</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--accent-green)"></div>Answered</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--accent-yellow)"></div>Flagged</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Current</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('bankModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="folderModal" role="dialog" aria-modal="true" aria-label="Review Folders">
+    <div class="modal-box" style="max-width:550px">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <div class="modal-title">Review Folders</div>
+      <div class="modal-body" style="text-align:left">
+        <div class="folder-list" id="folderList"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="newFolderName" placeholder="New folder name..." class="custom-number-input" style="flex:1; min-width:120px">
+          <button class="btn btn-primary btn-sm" onclick="createFolder()">Create</button>
         </div>
-        <button class="btn btn-red btn-full btn-sm" onclick="showSubmitModal()">📤 Submit Exam</button>
+        <div id="folderQuestions" style="margin-top:12px;max-height:200px;overflow-y:auto"></div>
       </div>
-    </div>
-  </div>
-
-  <!-- Mobile nav overlay -->
-  <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileNav()">
-    <div class="mobile-nav-drawer" onclick="event.stopPropagation()">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <div class="nav-panel-title" style="margin:0">Navigator</div>
-        <button class="btn btn-ghost btn-sm" onclick="closeMobileNav()">✕</button>
-      </div>
-      <div class="nav-grid" id="mobileNavGrid"></div>
-      <div class="nav-legend" style="margin-top:12px">
-        <div class="legend-item"><div class="legend-dot" style="background:var(--bg-card);border:1px solid var(--border)"></div>Not visited</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-green)"></div>Answered</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-yellow)"></div>Flagged</div>
-      </div>
-      <div style="margin-top:16px">
-        <button class="btn btn-red btn-full" onclick="showSubmitModal(); closeMobileNav()">📤 Submit Exam</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Pause overlay -->
-  <div class="pause-overlay" id="pauseOverlay">
-    <div class="pause-icon">⏸️</div>
-    <h2>Exam Paused</h2>
-    <p>Take a break. Your timer is paused.</p>
-    <button class="btn btn-primary btn-lg" onclick="togglePause()">▶ Resume</button>
-  </div>
-
-  <!-- Modals -->
-  <div class="modal-overlay" id="submitModal">
-    <div class="modal-box">
-      <div class="modal-icon">📤</div>
-      <div class="modal-title">Submit Exam?</div>
-      <div class="modal-body" id="submitModalBody"></div>
       <div class="modal-actions">
-        <button class="btn btn-ghost" onclick="closeModal('submitModal')">Cancel</button>
-        <button class="btn btn-red" onclick="submitExam()">Yes, Submit</button>
+        <button class="btn btn-ghost" onclick="closeModal('folderModal')">Close</button>
       </div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="timeUpModal">
-    <div class="modal-box">
-      <div class="modal-icon">⏰</div>
-      <div class="modal-title">Time's Up!</div>
-      <div class="modal-body">Your exam time has ended. Your answers have been automatically submitted.</div>
+  <div class="modal-overlay" id="aiPromptModal" role="dialog" aria-modal="true" aria-label="AI Prompt Generator">
+    <div class="modal-box" style="max-width:620px">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="modal-title">AI Prompt Generator</div>
+      <div class="modal-body" style="text-align:left;padding:0 4px;">
+
+        <p style="font-size:13px;color:var(--text-secondary);margin:0 0 16px 0;line-height:1.6;">
+          Generate a prompt, copy it, then paste into <strong>any AI assistant</strong>. The AI will create perfectly formatted JSON questions for you.
+        </p>
+
+        <div class="prompt-tabs">
+          <button class="prompt-tab active" onclick="switchPromptTab('topic')" id="tabTopic">Topic-Based</button>
+          <button class="prompt-tab" onclick="switchPromptTab('notes')" id="tabNotes">Notes-Based</button>
+        </div>
+
+        <div class="prompt-tab-content active" id="tabContentTopic">
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Subjects <span class="optional-tag">(optional — select one or more)</span></span>
+            <div class="subject-chips" id="subjectChips"></div>
+            <input type="hidden" id="aiSelectedSubjects" value="">
+          </div>
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Specific Topic <span class="optional-tag">(optional)</span></span>
+            <input type="text" id="aiTopic" placeholder="e.g., Asphyxial Deaths, Myocardial Infarction..." class="custom-number-input">
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+            <div style="flex:1;min-width:100px;">
+              <span class="section-label">Number of Questions</span>
+              <input type="number" id="aiNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="e.g. 10">
+            </div>
+
+            <div style="flex:1.5;min-width:140px;">
+              <span class="section-label">Question Format</span>
+              <select id="aiFormatTopic" class="custom-number-input" style="cursor:pointer; appearance:auto;">
+                <option value="standard" selected>Standard (100% Theory)</option>
+                <option value="mix">NEET Mix (~30% Images)</option>
+                <option value="image">Image-Based Only</option>
+              </select>
+            </div>
+
+            <div style="flex:2;min-width:160px;">
+              <span class="section-label">Exam Standard</span>
+              <select id="aiStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
+                <option value="NEET PG / INI-CET" selected>NEET PG / INI-CET</option>
+                <option value="FMGE / MCI Screening">FMGE / MCI Screening</option>
+                <option value="MBBS University Exam">MBBS University Exam</option>
+                <option value="USMLE Step 1">USMLE Step 1</option>
+                <option value="USMLE Step 2 CK">USMLE Step 2 CK</option>
+                <option value="PLAB">PLAB (UK)</option>
+                <option value="AMC">AMC (Australia)</option>
+                <option value="AIIMS / PGI Pattern">AIIMS / PGI Pattern</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Extra Instructions <span class="optional-tag">(optional)</span></span>
+            <input type="text" id="aiExtraInstructions" placeholder="e.g., focus on clinical vignettes, include image-based questions..." class="custom-number-input">
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" onclick="generateAIPrompt()" style="padding:10px 18px;font-weight:600;">Generate Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyAIPrompt()" id="copyPromptBtn" style="padding:10px 18px;">Copy Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearAIPromptFields()" style="padding:10px 18px;color:var(--text-muted);">Clear All</button>
+          </div>
+          <div style="margin-bottom:20px;">
+            <span class="section-label">Generated Prompt</span>
+            <textarea id="aiGeneratedPrompt" readonly rows="6" class="custom-number-input" style="font-family:'JetBrains Mono',monospace;font-size:11px;resize:vertical;" placeholder="Your generated prompt will appear here..."></textarea>
+          </div>
+        </div>
+
+        <div class="prompt-tab-content" id="tabContentNotes">
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Paste Your Study Notes</span>
+            <textarea id="aiNotesContent" rows="6" placeholder="Paste your notes, textbook content, or lecture summary here." class="custom-number-input" style="resize:vertical;"></textarea>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+            <div style="flex:1;min-width:100px;">
+              <span class="section-label">Number of Questions</span>
+              <input type="number" id="aiNotesNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="e.g. 10">
+            </div>
+
+            <div style="flex:1.5;min-width:140px;">
+              <span class="section-label">Question Format</span>
+              <select id="aiFormatNotes" class="custom-number-input" style="cursor:pointer; appearance:auto;">
+                <option value="standard" selected>Standard (100% Theory)</option>
+                <option value="mix">NEET Mix (~30% Images)</option>
+                <option value="image">Image-Based Only</option>
+              </select>
+            </div>
+
+            <div style="flex:2;min-width:160px;">
+              <span class="section-label">Exam Standard</span>
+              <select id="aiNotesStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
+                <option value="NEET PG / INI-CET" selected>NEET PG / INI-CET</option>
+                <option value="FMGE / MCI Screening">FMGE / MCI Screening</option>
+                <option value="MBBS University Exam">MBBS University Exam</option>
+                <option value="USMLE Step 1">USMLE Step 1</option>
+                <option value="USMLE Step 2 CK">USMLE Step 2 CK</option>
+                <option value="PLAB">PLAB (UK)</option>
+                <option value="AMC">AMC (Australia)</option>
+                <option value="AIIMS / PGI Pattern">AIIMS / PGI Pattern</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <span class="section-label">Extra Instructions <span class="optional-tag">(optional)</span></span>
+            <input type="text" id="aiNotesExtraInstructions" placeholder="e.g., focus on clinical applications..." class="custom-number-input">
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+            <button class="btn btn-accent btn-sm" onclick="generateAINotesPrompt()" style="padding:10px 18px;font-weight:600;">Generate Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyAINotesPrompt()" id="copyNotesPromptBtn" style="padding:10px 18px;">Copy Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearAINotesFields()" style="padding:10px 18px;color:var(--text-muted);">Clear All</button>
+          </div>
+          <div style="margin-bottom:20px;">
+            <span class="section-label">Generated Prompt</span>
+            <textarea id="aiNotesGeneratedPrompt" readonly rows="6" class="custom-number-input" style="font-family:'JetBrains Mono',monospace;font-size:11px;resize:vertical;" placeholder="Your notes-based prompt will appear here..."></textarea>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--border);padding-top:16px;">
+          <button class="how-to-toggle" id="howToToggleBtn" onclick="toggleHowToGuide()" aria-expanded="false">
+            <span style="display:flex;align-items:center;gap:8px;">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              How to Use the Prompt?
+            </span>
+            <svg class="toggle-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <div class="how-to-guide-content" id="howToGuideContent">
+            <div class="how-to-guide-inner">
+              <div class="ai-guide-box">
+                <strong>Copy the generated prompt</strong> above and paste it into any AI assistant:
+                <div class="llm-list">
+                  <span class="llm-tag">ChatGPT</span>
+                  <span class="llm-tag">Claude</span>
+                  <span class="llm-tag">Gemini</span>
+                  <span class="llm-tag">Perplexity</span>
+                  <span class="llm-tag">DeepSeek</span>
+                  <span class="llm-tag">or any other LLM</span>
+                </div>
+                <div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.7;">
+                  The AI will return a JSON array. Copy its response and paste it into the
+                  <strong>"Build Your Question Bank"</strong> textarea, then click <strong>"Load Questions"</strong>.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
       <div class="modal-actions">
-        <button class="btn btn-primary" onclick="closeModal('timeUpModal'); submitExam()">View Results</button>
+        <button class="btn btn-ghost" onclick="closeModal('aiPromptModal')">Close</button>
       </div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="confirmHomeModal">
-    <div class="modal-box">
-      <div class="modal-icon">🏠</div>
-      <div class="modal-title">Leave Quiz?</div>
-      <div class="modal-body">Your current progress will be lost. Are you sure?</div>
+  <div class="modal-overlay" id="dailyGoalModal" role="dialog" aria-modal="true" aria-label="Daily Goal">
+    <div class="modal-box" style="max-width:420px; text-align:center;">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+        </svg>
+      </div>
+      <div class="modal-title">Daily Practice Goal</div>
+      <div class="modal-body" style="padding-bottom: 0;">
+        <div class="milestone-header" style="justify-content:center; gap: 10px;">
+          <span id="milestoneText" style="font-size:15px; font-weight:700; color:var(--text-primary);">0 / 100 Questions Today</span>
+        </div>
+        <div class="milestone-progress-bg" style="height:12px; margin:16px 0; border-radius: 6px; background: var(--border);">
+          <div class="milestone-progress-fill" id="milestoneFill" style="width:0%; height:100%; border-radius:6px; background:var(--gradient-success); transition:width 0.8s cubic-bezier(0.16,1,0.3,1);"></div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center; align-items:center; margin-top:24px;">
+          <input type="number" id="dailyGoalInput" min="1" max="500" value="100" class="custom-number-input" style="width: 100px; text-align:center; font-weight: 600;">
+          <button class="btn btn-primary btn-sm" onclick="if(typeof setDailyGoal === 'function') setDailyGoal();">Update Goal</button>
+          <button class="btn btn-ghost btn-sm" onclick="if(typeof confirmResetDailyGoal === 'function') confirmResetDailyGoal();" title="Reset today's count">Reset Progress</button>
+        </div>
+      </div>
       <div class="modal-actions">
-        <button class="btn btn-ghost" onclick="closeModal('confirmHomeModal')">Stay</button>
-        <button class="btn btn-red" onclick="closeModal('confirmHomeModal'); goHome()">Leave</button>
+        <button class="btn btn-ghost" onclick="closeModal('dailyGoalModal')">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- Fixed widgets -->
-  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="togglePomodoroWidget()" title="Pomodoro Timer">🍅</button>
+  <div class="modal-overlay" id="aiConfigModal" role="dialog" aria-modal="true" aria-label="AI Settings">
+    <div class="modal-box">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="modal-title">AI Integration Settings</div>
+      <div class="modal-body" style="text-align:left">
+        <div class="api-config-field">
+          <label for="providerSelect">AI Provider</label>
+          <select id="providerSelect" onchange="if(typeof onProviderChange==='function') onProviderChange()" class="custom-number-input" style="padding: 8px 12px; cursor: pointer;">
+            <option value="pollinations">Pollinations AI — FREE, No Key Needed</option>
+            <option value="gemini">Google Gemini (Requires API Key)</option>
+          </select>
+        </div>
+        <div id="pollinationsConfig">
+          <div class="api-config-field">
+            <label for="pollinationsModelSelect">Model</label>
+            <select id="pollinationsModelSelect" class="custom-number-input" style="padding: 8px 12px; cursor: pointer;">
+              <option value="openai">OpenAI GPT (Recommended)</option>
+              <option value="openai-fast">OpenAI GPT Fast</option>
+            </select>
+            <div class="api-help">Completely <strong>free</strong>, no signup, no API key. Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener">Pollinations.ai</a>.</div>
+          </div>
+        </div>
+        <div id="geminiConfig" style="display:none">
+          <div class="api-config-field">
+            <label for="apiKeyInput">Google Gemini API Key</label>
+            <input type="password" id="apiKeyInput" placeholder="AIza..." class="custom-number-input" style="padding: 8px 12px;">
+            <div class="api-help">Get a free API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.</div>
+          </div>
+          <div class="api-config-field">
+            <label for="modelSelect">Gemini Model</label>
+            <select id="modelSelect" class="custom-number-input" style="padding: 8px 12px; cursor: pointer;">
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended)</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('aiConfigModal')">Cancel</button>
+        <button class="btn btn-ai" onclick="if(typeof saveAIConfig==='function') saveAIConfig()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="helpModal" role="dialog" aria-modal="true" aria-label="Help and Shortcuts">
+    <div class="modal-box">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="modal-title">Help &amp; Shortcuts</div>
+      <div class="modal-body" style="text-align:left">
+        <div style="margin-bottom:14px">
+          <strong style="color:var(--accent)">Keyboard Shortcuts</strong>
+          <div style="font-size:13px;margin-top:8px;line-height:2">
+            <kbd>&larr;</kbd> <kbd>&rarr;</kbd> Navigate &middot;
+            <kbd>1</kbd>–<kbd>4</kbd> Select A–D &middot;
+            <kbd>F</kbd> Flag &middot;
+            <kbd>Space</kbd> Pause
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <strong style="color:var(--accent)">JSON Format</strong>
+          <div style="font-size:13px;margin-top:8px;line-height:1.6">
+            Array of objects with: <code>question</code>, <code>options</code> (4 items), <code>correct_option</code>, <code>explanation</code>.
+            Optional: <code>image_url</code>, <code>subject</code>, <code>topic</code>, <code>difficulty</code>, <code>tags</code>.
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <strong style="color:var(--accent)">Question Settings</strong>
+          <div style="font-size:13px;margin-top:8px;line-height:1.6">
+            Use <strong>Shuffle Questions</strong> to randomise order each session.
+            Use <strong>Shuffle Options</strong> to randomise A/B/C/D per question.
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <strong style="color:var(--accent)">AI Prompt Generator</strong>
+          <div style="font-size:13px;margin-top:8px;line-height:1.6">
+            Two modes: <strong>Topic-Based</strong> and <strong>Notes-Based</strong>.
+            Generate a prompt → paste into any AI → paste response back as JSON.
+          </div>
+        </div>
+        <div>
+          <strong style="color:var(--accent)">AI Explanations</strong>
+          <div style="font-size:13px;margin-top:8px;line-height:1.6">
+            Pollinations AI is free and always available during quizzes for deep explanations, mnemonics, and assessments.
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeModal('helpModal')" style="cursor:pointer;min-width:100px;padding:10px 24px;">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()" title="Focus Timer" aria-label="Pomodoro Focus Timer">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+  </button>
   <div class="pomodoro-widget" id="pomodoroWidget">
     <div class="pomodoro-body">
       <div class="pomo-header">
         <span class="pomo-label" id="pomoLabel">FOCUS</span>
-        <button class="btn btn-ghost btn-xs" onclick="togglePomodoroWidget()" style="padding:4px 8px">✕</button>
+        <button class="btn btn-ghost btn-xs" onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()" style="padding:4px 8px" aria-label="Close pomodoro">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
       <div class="pomo-time" id="pomoTime">25:00</div>
       <div class="pomo-actions">
-        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="startPomodoro()">▶ Start</button>
-        <button class="btn btn-ghost btn-xs" onclick="resetPomodoro()">↺</button>
-        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(25)">25m</button>
-        <button class="btn btn-ghost btn-xs" onclick="setPomodoroPreset(50)">50m</button>
+        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="if(typeof startPomodoro==='function') startPomodoro()" aria-label="Start or pause">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="6 4 20 12 6 20 6 4"/>
+          </svg>
+          Start
+        </button>
+        <button class="btn btn-ghost btn-xs" onclick="if(typeof resetPomodoro==='function') resetPomodoro()" aria-label="Reset timer">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+          Reset
+        </button>
+        <button class="btn btn-ghost btn-xs" onclick="if(typeof setPomodoroPreset==='function') setPomodoroPreset(25)">25m</button>
+        <button class="btn btn-ghost btn-xs" onclick="if(typeof setPomodoroPreset==='function') setPomodoroPreset(50)">50m</button>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script>
+    'use strict';
+
+    // ═══════════════════════════════════════════════
+    // SVG ICON LIBRARY (matches website style)
+    // ═══════════════════════════════════════════════
+    const SVG_ICONS = {
+      play:  '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
+      pause: '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
+      success: '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12.5 11 15.5 16 9.5"/></svg>',
+      warning: '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+      error:   '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+      info:    '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+      sun: '<svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+      moon: '<svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+    };
+
+    // ═══════════════════════════════════════════════
+    // MODAL SYSTEM
+    // ═══════════════════════════════════════════════
+    let _openModalCount = 0;
+    function openModal(id) {
+      const overlay = document.getElementById(id);
+      if (!overlay) return;
+      _openModalCount++;
+      document.body.style.overflow = 'hidden';
+      // Use both classes to be 100% compatible with style.css and inline CSS
+      overlay.classList.add('active');
+      overlay.classList.add('show');
+      overlay.onclick = function(e) { if (e.target === overlay) closeModal(id); };
+      const focusable = overlay.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+      if (focusable.length) focusable[0].focus();
+    }
+    function closeModal(id) {
+      const overlay = document.getElementById(id);
+      if (!overlay) return;
+      overlay.classList.remove('active');
+      overlay.classList.remove('show');
+      overlay.onclick = null;
+      _openModalCount = Math.max(0, _openModalCount - 1);
+      if (_openModalCount === 0) document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const activeModals = document.querySelectorAll('.modal-overlay.active, .modal-overlay.show');
+        if (activeModals.length) closeModal(activeModals[activeModals.length - 1].id);
+      }
+    });
+
+    // Expose globally for script.js compatibility
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+
+    // ═══════════════════════════════════════════════
+    // PREMIUM TOAST OVERRIDE (BUG #6 — SVG icons, no emoji)
+    // ═══════════════════════════════════════════════
+    // Map common emoji prefixes from script.js to SVG types
+    const EMOJI_TO_TYPE = {
+      '✅':'success','✔':'success','✔️':'success','🎉':'success','🏆':'success','💾':'success','📥':'success','🔄':'info','🔍':'info','📁':'success','🎯':'success','🍅':'info','☕':'info','📊':'info','💡':'info','🤖':'info','📌':'info','📚':'info','⭐':'info','🚩':'warning','⚖️':'info','⏱':'info','⏱️':'info','⏭':'info','🏦':'info','✕':'error','✖':'info','✨':'info','📈':'info','💪':'info','👍':'info','❌':'error','⚠️':'warning','⚠':'warning'
+    };
+
+    function premiumShowToast(msg, dur) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      const text = String(msg || '');
+      // Detect leading emoji and strip it
+      let type = 'info';
+      let cleanText = text;
+      // Try matching first 1-2 chars (some emojis are surrogate pairs)
+      const firstTwo = text.slice(0, 2).trim();
+      const firstOne = text.slice(0, 1);
+      if (EMOJI_TO_TYPE[firstTwo]) {
+        type = EMOJI_TO_TYPE[firstTwo];
+        cleanText = text.slice(2).trim();
+      } else if (EMOJI_TO_TYPE[firstOne]) {
+        type = EMOJI_TO_TYPE[firstOne];
+        cleanText = text.slice(1).trim();
+      }
+      // Remove any leftover leading emoji-like chars (surrogate pairs)
+      cleanText = cleanText.replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]+\s*/u, '');
+      // Apply type class
+      toast.classList.remove('toast-success','toast-warning','toast-error','toast-info');
+      toast.classList.add('toast-' + type);
+      const iconSvg = SVG_ICONS[type] || SVG_ICONS.info;
+      toast.innerHTML = iconSvg + '<span>' + cleanText + '</span>';
+      toast.classList.add('show');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(function() {
+        toast.classList.remove('show');
+      }, dur || 3000);
+    }
+    window.showToast = premiumShowToast;
+
+    // ═══════════════════════════════════════════════
+    // CUSTOM CONFIRM MODAL
+    // ═══════════════════════════════════════════════
+    function showConfirm(message, onConfirm, title) {
+      const msgEl   = document.getElementById('confirmModalMessage');
+      const titleEl = document.getElementById('confirmModalTitle');
+      const okBtn   = document.getElementById('confirmOkBtn');
+      if (titleEl) titleEl.textContent = title || 'Are you sure?';
+      if (msgEl)   msgEl.textContent   = message || 'This action cannot be undone.';
+      const newOkBtn = okBtn.cloneNode(true);
+      okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+      newOkBtn.addEventListener('click', function() {
+        closeModal('confirmModal');
+        if (typeof onConfirm === 'function') onConfirm();
+      });
+      openModal('confirmModal');
+    }
+
+    function confirmClearInput() {
+      const textarea = document.getElementById('jsonInput');
+      if (!textarea || !textarea.value.trim()) { showToast('Input is already empty.'); return; }
+      showConfirm(
+        'Clear all pasted questions? This cannot be undone.',
+        function() {
+          textarea.value = '';
+          validateJSONLive();
+          hideSchemaErrors();
+          hideQuizConfig();
+          const ps = document.getElementById('parseStatus');
+          if (ps) ps.innerHTML = '';
+          const qp = document.getElementById('qPreview');
+          if (qp) qp.style.display = 'none';
+          const sf = document.getElementById('smartFilters');
+          if (sf) sf.style.display = 'none';
+          const dm = document.getElementById('difficultyMeterWrap');
+          if (dm) dm.style.display = 'none';
+          showToast('Input cleared.');
+        },
+        'Clear All Questions?'
+      );
+    }
+
+    function confirmResetDailyGoal() {
+      showConfirm(
+        'Reset today\'s progress to 0? Your session count will be permanently cleared.',
+        function() {
+          const today = new Date().toISOString().slice(0, 10);
+          localStorage.setItem('medquiz_daily_count', '0');
+          localStorage.setItem('medquiz_daily_date',  new Date().toDateString());
+          if (typeof openDB === 'function') {
+            openDB().then(function(db) {
+              const tx    = db.transaction('milestones', 'readwrite');
+              const store = tx.objectStore('milestones');
+              store.put({ date: today, answered: 0 });
+              tx.oncomplete = function() {
+                if (typeof updateMilestoneBar === 'function') updateMilestoneBar();
+                showToast('Daily progress reset to zero.');
+              };
+            }).catch(function() { showToast('Daily progress reset.'); });
+          } else { showToast('Daily progress reset.'); }
+        },
+        'Reset Daily Progress?'
+      );
+    }
+
+    // ═══════════════════════════════════════════════
+    // PARTICLE BACKGROUND
+    // ═══════════════════════════════════════════════
+    (function() {
+      const canvas = document.getElementById('particlesCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const particles = [];
+      let animationFrameId = null, w, h;
+
+      function getParticleCount() {
+        const divisor = window.innerWidth < 600 ? 50 : 28;
+        return Math.min(80, Math.max(15, Math.floor(window.innerWidth / divisor)));
+      }
+      function resizeCanvas() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      function createParticle() {
+        return {
+          x: Math.random()*w, y: Math.random()*h,
+          size: Math.random()*2.5+0.8,
+          speedX: (Math.random()-0.5)*0.4,
+          speedY: -(Math.random()*0.6+0.2),
+          opacity: Math.random()*0.5+0.15,
+          pulse: Math.random()*Math.PI*2
+        };
+      }
+      function initParticles() {
+        particles.length = 0;
+        for (let i = 0; i < getParticleCount(); i++) particles.push(createParticle());
+      }
+      function animate() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = !document.body.classList.contains('light');
+        const col    = isDark ? '255,255,255' : '99,102,241';
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.x += p.speedX; p.y += p.speedY; p.pulse += 0.02;
+          const alpha = Math.min(0.7, Math.max(0, p.opacity + Math.sin(p.pulse)*0.1));
+          if (p.y < -10) { p.y = h+10; p.x = Math.random()*w; }
+          if (p.x < -10) p.x = w+10;
+          if (p.x > w+10) p.x = -10;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+          ctx.fillStyle = 'rgba('+col+','+alpha+')'; ctx.fill();
+          if (p.size > 1.8) {
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size*2.5, 0, Math.PI*2);
+            ctx.fillStyle = 'rgba('+col+','+(alpha*0.25)+')'; ctx.fill();
+          }
+        }
+        animationFrameId = requestAnimationFrame(animate);
+      }
+      function startAnimation() { if (!animationFrameId) animate(); }
+      function stopAnimation() { if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; } }
+      document.addEventListener('visibilitychange', function() { document.hidden ? stopAnimation() : startAnimation(); });
+      resizeCanvas(); initParticles(); startAnimation();
+      window.addEventListener('resize', function() { resizeCanvas(); initParticles(); });
+    })();
+
+    // ═══════════════════════════════════════════════
+    // SCROLL & UI HELPERS
+    // ═══════════════════════════════════════════════
+    window.addEventListener('scroll', function() {
+      const scrollY = window.scrollY;
+      const navbar  = document.getElementById('mainNavbar');
+      if (navbar) navbar.classList.toggle('scrolled', scrollY > 10);
+      const btn = document.getElementById('backToTopBtn');
+      if (btn) btn.classList.toggle('visible', scrollY > 400);
+    });
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+    function revealQuizConfig() {
+      const s = document.getElementById('quizConfigSection');
+      if (!s) return;
+      s.style.display = '';
+      s.style.removeProperty('display');
+      requestAnimationFrame(function() {
+        s.classList.add('revealed');
+        setTimeout(function() { s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
+      });
+    }
+    function hideQuizConfig() {
+      const s = document.getElementById('quizConfigSection');
+      if (s) s.classList.remove('revealed');
+    }
+
+    // ═══════════════════════════════════════════════
+    // QUIZ PARSED EVENTS
+    // ═══════════════════════════════════════════════
+    document.addEventListener('quizParsed', function(e) {
+      const detail    = (e && e.detail) ? e.detail : {};
+      const count     = detail.count     || 0;
+      const questions = detail.questions || [];
+
+      const parseStatus = document.getElementById('parseStatus');
+      if (parseStatus) {
+        const svgCheck = '<span class="status-check-svg"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle class="check-circle" cx="12" cy="12" r="9"/><polyline class="check-mark" points="7 12.5 10.5 16 17 9"/></svg></span>';
+        parseStatus.innerHTML = svgCheck + ' <span style="color:var(--text-primary);font-weight:600;">' + count + ' question' + (count !== 1 ? 's' : '') + ' loaded successfully</span>';
+      }
+
+      if (questions.length > 0) updateDifficultyMeter(questions);
+      revealQuizConfig();
+      resetLoadButton(true);
+    });
+
+    document.addEventListener('quizParseError', function() { resetLoadButton(false); });
+
+    // ═══════════════════════════════════════════════
+    // DIFFICULTY METER (with counter-up animation)
+    // ═══════════════════════════════════════════════
+    function updateDifficultyMeter(questions) {
+      const wrap  = document.getElementById('difficultyMeterWrap');
+      const fill  = document.getElementById('difficultyFill');
+      const badge = document.getElementById('difficultyBadge');
+      const label = document.getElementById('difficultyBadgeText');
+      if (!wrap || !fill || !badge || !label) return;
+
+      let total = 0, count = 0;
+      questions.forEach(function(q) {
+        const d = parseFloat(q.difficulty);
+        if (!isNaN(d) && d >= 1 && d <= 5) { total += d; count++; }
+      });
+      if (count === 0) { wrap.style.display = 'none'; return; }
+
+      const avg  = total / count;
+      wrap.style.display = 'block';
+      const pct  = ((avg - 1) / 4) * 100;
+      let tier, tierLabel, colorHex;
+      if (avg < 2.4)      { tier = 'easy';   tierLabel = 'Easy';      colorHex = '#22c55e'; }
+      else if (avg < 3.7) { tier = 'medium'; tierLabel = 'Moderate';  colorHex = '#f59e0b'; }
+      else                { tier = 'hard';   tierLabel = 'Difficult'; colorHex = '#ef4444'; }
+
+      fill.style.width = '0%';
+      fill.style.background = colorHex;
+      setTimeout(function() { fill.style.width = pct + '%'; }, 80);
+      badge.className = 'difficulty-badge ' + tier;
+
+      // Counter-up animation for the average score
+      animateCounterUp(label, 0, avg, 900, function(val) {
+        return tierLabel + ' (' + val.toFixed(1) + '/5)';
+      });
+    }
+
+    function animateCounterUp(el, from, to, duration, formatter) {
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(1, elapsed / duration);
+        // easeOutCubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = from + (to - from) * eased;
+        el.textContent = formatter(value);
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = formatter(to);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // ═══════════════════════════════════════════════
+    // SHUFFLE TOGGLES
+    // ═══════════════════════════════════════════════
+    window._shuffleQuestions = false;
+    window._shuffleOptions   = false;
+    window._questionTarget   = null;
+    function onShuffleToggle() {
+      window._shuffleQuestions = document.getElementById('shuffleQuestionsToggle').checked;
+      showToast(window._shuffleQuestions ? 'Questions will be shuffled each session.' : 'Question order preserved.');
+    }
+    function onShuffleOptionsToggle() {
+      window._shuffleOptions = document.getElementById('shuffleOptionsToggle').checked;
+      showToast(window._shuffleOptions ? 'Answer options will be randomised.' : 'Option order preserved.');
+    }
+
+    // ═══════════════════════════════════════════════
+    // HOW-TO GUIDE
+    // ═══════════════════════════════════════════════
+    function toggleHowToGuide() {
+      const btn = document.getElementById('howToToggleBtn');
+      const content = document.getElementById('howToGuideContent');
+      if (!btn || !content) return;
+      if (content.classList.contains('open')) {
+        content.classList.remove('open');
+        btn.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        content.classList.add('open');
+        btn.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    // SUBJECTS & AI PROMPTS
+    // ═══════════════════════════════════════════════
+    let _subjectChipsBuilt = false;
+    const allSubjects = ['Anatomy','Physiology','Biochemistry','Pathology','Pharmacology','Microbiology','Forensic Medicine','Community Medicine','General Medicine','General Surgery','Obstetrics & Gynaecology','Paediatrics','Ophthalmology','ENT','Orthopaedics','Dermatology','Psychiatry','Radiology','Anaesthesiology'];
+
+    function buildSubjectChips() {
+      if (_subjectChipsBuilt) return;
+      const container = document.getElementById('subjectChips');
+      if (!container) return;
+      container.innerHTML = '';
+      allSubjects.forEach(function(subj) {
+        const chip = document.createElement('span');
+        chip.className = 'subject-chip';
+        chip.textContent = subj;
+        chip.setAttribute('role', 'button');
+        chip.setAttribute('tabindex', '0');
+        chip.setAttribute('aria-pressed', 'false');
+        chip.onclick = function() {
+          const sel = this.classList.toggle('selected');
+          this.setAttribute('aria-pressed', sel ? 'true' : 'false');
+          updateSelectedSubjects();
+        };
+        chip.onkeydown = function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+        };
+        container.appendChild(chip);
+      });
+      _subjectChipsBuilt = true;
+    }
+
+    function updateSelectedSubjects() {
+      const chips = document.querySelectorAll('#subjectChips .subject-chip.selected');
+      const selected = [];
+      chips.forEach(function(c) { selected.push(c.textContent); });
+      const hidden = document.getElementById('aiSelectedSubjects');
+      if (hidden) hidden.value = selected.join(', ');
+    }
+
+    function getSelectedSubjects() {
+      const hidden = document.getElementById('aiSelectedSubjects');
+      return hidden ? hidden.value : '';
+    }
+
+    function openAIPromptModal() { buildSubjectChips(); openModal('aiPromptModal'); }
+
+    function switchPromptTab(tab) {
+      const tT = document.getElementById('tabTopic');
+      const tN = document.getElementById('tabNotes');
+      const cT = document.getElementById('tabContentTopic');
+      const cN = document.getElementById('tabContentNotes');
+      if (!tT || !tN) return;
+      if (tab === 'topic') {
+        tT.classList.add('active'); tN.classList.remove('active');
+        cT.classList.add('active'); cN.classList.remove('active');
+      } else {
+        tN.classList.add('active'); tT.classList.remove('active');
+        cN.classList.add('active'); cT.classList.remove('active');
+      }
+    }
+
+    function generateAIPrompt() {
+      const selectedSubjects = getSelectedSubjects();
+      const topic    = document.getElementById('aiTopic').value.trim();
+      const numQ     = parseInt(document.getElementById('aiNumQuestions').value);
+      const format   = document.getElementById('aiFormatTopic').value;
+      const standard = document.getElementById('aiStandard').value;
+      const extra    = document.getElementById('aiExtraInstructions').value.trim();
+
+      if (!selectedSubjects && !topic) { showToast('Please select at least one subject or enter a topic.'); return; }
+      if (!numQ || numQ < 1) { showToast('Please enter a valid number of questions.'); return; }
+
+      const subjectPart = selectedSubjects ? 'on ' + selectedSubjects : '';
+      const topicPart   = topic ? (selectedSubjects ? ' — specifically "'+topic+'"' : 'on "'+topic+'"') : '';
+
+      let prompt = 'You are an expert medical educator creating exam-standard MCQs for ' + standard + ' aspirants.\n\n';
+
+      let rules = 'STRICT RULES:\n';
+      rules += '1. Each question must have EXACTLY 4 answer options (no more, no less).\n';
+      rules += '2. The explanation must be IN-DEPTH and thorough. Include:\n';
+      rules += '   - Why the correct answer is right (mechanism, reasoning)\n';
+      rules += '   - Why each wrong option is incorrect\n';
+      rules += '   - Key clinical pearls or mnemonics where relevant\n';
+      rules += '3. Questions must test clinical reasoning/application at ' + standard + ' difficulty level.\n';
+
+      if (format === 'standard') {
+        prompt += 'Generate ' + numQ + ' theoretical medical MCQ questions ' + subjectPart + topicPart + '.\n\n';
+        rules += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
+      }
+      else if (format === 'image') {
+        prompt += 'Generate ' + numQ + ' image-based medical MCQ questions ' + subjectPart + topicPart + '.\n\n';
+        rules += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical/radiology/histology images relevant to the topic. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a clinical vignette that strictly requires visual analysis of the image to answer correctly. Verify the URL exists. DO NOT HALLUCINATE URLs.\n';
+      }
+      else if (format === 'mix') {
+        const imgCount = Math.ceil(numQ * 0.3);
+        const theoryCount = numQ - imgCount;
+        prompt += 'Generate a total of ' + numQ + ' medical MCQ questions ' + subjectPart + topicPart + '. ';
+        prompt += 'You MUST provide exactly ' + theoryCount + ' theoretical questions and ' + imgCount + ' image-based questions.\n\n';
+        rules += '4. For the ' + imgCount + ' image-based questions, YOU MUST USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for clear medical images. Extract the raw image URL (.jpg or .png), place it in "image_url", and build a vignette around it. DO NOT hallucinate URLs. For the ' + theoryCount + ' theoretical questions, leave "image_url" blank.\n';
+      }
+
+      if (extra) rules += '5. Additional instructions: ' + extra + '\n';
+      prompt += rules;
+
+      prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks. Start with [ and end with ].\n';
+      prompt += 'Each object must have these exact fields:\n{\n  "question": "Full question text here",\n  "options": ["Option A", "Option B", "Option C", "Option D"],\n  "correct_option": "Must exactly match one option",\n  "explanation": "In-depth explanation",\n  "difficulty": 3,\n  "subject": "Subject name",\n  "topic": "Specific topic",\n  "tags": ["NEET PG"],\n  "image_url": "URL if image-based, otherwise empty string"\n}';
+
+      const textarea = document.getElementById('aiGeneratedPrompt');
+      textarea.value = prompt;
+      // Subtle highlight pulse animation
+      textarea.classList.remove('ai-pulse');
+      void textarea.offsetWidth; // restart animation
+      textarea.classList.add('ai-pulse');
+      textarea.scrollIntoView({ behavior: 'smooth' });
+      showToast('Prompt generated! Copy and paste into any AI assistant.');
+    }
+
+    function generateAINotesPrompt() {
+      const notes    = document.getElementById('aiNotesContent').value.trim();
+      const numQ     = parseInt(document.getElementById('aiNotesNumQuestions').value);
+      const format   = document.getElementById('aiFormatNotes').value;
+      const standard = document.getElementById('aiNotesStandard').value;
+      const extra    = document.getElementById('aiNotesExtraInstructions').value.trim();
+
+      if (!notes) { showToast('Please paste your study notes first.'); return; }
+      if (!numQ || numQ < 1) { showToast('Please enter a valid number of questions.'); return; }
+
+      let prompt = 'You are an expert medical educator creating exam-standard MCQs for ' + standard + ' aspirants.\n\n';
+      prompt += 'Based on the following study notes, generate a total of ' + numQ + ' medical MCQ questions.\n\n';
+      prompt += 'STUDY NOTES:\n"""\n' + notes + '\n"""\n\n';
+
+      let rules = 'STRICT RULES:\n';
+      rules += '1. Each question must have EXACTLY 4 answer options (no more, no less).\n';
+      rules += '2. The explanation must be IN-DEPTH and thorough. Include:\n';
+      rules += '   - Why the correct answer is right\n';
+      rules += '   - Why each wrong option is incorrect\n';
+      rules += '   - Key clinical pearls relevant to the notes\n';
+      rules += '3. Base questions strictly on the provided notes content.\n';
+
+      if (format === 'standard') {
+        rules += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
+      }
+      else if (format === 'image') {
+        rules += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical images relevant to the concepts in the notes. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a vignette that requires visual analysis. DO NOT HALLUCINATE URLs.\n';
+      }
+      else if (format === 'mix') {
+        const imgCount = Math.ceil(numQ * 0.3);
+        const theoryCount = numQ - imgCount;
+        rules += '4. You MUST provide exactly ' + theoryCount + ' theoretical questions and ' + imgCount + ' image-based questions. For image-based questions, USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for relevant medical images. Extract the raw image URL (.jpg or .png) and place it in "image_url". DO NOT hallucinate URLs.\n';
+      }
+
+      if (extra) rules += '5. Additional instructions: ' + extra + '\n';
+      prompt += rules;
+
+      prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks. Start with [ and end with ].\n';
+      prompt += 'Each object must have these exact fields:\n{\n  "question": "Full question text here",\n  "options": ["Option A", "Option B", "Option C", "Option D"],\n  "correct_option": "Must exactly match one option",\n  "explanation": "In-depth explanation",\n  "difficulty": 3,\n  "subject": "Subject name",\n  "topic": "Specific topic",\n  "tags": ["NEET PG"],\n  "image_url": "URL if image-based, otherwise empty string"\n}';
+
+      const textarea = document.getElementById('aiNotesGeneratedPrompt');
+      textarea.value = prompt;
+      textarea.classList.remove('ai-pulse');
+      void textarea.offsetWidth;
+      textarea.classList.add('ai-pulse');
+      textarea.scrollIntoView({ behavior: 'smooth' });
+      showToast('Notes-based prompt generated! Copy and paste into any AI assistant.');
+    }
+
+    function copyAIPrompt() { copyTextToClipboard('aiGeneratedPrompt', 'copyPromptBtn', 'Prompt copied! Paste into any AI assistant.'); }
+    function clearAIPromptFields() {
+      document.querySelectorAll('#subjectChips .subject-chip.selected').forEach(function(c) {
+        c.classList.remove('selected');
+        c.setAttribute('aria-pressed','false');
+      });
+      ['aiSelectedSubjects','aiTopic','aiExtraInstructions','aiGeneratedPrompt'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const numQ = document.getElementById('aiNumQuestions');
+      if (numQ) numQ.value = '10';
+      const format = document.getElementById('aiFormatTopic');
+      if (format) format.value = 'standard';
+      updateSelectedSubjects();
+      showToast('All fields cleared.');
+    }
+    function copyAINotesPrompt() { copyTextToClipboard('aiNotesGeneratedPrompt', 'copyNotesPromptBtn', 'Prompt copied! Paste into any AI assistant.'); }
+    function clearAINotesFields() {
+      ['aiNotesContent','aiNotesExtraInstructions','aiNotesGeneratedPrompt'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const numQ = document.getElementById('aiNotesNumQuestions');
+      if (numQ) numQ.value = '10';
+      const format = document.getElementById('aiFormatNotes');
+      if (format) format.value = 'standard';
+      showToast('All fields cleared.');
+    }
+
+    function copyTextToClipboard(textareaId, btnId, successMsg) {
+      const textarea = document.getElementById(textareaId);
+      const btn      = document.getElementById(btnId);
+      if (!textarea || !textarea.value.trim()) { showToast('Click "Generate Prompt" first.'); return; }
+      const originalText = btn ? btn.textContent : '';
+      function onSuccess() {
+        if (btn) {
+          btn.textContent = 'Copied!';
+          btn.style.background = 'var(--accent)';
+          btn.style.color = '#fff';
+          setTimeout(function() {
+            btn.textContent = originalText;
+            btn.style.background = '';
+            btn.style.color = '';
+          }, 2000);
+        }
+        showToast(successMsg || 'Copied!');
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textarea.value).then(onSuccess).catch(function() {
+          textarea.select();
+          showToast('Clipboard error. Text selected, please copy manually.');
+        });
+      } else {
+        textarea.select();
+        showToast('Clipboard API not available. Text selected, please copy manually.');
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    // JSON LIVE VALIDATOR
+    // ═══════════════════════════════════════════════
+    let _jsonValidateTimer = null;
+    function validateJSONLive() {
+      clearTimeout(_jsonValidateTimer);
+      _jsonValidateTimer = setTimeout(_doValidateJSON, 300);
+    }
+    function _doValidateJSON() {
+      const textarea  = document.getElementById('jsonInput');
+      const textSpan  = document.getElementById('jsonValidatorText');
+      const indicator = document.getElementById('jsonValidatorIndicator');
+      const helpBtn   = document.getElementById('jsonHelpBtn');
+      if (!textarea || !indicator || !textSpan) return;
+      const value = textarea.value.trim();
+      if (value.length === 0) {
+        textarea.classList.remove('valid-glow','invalid-glow');
+        textSpan.textContent = '';
+        indicator.className = 'json-validator-indicator';
+        if (helpBtn) helpBtn.classList.remove('visible');
+        hideSchemaErrors();
+        return;
+      }
+      try {
+        const parsed = JSON.parse(value);
+        if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("Must be non-empty array");
+        const schemaIssues = [];
+        parsed.forEach(function(q, i) {
+          ['question','options','correct_option','explanation'].forEach(function(f) {
+            if (!q[f]) schemaIssues.push('Q'+(i+1)+': missing "'+f+'"');
+          });
+          if (q.options && (!Array.isArray(q.options) || q.options.length < 2))
+            schemaIssues.push('Q'+(i+1)+': "options" must be array > 1');
+          if (q.correct_option && Array.isArray(q.options) && q.options.indexOf(q.correct_option) === -1)
+            schemaIssues.push('Q'+(i+1)+': "correct_option" not in options');
+        });
+        if (schemaIssues.length > 0) {
+          textarea.classList.remove('valid-glow');
+          textarea.classList.add('invalid-glow');
+          textSpan.textContent = parsed.length + ' question(s) — ' + schemaIssues.length + ' issue(s)';
+          indicator.className = 'json-validator-indicator warning';
+          if (helpBtn) helpBtn.classList.add('visible');
+          showSchemaErrors(schemaIssues);
+        } else {
+          textarea.classList.add('valid-glow');
+          textarea.classList.remove('invalid-glow');
+          textSpan.textContent = parsed.length + ' question(s) detected — valid';
+          indicator.className = 'json-validator-indicator valid';
+          if (helpBtn) helpBtn.classList.remove('visible');
+          hideSchemaErrors();
+        }
+      } catch (e) {
+        textarea.classList.remove('valid-glow');
+        textarea.classList.add('invalid-glow');
+        textSpan.textContent = 'Invalid JSON format';
+        indicator.className = 'json-validator-indicator invalid';
+        if (helpBtn) helpBtn.classList.add('visible');
+        hideSchemaErrors();
+      }
+    }
+    function showSchemaErrors(issues) {
+      const container = document.getElementById('schemaErrorList');
+      const list      = document.getElementById('schemaErrorItems');
+      if (!container || !list) return;
+      list.innerHTML = '';
+      issues.slice(0, 8).forEach(function(issue) {
+        const li = document.createElement('li');
+        li.textContent = issue;
+        list.appendChild(li);
+      });
+      if (issues.length > 8) {
+        const li = document.createElement('li');
+        li.textContent = '… and '+(issues.length-8)+' more';
+        list.appendChild(li);
+      }
+      container.classList.add('visible');
+    }
+    function hideSchemaErrors() {
+      const c = document.getElementById('schemaErrorList');
+      if (c) c.classList.remove('visible');
+    }
+    function toggleJSONHelp() {
+      const p = document.getElementById('jsonHelpPanel');
+      if (p) {
+        p.classList.toggle('open');
+        if (p.classList.contains('open')) p.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    // LOAD BUTTON & PASTE
+    // ═══════════════════════════════════════════════
+    function handleLoadQuestions(btn) {
+      if (btn.classList.contains('btn-loading')) return;
+      const textarea = document.getElementById('jsonInput');
+      if (!textarea || !textarea.value.trim()) {
+        showToast('Please paste your JSON questions first.');
+        return;
+      }
+      const originalHTML = btn.innerHTML;
+      btn.classList.add('btn-loading');
+      btn.innerHTML = '<span class="btn-spinner"></span>Loading...';
+      btn.setAttribute('data-original-html', originalHTML);
+
+      setTimeout(function() {
+        if (typeof parseJSON === 'function') {
+          parseJSON();
+        } else {
+          resetLoadButton(false);
+          showToast('System not fully loaded yet. Please wait a moment.');
+        }
+      }, 50);
+
+      setTimeout(function() {
+        const b = document.getElementById('loadQuestionsBtn');
+        if (b && b.classList.contains('btn-loading')) resetLoadButton(false);
+      }, 5000);
+    }
+
+    function resetLoadButton(success) {
+      const btn = document.getElementById('loadQuestionsBtn');
+      if (!btn) return;
+      btn.classList.remove('btn-loading');
+      if (success) {
+        btn.classList.add('btn-success-state');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><polyline points="20 6 9 17 4 12"/></svg>Questions Loaded';
+        setTimeout(function() {
+          btn.classList.remove('btn-success-state');
+          btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions';
+        }, 2500);
+      } else {
+        btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions';
+      }
+    }
+
+    function pasteFromClipboard() {
+      if (!window.isSecureContext) {
+        showToast('Clipboard requires HTTPS. Please paste manually.');
+        return;
+      }
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        showToast('Clipboard API not supported here. Please paste manually.');
+        return;
+      }
+      navigator.clipboard.readText().then(function(text) {
+        const ta = document.getElementById('jsonInput');
+        if (ta && text) {
+          ta.value = text;
+          validateJSONLive();
+          showToast('Pasted from clipboard!');
+        } else if (!text) {
+          showToast('Clipboard is empty.');
+        }
+      }).catch(function() {
+        showToast('Clipboard read failed. Paste manually.');
+      });
+    }
+
+    // ═══════════════════════════════════════════════
+    // BUG #3 FIX — setTimerPreset with explicit event
+    // ═══════════════════════════════════════════════
+    // Override script.js setTimerPreset to safely capture event from inline onclick
+    window.setTimerPreset = function(eventOrSec, maybeSec) {
+      // Support both old (sec) and new (event, sec) signatures
+      let evt, sec;
+      if (typeof eventOrSec === 'number') {
+        sec = eventOrSec;
+        evt = window.event;
+      } else {
+        evt = eventOrSec;
+        sec = maybeSec;
+      }
+      window.timePerQuestion = sec;
+      // Update active class on presets
+      document.querySelectorAll('.timer-preset').forEach(function(p) { p.classList.remove('active'); });
+      if (evt && evt.target) {
+        // Find the actual button (target may be a child)
+        let btn = evt.target;
+        while (btn && !btn.classList.contains('timer-preset')) { btn = btn.parentElement; }
+        if (btn) btn.classList.add('active');
+      }
+      const customInput = document.getElementById('customMinutes');
+      if (customInput) customInput.value = '';
+      if (typeof updateTimerDisplay === 'function') updateTimerDisplay();
+    };
+
+    // ═══════════════════════════════════════════════
+    // BUG #5 FIX — Pomodoro SVG icons (override script.js)
+    // ═══════════════════════════════════════════════
+    function updatePomoStartButton(isRunning) {
+      const btn = document.getElementById('pomoStartBtn');
+      if (!btn) return;
+      if (isRunning) {
+        btn.innerHTML = SVG_ICONS.pause.replace('toast-icon-svg', '').replace('width="', 'width="12" data-w="') + 'Pause';
+        // simpler approach: build directly
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>Pause';
+      } else {
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>Start';
+      }
+    }
+
+    // Watch for text changes on pomodoro start button (script.js will set ▶/⏸ text)
+    // Use MutationObserver to convert script.js text to SVG icons
+    document.addEventListener('DOMContentLoaded', function() {
+      const pomoBtn = document.getElementById('pomoStartBtn');
+      if (!pomoBtn) return;
+
+      const obs = new MutationObserver(function(mutations) {
+        const txt = pomoBtn.textContent || '';
+        // Detect pause state (▶ Start text from script.js)
+        if (txt.indexOf('Start') !== -1 && pomoBtn.querySelector('svg') === null) {
+          updatePomoStartButton(false);
+        } else if (txt.indexOf('Pause') !== -1 && pomoBtn.querySelector('svg') === null) {
+          updatePomoStartButton(true);
+        }
+      });
+      obs.observe(pomoBtn, { childList: true, characterData: true, subtree: true });
+    });
+
+    // ═══════════════════════════════════════════════
+    // JSON TEXTAREA — One-time first-focus shimmer
+    // ═══════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+      const ta = document.getElementById('jsonInput');
+      if (!ta) return;
+      let shimmered = false;
+      ta.addEventListener('focus', function() {
+        if (shimmered) return;
+        shimmered = true;
+        ta.classList.add('first-focus-shimmer');
+        setTimeout(function() { ta.classList.remove('first-focus-shimmer'); }, 1500);
+      }, { once: false });
+    });
+
+    // ═══════════════════════════════════════════════
+    // MODE CARD — iOS-style tap glow
+    // ═══════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.mode-card');
+      cards.forEach(function(card) {
+        card.addEventListener('pointerdown', function() {
+          card.classList.add('tap-glow');
+          setTimeout(function() { card.classList.remove('tap-glow'); }, 600);
+        });
+      });
+    });
+  </script>
+
+  <script src="https://js.puter.com/v2/"></script>
   <script src="js/script.js"></script>
 </body>
 </html>
