@@ -10,6 +10,16 @@
   <meta property="og:description" content="AI-assisted medical quiz platform. Paste questions, track progress, and master your exams.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
+
+  <!-- ── PWA: Standalone App Behaviour (No auto-install prompt) ── -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MedQuiz Pro">
+  <meta name="application-name" content="MedQuiz Pro">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
   <title>MedQuiz Pro — Medical MCQ Quiz Platform</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,10 +37,10 @@
     button, .mode-card, .subject-chip, .paste-btn, .how-to-toggle, .nav-icon-btn, .nav-brand {
       transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
-    
+
     /* Squish effect on click/tap for tactile feedback */
-    button:active:not(:disabled):not(.btn-loading), 
-    .paste-btn:active, 
+    button:active:not(:disabled):not(.btn-loading),
+    .paste-btn:active,
     .nav-icon-btn:active,
     .nav-brand:active,
     .subject-chip:active {
@@ -42,9 +52,9 @@
     }
 
     /* Smooth focus rings for accessibility and premium input feel */
-    input:focus-visible, 
-    textarea:focus-visible, 
-    select:focus-visible, 
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible,
     button:focus-visible,
     .subject-chip:focus-visible {
       outline: none;
@@ -77,16 +87,23 @@
     .hero { position: relative; z-index: 1; }
     .hero > * { position: relative; z-index: 1; }
 
+    /* Subtle GPU-accelerated hero parallax (battery-friendly, CSS-only) */
     .hero-logo {
-      animation: heroLogoEntrance 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+      animation: heroLogoEntrance 0.8s cubic-bezier(0.16,1,0.3,1) forwards,
+                 heroLogoFloat 6s ease-in-out 0.8s infinite;
+      will-change: transform;
     }
     .hero h1 {
       animation: heroTitleEntrance 0.8s cubic-bezier(0.16,1,0.3,1) 0.15s forwards;
       opacity: 0; transform: translateY(16px);
     }
     @keyframes heroLogoEntrance {
-      0%   { transform: scale(0.7); opacity: 0; }
-      100% { transform: scale(1);   opacity: 1; }
+      0%   { transform: scale(0.7) translateY(0); opacity: 0; }
+      100% { transform: scale(1) translateY(0);   opacity: 1; }
+    }
+    @keyframes heroLogoFloat {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50%      { transform: scale(1) translateY(-4px); }
     }
     @keyframes heroTitleEntrance {
       0%   { opacity: 0; transform: translateY(16px); }
@@ -138,6 +155,29 @@
       border-color: #ef4444 !important;
       animation: invalidPulse 2s ease-in-out infinite;
     }
+
+    /* JSON textarea — subtle one-time shimmer on first focus */
+    .json-textarea.first-focus-shimmer {
+      position: relative;
+    }
+    .json-textarea.first-focus-shimmer::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(110deg,
+        transparent 30%,
+        rgba(99,102,241,0.08) 50%,
+        transparent 70%);
+      background-size: 200% 100%;
+      pointer-events: none;
+      border-radius: inherit;
+      animation: shimmerSweep 1.4s ease-out forwards;
+    }
+    @keyframes shimmerSweep {
+      0%   { background-position: 200% 0; opacity: 0; }
+      30%  { opacity: 1; }
+      100% { background-position: -100% 0; opacity: 0; }
+    }
+
     .json-validator-indicator {
       display: flex; align-items: center; gap: 6px;
       font-size: 12px; margin-top: 6px; min-height: 20px;
@@ -197,11 +237,22 @@
     .schema-error-list li { margin-bottom: 2px; }
 
     /* ── Mode Cards ── */
-    .mode-card { border-left: 4px solid transparent; cursor: pointer; }
+    .mode-card { border-left: 4px solid transparent; cursor: pointer; position: relative; overflow: hidden; }
     #examModeCard   { border-left-color: #3b82f6; }
     #studyModeCard  { border-left-color: #22c55e; }
     #retakeModeCard { border-left-color: #f59e0b; }
     .mode-card.selected { border-left-width: 5px; background: rgba(99, 102, 241, 0.05); }
+
+    /* iOS-style tap glow on mode cards (mobile-friendly, subtle) */
+    .mode-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(99,102,241,0.18), transparent 70%);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s ease;
+      border-radius: inherit;
+    }
+    .mode-card.tap-glow::after { opacity: 1; }
 
     /* ── Config Divider ── */
     .config-divider {
@@ -327,6 +378,16 @@
       box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
     }
 
+    /* AI prompt textarea — subtle highlight pulse on generation */
+    .custom-number-input.ai-pulse {
+      animation: aiPromptPulse 1.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes aiPromptPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(168,85,247,0); border-color: var(--border); }
+      30%  { box-shadow: 0 0 0 4px rgba(168,85,247,0.18); border-color: rgba(168,85,247,0.55); }
+      100% { box-shadow: 0 0 0 0 rgba(168,85,247,0); border-color: var(--border); }
+    }
+
     .section-label {
       display: block; font-size: 11px; font-weight: 700;
       color: var(--text-primary); margin-bottom: 5px;
@@ -351,7 +412,7 @@
       border: 1px solid var(--border); color: var(--text-primary); white-space: nowrap;
     }
 
-    /* ── BUG 4: How to Use — Collapsible ── */
+    /* ── How to Use — Collapsible ── */
     .how-to-toggle {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 8px 14px; font-size: 12px; font-weight: 600;
@@ -378,7 +439,7 @@
       margin-top: 10px; padding-top: 4px;
     }
 
-    /* ── Modals ── */
+    /* ── Modals (Compatibility shim: support both .active AND .show) ── */
     .modal-overlay {
       display: none; position: fixed; top: 0; left: 0;
       width: 100%; height: 100%; z-index: 2000;
@@ -388,7 +449,9 @@
       padding: 16px; box-sizing: border-box;
       opacity: 0; transition: opacity 0.3s ease;
     }
-    .modal-overlay.active { display: flex; opacity: 1; }
+    .modal-overlay.active,
+    .modal-overlay.show { display: flex; opacity: 1; }
+
     .modal-box {
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: 16px; padding: 24px 22px 18px 22px;
@@ -398,7 +461,9 @@
       transform: translateY(20px) scale(0.98); opacity: 0;
       transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
     }
-    .modal-overlay.active .modal-box { transform: translateY(0) scale(1); opacity: 1; }
+    .modal-overlay.active .modal-box,
+    .modal-overlay.show   .modal-box { transform: translateY(0) scale(1); opacity: 1; }
+
     .modal-icon {
       display: flex; align-items: center; justify-content: center;
       margin: 0 auto 8px auto; width: 44px; height: 44px;
@@ -424,7 +489,8 @@
         padding-bottom: max(18px, env(safe-area-inset-bottom));
         transform: translateY(100%);
       }
-      .modal-overlay.active .modal-box { transform: translateY(0); }
+      .modal-overlay.active .modal-box,
+      .modal-overlay.show   .modal-box { transform: translateY(0); }
     }
 
     /* Confirm Modal */
@@ -446,9 +512,7 @@
     .btn-confirm-danger:hover { background: #dc2626; }
 
     /* ── Quiz Config Reveal ── */
-    .quiz-config-section {
-      display: none;
-    }
+    .quiz-config-section { display: none; }
     .quiz-config-section.revealed {
       display: block;
       animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
@@ -481,8 +545,6 @@
     }
     .toggle-switch input:checked + .toggle-track { background: var(--accent); }
     .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); }
-    
-    /* Focus visible for custom toggle */
     .toggle-switch input:focus-visible + .toggle-track { box-shadow: 0 0 0 3px rgba(99,102,241,0.3); }
 
     /* ── Difficulty Meter ── */
@@ -537,8 +599,44 @@
     .pomodoro-toggle { z-index: 950; }
     .pomodoro-widget { z-index: 960; }
 
-    /* ── Toast ── */
-    .toast { z-index: 3000; }
+    /* Pomodoro action button SVGs */
+    .pomo-actions .btn {
+      display: inline-flex; align-items: center;
+      justify-content: center; gap: 4px;
+    }
+    .pomo-actions .btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    /* ── Toast — Premium feel ── */
+    .toast {
+      z-index: 3000;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: rgba(21, 28, 46, 0.92) !important;
+      border: 1px solid rgba(99, 102, 241, 0.25) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                  0 0 0 1px rgba(255, 255, 255, 0.04) inset !important;
+      transition: opacity 0.35s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.45s cubic-bezier(0.16,1,0.3,1) !important;
+      display: inline-flex !important;
+      align-items: center; gap: 8px;
+    }
+    [data-theme="light"] .toast {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      color: var(--text-primary) !important;
+    }
+    .toast.toast-success { border-color: rgba(34, 197, 94, 0.4) !important; }
+    .toast.toast-warning { border-color: rgba(245, 158, 11, 0.4) !important; }
+    .toast.toast-error   { border-color: rgba(239, 68, 68, 0.4) !important; }
+    .toast.toast-info    { border-color: rgba(99, 102, 241, 0.35) !important; }
+    .toast .toast-icon-svg {
+      width: 16px; height: 16px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .toast.toast-success .toast-icon-svg { color: #22c55e; }
+    .toast.toast-warning .toast-icon-svg { color: #f59e0b; }
+    .toast.toast-error   .toast-icon-svg { color: #ef4444; }
+    .toast.toast-info    .toast-icon-svg { color: #6366f1; }
 
     /* ── Skip Link ── */
     .skip-link {
@@ -548,6 +646,25 @@
       text-decoration: none; transition: top 0.2s; z-index: 9999;
     }
     .skip-link:focus { top: 0; }
+
+    /* ── Mobile Nav Drawer — Smooth slide-in from right (BUG #7 fix) ── */
+    .mobile-nav-drawer {
+      animation: slideInRight 0.42s cubic-bezier(0.22, 1, 0.36, 1) !important;
+      will-change: transform;
+    }
+    @keyframes slideInRight {
+      0%   { transform: translateX(100%); opacity: 0.4; }
+      60%  { opacity: 1; }
+      100% { transform: translateX(0);    opacity: 1; }
+    }
+
+    /* ── Theme toggle transition (smooth SVG swap) ── */
+    #themeBtn svg {
+      transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    #themeBtn.theme-switching svg {
+      opacity: 0; transform: scale(0.7) rotate(30deg);
+    }
   </style>
 </head>
 <body>
@@ -567,7 +684,7 @@
           <circle id="navGoalRing" cx="18" cy="18" r="14" fill="none" stroke="var(--accent-red)" stroke-width="3" stroke-dasharray="87.96" stroke-dashoffset="87.96" stroke-linecap="round" style="transition: stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1), stroke 0.8s ease; transform: rotate(-90deg); transform-origin: 50% 50%;"></circle>
         </svg>
       </button>
-      
+
       <button class="nav-icon-btn" onclick="openModal('bankModal')" title="Question Bank" aria-label="Question Bank">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <ellipse cx="12" cy="5" rx="9" ry="3"/>
@@ -575,20 +692,25 @@
           <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
         </svg>
       </button>
+
       <button class="nav-icon-btn" onclick="openModal('folderModal')" title="Review Folders" aria-label="Review Folders">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
         </svg>
       </button>
+
       <div class="ai-status connected" id="aiStatus" title="AI Integration Status">
         <span class="ai-status-dot"></span>
         <span id="aiStatusText">AI Ready</span>
       </div>
+
       <button class="nav-icon-btn" onclick="openModal('aiConfigModal')" title="AI Settings" aria-label="AI Settings">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       </button>
+
+      <!-- BUG #2 FIX: SVG preserved — toggleTheme() override in inline script handles swap -->
       <button class="nav-icon-btn" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn" aria-label="Toggle Theme">
         <svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5"/>
@@ -602,6 +724,7 @@
           <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
         </svg>
       </button>
+
       <button class="nav-icon-btn" onclick="openModal('helpModal')" title="Help & Shortcuts" aria-label="Help">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/>
@@ -681,7 +804,7 @@
         aria-label="JSON question input"
       ></textarea>
 
-      <div class="json-validator-indicator" id="jsonValidatorIndicator">
+      <div class="json-validator-indicator" id="jsonValidatorIndicator" aria-live="polite">
         <span id="jsonValidatorText"></span>
         <button class="json-help-btn" id="jsonHelpBtn" onclick="toggleJSONHelp()" title="JSON formatting help" aria-label="JSON help">?</button>
       </div>
@@ -733,7 +856,7 @@
         <button class="smart-filter-chip" data-tag="ALL" onclick="resetSmartFilters()">All</button>
       </div>
 
-      <div class="parse-status" id="parseStatus"></div>
+      <div class="parse-status" id="parseStatus" aria-live="polite"></div>
 
       <div class="q-preview" id="qPreview">
         <h3 id="qPreviewTitle"></h3>
@@ -748,7 +871,9 @@
         <div class="mode-selector" id="modeSelector">
           <h3>Choose Your Quiz Mode</h3>
           <div class="mode-cards">
-            <div class="mode-card" id="examModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('exam')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('exam');}">
+            <div class="mode-card" id="examModeCard" tabindex="0" role="button" aria-pressed="false"
+                 onclick="selectMode('exam')"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('exam');}">
               <span class="mode-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/>
@@ -758,7 +883,9 @@
               <div class="mode-name">Exam Mode</div>
               <div class="mode-desc">Timed · CBT-style · Final submit · Full review</div>
             </div>
-            <div class="mode-card" id="studyModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('study')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('study');}">
+            <div class="mode-card" id="studyModeCard" tabindex="0" role="button" aria-pressed="false"
+                 onclick="selectMode('study')"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('study');}">
               <span class="mode-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -768,7 +895,9 @@
               <div class="mode-name">Study Mode</div>
               <div class="mode-desc">No timer · Instant feedback · AI help · Learn deeply</div>
             </div>
-            <div class="mode-card" id="retakeModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('retake')" style="display:none" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('retake');}">
+            <div class="mode-card" id="retakeModeCard" tabindex="0" role="button" aria-pressed="false"
+                 onclick="selectMode('retake')" style="display:none"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('retake');}">
               <span class="mode-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="1 4 1 10 7 10"/>
@@ -784,11 +913,11 @@
         <div class="timer-config" id="timerConfig">
           <label>Exam Timer</label>
           <div class="timer-presets">
-            <button class="timer-preset" onclick="setTimerPreset(0)">No Limit</button>
-            <button class="timer-preset" onclick="setTimerPreset(30)">30s/Q</button>
-            <button class="timer-preset" onclick="setTimerPreset(60)">1 min/Q</button>
-            <button class="timer-preset active" onclick="setTimerPreset(90)">1.5 min/Q</button>
-            <button class="timer-preset" onclick="setTimerPreset(120)">2 min/Q</button>
+            <button class="timer-preset" onclick="setTimerPreset(event, 0)">No Limit</button>
+            <button class="timer-preset" onclick="setTimerPreset(event, 30)">30s/Q</button>
+            <button class="timer-preset" onclick="setTimerPreset(event, 60)">1 min/Q</button>
+            <button class="timer-preset active" onclick="setTimerPreset(event, 90)">1.5 min/Q</button>
+            <button class="timer-preset" onclick="setTimerPreset(event, 120)">2 min/Q</button>
           </div>
           <div class="custom-time">
             <input type="number" id="customMinutes" min="0" placeholder="Custom (min)" class="custom-number-input" style="width: auto;">
@@ -820,7 +949,8 @@
               <div class="settings-row-sub">Randomise order each session</div>
             </div>
           </div>
-          <label class="toggle-switch" aria-label="Shuffle questions" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleQuestionsToggle').click();}">
+          <label class="toggle-switch" aria-label="Shuffle questions" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleQuestionsToggle').click();}">
             <input type="checkbox" id="shuffleQuestionsToggle" onchange="onShuffleToggle()">
             <span class="toggle-track"></span>
           </label>
@@ -841,7 +971,8 @@
               <div class="settings-row-sub">Randomise A/B/C/D order per question</div>
             </div>
           </div>
-          <label class="toggle-switch" aria-label="Shuffle answer options" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleOptionsToggle').click();}">
+          <label class="toggle-switch" aria-label="Shuffle answer options" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleOptionsToggle').click();}">
             <input type="checkbox" id="shuffleOptionsToggle" onchange="onShuffleOptionsToggle()">
             <span class="toggle-track"></span>
           </label>
@@ -874,11 +1005,17 @@
           <button class="btn btn-primary btn-lg btn-full" onclick="startQuiz()">Start Quiz</button>
         </div>
 
-      </div></div></div><button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()" title="Back to top" aria-label="Back to top">
+      </div>
+    </div>
+  </div>
+
+  <button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()" title="Back to top" aria-label="Back to top">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="18 15 12 9 6 15"/>
     </svg>
   </button>
+
+  <!-- ── MODALS ── -->
 
   <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
     <div class="modal-box" style="max-width:380px; text-align:center;">
@@ -977,7 +1114,6 @@
               <span class="section-label">Number of Questions</span>
               <input type="number" id="aiNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="e.g. 10">
             </div>
-            
             <div style="flex:1.5;min-width:140px;">
               <span class="section-label">Question Format</span>
               <select id="aiFormatTopic" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -986,7 +1122,6 @@
                 <option value="image">Image-Based Only</option>
               </select>
             </div>
-
             <div style="flex:2;min-width:160px;">
               <span class="section-label">Exam Standard</span>
               <select id="aiStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -1026,7 +1161,6 @@
               <span class="section-label">Number of Questions</span>
               <input type="number" id="aiNotesNumQuestions" value="10" min="1" max="999" class="custom-number-input" placeholder="e.g. 10">
             </div>
-            
             <div style="flex:1.5;min-width:140px;">
               <span class="section-label">Question Format</span>
               <select id="aiFormatNotes" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -1035,7 +1169,6 @@
                 <option value="image">Image-Based Only</option>
               </select>
             </div>
-
             <div style="flex:2;min-width:160px;">
               <span class="section-label">Exam Standard</span>
               <select id="aiNotesStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
@@ -1101,7 +1234,8 @@
           </div>
         </div>
 
-      </div><div class="modal-actions">
+      </div>
+      <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('aiPromptModal')">Close</button>
       </div>
     </div>
@@ -1237,22 +1371,49 @@
     </div>
   </div>
 
-  <button class="pomodoro-toggle" id="pomodoroToggle" onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()" title="Focus Timer" aria-label="Pomodoro Focus Timer">
+  <!-- ── POMODORO ── -->
+  <button class="pomodoro-toggle" id="pomodoroToggle"
+          onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()"
+          title="Focus Timer" aria-label="Pomodoro Focus Timer">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="10"/>
       <polyline points="12 6 12 12 16 14"/>
     </svg>
   </button>
+
   <div class="pomodoro-widget" id="pomodoroWidget">
     <div class="pomodoro-body">
       <div class="pomo-header">
         <span class="pomo-label" id="pomoLabel">FOCUS</span>
-        <button class="btn btn-ghost btn-xs" onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()" style="padding:4px 8px">&times;</button>
+        <button class="btn btn-ghost btn-xs"
+                onclick="if(typeof togglePomodoroWidget==='function') togglePomodoroWidget()"
+                style="padding:4px 8px" aria-label="Close pomodoro">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
       <div class="pomo-time" id="pomoTime">25:00</div>
       <div class="pomo-actions">
-        <button class="btn btn-green btn-xs" id="pomoStartBtn" onclick="if(typeof startPomodoro==='function') startPomodoro()">Start</button>
-        <button class="btn btn-ghost btn-xs" onclick="if(typeof resetPomodoro==='function') resetPomodoro()">Reset</button>
+        <!-- BUG #5 FIX: SVG play icon rendered in HTML, maintained by updatePomoStartButton() -->
+        <button class="btn btn-green btn-xs" id="pomoStartBtn"
+                onclick="if(typeof startPomodoro==='function') startPomodoro()"
+                aria-label="Start or pause">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="6 4 20 12 6 20 6 4"/>
+          </svg>
+          Start
+        </button>
+        <button class="btn btn-ghost btn-xs"
+                onclick="if(typeof resetPomodoro==='function') resetPomodoro()"
+                aria-label="Reset timer">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+          Reset
+        </button>
         <button class="btn btn-ghost btn-xs" onclick="if(typeof setPomodoroPreset==='function') setPomodoroPreset(25)">25m</button>
         <button class="btn btn-ghost btn-xs" onclick="if(typeof setPomodoroPreset==='function') setPomodoroPreset(50)">50m</button>
       </div>
@@ -1264,41 +1425,189 @@
   <script>
     'use strict';
 
-    // ── Modal System ──
-    var _openModalCount = 0;
+    // ═══════════════════════════════════════════════════════
+    // SVG ICON LIBRARY (matches website style — no emojis)
+    // ═══════════════════════════════════════════════════════
+    const SVG_ICONS = {
+      play: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
+      pause: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
+      success: '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12.5 11 15.5 16 9.5"/></svg>',
+      warning: '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+      error:   '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+      info:    '<svg class="toast-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+      sun:  '<svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+      moon: '<svg id="themeIconSvg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+    };
+
+    // SVG strings for sun/moon without the id (used inside themeBtn to avoid duplicate ids)
+    const THEME_SVG = {
+      sun:  '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+      moon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+    };
+
+    // ═══════════════════════════════════════════════════════
+    // BUG #2 COMPLETE FIX — toggleTheme() override
+    // Preserves SVG, adds smooth transition, syncs with
+    // script.js theme logic without breaking it
+    // ═══════════════════════════════════════════════════════
+    function _setThemeIcon(isDark) {
+      const btn = document.getElementById('themeBtn');
+      if (!btn) return;
+      // Animate out
+      btn.classList.add('theme-switching');
+      setTimeout(function() {
+        // Swap SVG — dark mode shows sun (to switch to light), light mode shows moon
+        btn.innerHTML = isDark ? THEME_SVG.sun : THEME_SVG.moon;
+        btn.setAttribute('title', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+        btn.setAttribute('aria-label', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+        // Animate in
+        btn.classList.remove('theme-switching');
+      }, 150);
+    }
+
+    window.toggleTheme = function() {
+      // Determine current theme state
+      const isCurrentlyDark = !document.body.classList.contains('light') &&
+                               document.documentElement.getAttribute('data-theme') !== 'light';
+      // Toggle body class (matches script.js pattern)
+      document.body.classList.toggle('light');
+      document.documentElement.setAttribute('data-theme',
+        document.body.classList.contains('light') ? 'light' : 'dark'
+      );
+      // Persist
+      try {
+        localStorage.setItem('medquiz_theme',
+          document.body.classList.contains('light') ? 'light' : 'dark'
+        );
+      } catch(e) {}
+      // After toggle: isCurrentlyDark was true → now light → show moon
+      // isCurrentlyDark was false → now dark → show sun
+      _setThemeIcon(!document.body.classList.contains('light'));
+      // Update meta theme-color
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) {
+        metaTheme.setAttribute('content',
+          document.body.classList.contains('light') ? '#ffffff' : '#0a0e1a'
+        );
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════
+    // MODAL SYSTEM (Bug #1 — supports both .active and .show)
+    // ═══════════════════════════════════════════════════════
+    let _openModalCount = 0;
+
     function openModal(id) {
-      var overlay = document.getElementById(id);
+      const overlay = document.getElementById(id);
       if (!overlay) return;
       _openModalCount++;
       document.body.style.overflow = 'hidden';
       overlay.classList.add('active');
-      overlay.onclick = function(e) { if (e.target === overlay) closeModal(id); };
-      var focusable = overlay.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+      overlay.classList.add('show');
+      overlay.onclick = function(e) {
+        if (e.target === overlay) closeModal(id);
+      };
+      // Focus first focusable element for accessibility
+      const focusable = overlay.querySelectorAll(
+        'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
+      );
       if (focusable.length) focusable[0].focus();
     }
+
     function closeModal(id) {
-      var overlay = document.getElementById(id);
+      const overlay = document.getElementById(id);
       if (!overlay) return;
       overlay.classList.remove('active');
+      overlay.classList.remove('show');
       overlay.onclick = null;
       _openModalCount = Math.max(0, _openModalCount - 1);
       if (_openModalCount === 0) document.body.style.overflow = '';
     }
+
+    // Escape key closes top-most modal
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        var activeModals = document.querySelectorAll('.modal-overlay.active');
-        if (activeModals.length) closeModal(activeModals[activeModals.length - 1].id);
-      }
+      if (e.key !== 'Escape') return;
+      const activeModals = document.querySelectorAll('.modal-overlay.active, .modal-overlay.show');
+      if (activeModals.length) closeModal(activeModals[activeModals.length - 1].id);
     });
 
-    // ── Custom Confirm ──
+    // Expose globally so script.js can call them
+    window.openModal  = openModal;
+    window.closeModal = closeModal;
+
+    // ═══════════════════════════════════════════════════════
+    // PREMIUM TOAST (Bug #6 — SVG icons, no emoji)
+    // ═══════════════════════════════════════════════════════
+    const EMOJI_TO_TYPE = {
+      '✅':'success','✔':'success','✔️':'success',
+      '🎉':'success','🏆':'success','💾':'success',
+      '📥':'success','📁':'success','🎯':'success',
+      '🔄':'info','🔍':'info','📊':'info','💡':'info',
+      '🤖':'info','📌':'info','📚':'info','⭐':'info',
+      '☕':'info','🍅':'info','⏱':'info','⏱️':'info',
+      '⏭':'info','🏦':'info','✨':'info','📈':'info',
+      '💪':'info','👍':'info','🌙':'info','☀️':'info',
+      '🚩':'warning','⚖️':'warning',
+      '❌':'error','✕':'error','✖':'error',
+      '⚠️':'warning','⚠':'warning'
+    };
+
+    function premiumShowToast(msg, dur) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      const text = String(msg || '');
+
+      // Strip leading emoji and map to type
+      let type = 'info';
+      let cleanText = text.trimStart();
+
+      // Check multi-char emoji first (e.g. ✔️ is 2 chars)
+      const twoChar = cleanText.slice(0, 2);
+      const oneChar = cleanText.slice(0, 1);
+
+      if (EMOJI_TO_TYPE[twoChar] !== undefined) {
+        type = EMOJI_TO_TYPE[twoChar];
+        cleanText = cleanText.slice(2).trimStart();
+      } else if (EMOJI_TO_TYPE[oneChar] !== undefined) {
+        type = EMOJI_TO_TYPE[oneChar];
+        cleanText = cleanText.slice(1).trimStart();
+      }
+
+      // Catch any remaining leading Unicode emoji (surrogate pairs etc.)
+      cleanText = cleanText.replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\s]+/u, '').trimStart();
+
+      // Set type-specific border class
+      toast.className = 'toast toast-' + type;
+
+      // Render SVG icon + text
+      const iconHtml = SVG_ICONS[type] || SVG_ICONS.info;
+      toast.innerHTML = iconHtml + '<span>' + cleanText + '</span>';
+
+      // Show
+      toast.classList.add('show');
+      clearTimeout(toast._toastTimeout);
+      toast._toastTimeout = setTimeout(function() {
+        toast.classList.remove('show');
+      }, dur || 3000);
+    }
+
+    // Override script.js showToast globally
+    window.showToast = premiumShowToast;
+
+    // ═══════════════════════════════════════════════════════
+    // CUSTOM CONFIRM MODAL
+    // ═══════════════════════════════════════════════════════
     function showConfirm(message, onConfirm, title) {
-      var msgEl   = document.getElementById('confirmModalMessage');
-      var titleEl = document.getElementById('confirmModalTitle');
-      var okBtn   = document.getElementById('confirmOkBtn');
-      if (titleEl) titleEl.textContent = title || 'Are you sure?';
-      if (msgEl)   msgEl.textContent   = message || 'This action cannot be undone.';
-      var newOkBtn = okBtn.cloneNode(true);
+      const msgEl   = document.getElementById('confirmModalMessage');
+      const titleEl = document.getElementById('confirmModalTitle');
+      const okBtn   = document.getElementById('confirmOkBtn');
+      if (!msgEl || !titleEl || !okBtn) return;
+
+      titleEl.textContent = title   || 'Are you sure?';
+      msgEl.textContent   = message || 'This action cannot be undone.';
+
+      // Clone button to remove any previous event listeners
+      const newOkBtn = okBtn.cloneNode(true);
       okBtn.parentNode.replaceChild(newOkBtn, okBtn);
       newOkBtn.addEventListener('click', function() {
         closeModal('confirmModal');
@@ -1306,117 +1615,203 @@
       });
       openModal('confirmModal');
     }
+
+    // Bug #4 fix: only confirmClearInput() — no old clearInput()
     function confirmClearInput() {
-      var textarea = document.getElementById('jsonInput');
-      if (!textarea || !textarea.value.trim()) { showToast('Input is already empty.'); return; }
+      const textarea = document.getElementById('jsonInput');
+      if (!textarea || !textarea.value.trim()) {
+        showToast('Input is already empty.');
+        return;
+      }
       showConfirm(
         'Clear all pasted questions? This cannot be undone.',
         function() {
-          textarea.value = '';
+          const ta = document.getElementById('jsonInput');
+          const ps = document.getElementById('parseStatus');
+          const qp = document.getElementById('qPreview');
+          const sf = document.getElementById('smartFilters');
+          const dm = document.getElementById('difficultyMeterWrap');
+          if (ta) ta.value = '';
           validateJSONLive();
           hideSchemaErrors();
           hideQuizConfig();
-          var ps = document.getElementById('parseStatus');
           if (ps) ps.innerHTML = '';
-          var qp = document.getElementById('qPreview');
           if (qp) qp.style.display = 'none';
-          var sf = document.getElementById('smartFilters');
           if (sf) sf.style.display = 'none';
-          var dm = document.getElementById('difficultyMeterWrap');
           if (dm) dm.style.display = 'none';
           showToast('Input cleared.');
         },
         'Clear All Questions?'
       );
     }
+
     function confirmResetDailyGoal() {
       showConfirm(
-        'Reset today\'s progress to 0? Your session count will be permanently cleared.',
+        "Reset today's progress to 0? Your session count will be permanently cleared.",
         function() {
-          var today = new Date().toISOString().slice(0, 10);
           localStorage.setItem('medquiz_daily_count', '0');
           localStorage.setItem('medquiz_daily_date',  new Date().toDateString());
+          const today = new Date().toISOString().slice(0, 10);
           if (typeof openDB === 'function') {
             openDB().then(function(db) {
-              var tx    = db.transaction('milestones', 'readwrite');
-              var store = tx.objectStore('milestones');
+              const tx    = db.transaction('milestones', 'readwrite');
+              const store = tx.objectStore('milestones');
               store.put({ date: today, answered: 0 });
               tx.oncomplete = function() {
                 if (typeof updateMilestoneBar === 'function') updateMilestoneBar();
                 showToast('Daily progress reset to zero.');
               };
             }).catch(function() { showToast('Daily progress reset.'); });
-          } else { showToast('Daily progress reset.'); }
+          } else {
+            showToast('Daily progress reset.');
+          }
         },
         'Reset Daily Progress?'
       );
     }
 
-    // ── Particles ──
-    (function() {
-      var canvas = document.getElementById('particlesCanvas');
+    // ═══════════════════════════════════════════════════════
+    // PARTICLE BACKGROUND
+    // ═══════════════════════════════════════════════════════
+    (function initParticles() {
+      const canvas = document.getElementById('particlesCanvas');
       if (!canvas) return;
-      var ctx = canvas.getContext('2d');
-      var particles = [], animationFrameId = null, w, h;
-      function getParticleCount() { var divisor = window.innerWidth < 600 ? 50 : 28; return Math.min(80, Math.max(15, Math.floor(window.innerWidth / divisor))); }
-      function resizeCanvas() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-      function createParticle() { return { x: Math.random()*w, y: Math.random()*h, size: Math.random()*2.5+0.8, speedX: (Math.random()-0.5)*0.4, speedY: -(Math.random()*0.6+0.2), opacity: Math.random()*0.5+0.15, pulse: Math.random()*Math.PI*2 }; }
-      function initParticles() { particles.length = 0; for (var i = 0; i < getParticleCount(); i++) particles.push(createParticle()); }
+      const ctx = canvas.getContext('2d');
+      const particles = [];
+      let animationFrameId = null;
+      let w, h;
+
+      function getCount() {
+        return Math.min(80, Math.max(15,
+          Math.floor(window.innerWidth / (window.innerWidth < 600 ? 50 : 28))
+        ));
+      }
+
+      function resize() {
+        w = canvas.width  = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+
+      function makeParticle() {
+        return {
+          x:      Math.random() * w,
+          y:      Math.random() * h,
+          size:   Math.random() * 2.5 + 0.8,
+          speedX: (Math.random() - 0.5) * 0.4,
+          speedY: -(Math.random() * 0.6 + 0.2),
+          opacity: Math.random() * 0.5 + 0.15,
+          pulse:  Math.random() * Math.PI * 2
+        };
+      }
+
+      function init() {
+        particles.length = 0;
+        const count = getCount();
+        for (let i = 0; i < count; i++) particles.push(makeParticle());
+      }
+
       function animate() {
         ctx.clearRect(0, 0, w, h);
-        var isDark = !document.body.classList.contains('light');
-        var col    = isDark ? '255,255,255' : '99,102,241';
-        for (var i = 0; i < particles.length; i++) {
-          var p = particles[i];
-          p.x += p.speedX; p.y += p.speedY; p.pulse += 0.02;
-          var alpha = Math.min(0.7, Math.max(0, p.opacity + Math.sin(p.pulse)*0.1));
-          if (p.y < -10) { p.y = h+10; p.x = Math.random()*w; }
-          if (p.x < -10) p.x = w+10;
+        const isDark = !document.body.classList.contains('light');
+        const col    = isDark ? '255,255,255' : '99,102,241';
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.x     += p.speedX;
+          p.y     += p.speedY;
+          p.pulse += 0.02;
+
+          const alpha = Math.min(0.7, Math.max(0, p.opacity + Math.sin(p.pulse) * 0.1));
+
+          if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+          if (p.x < -10)  p.x = w + 10;
           if (p.x > w+10) p.x = -10;
-          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-          ctx.fillStyle = 'rgba('+col+','+alpha+')'; ctx.fill();
-          if (p.size > 1.8) { ctx.beginPath(); ctx.arc(p.x, p.y, p.size*2.5, 0, Math.PI*2); ctx.fillStyle = 'rgba('+col+','+(alpha*0.25)+')'; ctx.fill(); }
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(' + col + ',' + alpha + ')';
+          ctx.fill();
+
+          if (p.size > 1.8) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(' + col + ',' + (alpha * 0.25) + ')';
+            ctx.fill();
+          }
         }
         animationFrameId = requestAnimationFrame(animate);
       }
-      function startAnimation() { if (!animationFrameId) animate(); }
-      function stopAnimation() { if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; } }
-      document.addEventListener('visibilitychange', function() { document.hidden ? stopAnimation() : startAnimation(); });
-      resizeCanvas(); initParticles(); startAnimation();
-      window.addEventListener('resize', function() { resizeCanvas(); initParticles(); });
+
+      function start() { if (!animationFrameId) animate(); }
+      function stop()  {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      }
+
+      document.addEventListener('visibilitychange', function() {
+        document.hidden ? stop() : start();
+      });
+
+      resize(); init(); start();
+      window.addEventListener('resize', function() { resize(); init(); });
     })();
 
-    // ── Scroll & UI Toggles ──
+    // ═══════════════════════════════════════════════════════
+    // SCROLL & UI HELPERS
+    // ═══════════════════════════════════════════════════════
     window.addEventListener('scroll', function() {
-      var scrollY = window.scrollY;
-      var navbar  = document.getElementById('mainNavbar');
-      if (navbar) navbar.classList.toggle('scrolled', scrollY > 10);
-      var btn = document.getElementById('backToTopBtn');
-      if (btn) btn.classList.toggle('visible', scrollY > 400);
-    });
-    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    
+      const y      = window.scrollY;
+      const navbar = document.getElementById('mainNavbar');
+      const topBtn = document.getElementById('backToTopBtn');
+      if (navbar) navbar.classList.toggle('scrolled', y > 10);
+      if (topBtn) topBtn.classList.toggle('visible', y > 400);
+    }, { passive: true });
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function revealQuizConfig() {
-      var s = document.getElementById('quizConfigSection');
-      if (!s) return;
-      s.style.display = ''; s.style.removeProperty('display');
-      requestAnimationFrame(function() { 
-        s.classList.add('revealed'); 
-        setTimeout(function() { s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); 
+      const section = document.getElementById('quizConfigSection');
+      if (!section) return;
+      section.style.removeProperty('display');
+      requestAnimationFrame(function() {
+        section.classList.add('revealed');
+        setTimeout(function() {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
       });
     }
-    function hideQuizConfig() { var s = document.getElementById('quizConfigSection'); if (s) s.classList.remove('revealed'); }
 
-    // ── Events ──
+    function hideQuizConfig() {
+      const section = document.getElementById('quizConfigSection');
+      if (section) section.classList.remove('revealed');
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // QUIZ PARSED EVENTS
+    // ═══════════════════════════════════════════════════════
     document.addEventListener('quizParsed', function(e) {
-      var detail    = (e && e.detail) ? e.detail : {};
-      var count     = detail.count     || 0;
-      var questions = detail.questions || [];
+      const detail    = (e && e.detail) ? e.detail : {};
+      const count     = detail.count     || 0;
+      const questions = detail.questions || [];
 
-      var parseStatus = document.getElementById('parseStatus');
+      const parseStatus = document.getElementById('parseStatus');
       if (parseStatus) {
-        var svgCheck = '<span class="status-check-svg"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle class="check-circle" cx="12" cy="12" r="9"/><polyline class="check-mark" points="7 12.5 10.5 16 17 9"/></svg></span>';
-        parseStatus.innerHTML = svgCheck + ' <span style="color:var(--text-primary);font-weight:600;">' + count + ' question' + (count !== 1 ? 's' : '') + ' loaded successfully</span>';
+        const svgCheck = [
+          '<span class="status-check-svg">',
+          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none"',
+          ' stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">',
+          '<circle class="check-circle" cx="12" cy="12" r="9"/>',
+          '<polyline class="check-mark" points="7 12.5 10.5 16 17 9"/>',
+          '</svg></span>'
+        ].join('');
+        parseStatus.innerHTML =
+          svgCheck +
+          ' <span style="color:var(--text-primary);font-weight:600;">' +
+          count + ' question' + (count !== 1 ? 's' : '') + ' loaded successfully</span>';
       }
 
       if (questions.length > 0) updateDifficultyMeter(questions);
@@ -1424,97 +1819,206 @@
       resetLoadButton(true);
     });
 
-    document.addEventListener('quizParseError', function() { resetLoadButton(false); });
+    document.addEventListener('quizParseError', function() {
+      resetLoadButton(false);
+    });
 
+    // ═══════════════════════════════════════════════════════
+    // DIFFICULTY METER with counter-up animation
+    // ═══════════════════════════════════════════════════════
     function updateDifficultyMeter(questions) {
-      var wrap  = document.getElementById('difficultyMeterWrap');
-      var fill  = document.getElementById('difficultyFill');
-      var badge = document.getElementById('difficultyBadge');
-      var label = document.getElementById('difficultyBadgeText');
+      const wrap  = document.getElementById('difficultyMeterWrap');
+      const fill  = document.getElementById('difficultyFill');
+      const badge = document.getElementById('difficultyBadge');
+      const label = document.getElementById('difficultyBadgeText');
       if (!wrap || !fill || !badge || !label) return;
-      var total = 0, count = 0;
-      questions.forEach(function(q) {
-        var d = parseFloat(q.difficulty);
+
+      let total = 0, count = 0;
+      for (let i = 0; i < questions.length; i++) {
+        const d = parseFloat(questions[i].difficulty);
         if (!isNaN(d) && d >= 1 && d <= 5) { total += d; count++; }
-      });
+      }
       if (count === 0) { wrap.style.display = 'none'; return; }
-      var avg  = total / count;
+
+      const avg = total / count;
       wrap.style.display = 'block';
-      var pct  = ((avg - 1) / 4) * 100;
-      var tier, tierLabel, colorHex;
+
+      const pct = ((avg - 1) / 4) * 100;
+      let tier, tierLabel, colorHex;
       if (avg < 2.4)      { tier = 'easy';   tierLabel = 'Easy';      colorHex = '#22c55e'; }
       else if (avg < 3.7) { tier = 'medium'; tierLabel = 'Moderate';  colorHex = '#f59e0b'; }
       else                { tier = 'hard';   tierLabel = 'Difficult'; colorHex = '#ef4444'; }
-      fill.style.width = '0%'; fill.style.background = colorHex;
+
+      // Reset fill then animate
+      fill.style.width      = '0%';
+      fill.style.background = colorHex;
       setTimeout(function() { fill.style.width = pct + '%'; }, 80);
-      badge.className   = 'difficulty-badge ' + tier;
-      label.textContent = tierLabel + ' (' + avg.toFixed(1) + '/5)';
+
+      badge.className = 'difficulty-badge ' + tier;
+
+      // Counter-up animation for the score number
+      animateCounterUp(label, 0, avg, 900, function(val) {
+        return tierLabel + ' (' + val.toFixed(1) + '/5)';
+      });
     }
 
-    // ── Shuffle Toggles ──
+    function animateCounterUp(el, from, to, duration, formatter) {
+      const startTime = performance.now();
+      function tick(now) {
+        const elapsed  = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        // easeOutCubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = formatter(from + (to - from) * eased);
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          el.textContent = formatter(to);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // SHUFFLE TOGGLES
+    // ═══════════════════════════════════════════════════════
     window._shuffleQuestions = false;
     window._shuffleOptions   = false;
-    window._questionTarget   = null;
-    function onShuffleToggle() { window._shuffleQuestions = document.getElementById('shuffleQuestionsToggle').checked; showToast(window._shuffleQuestions ? 'Questions will be shuffled each session.' : 'Question order preserved.'); }
-    function onShuffleOptionsToggle() { window._shuffleOptions = document.getElementById('shuffleOptionsToggle').checked; showToast(window._shuffleOptions ? 'Answer options will be randomised.' : 'Option order preserved.'); }
 
-    // ── How-to Guide ──
-    function toggleHowToGuide() {
-      var btn = document.getElementById('howToToggleBtn'), content = document.getElementById('howToGuideContent');
-      if (!btn || !content) return;
-      if (content.classList.contains('open')) { content.classList.remove('open'); btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); } 
-      else { content.classList.add('open'); btn.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+    function onShuffleToggle() {
+      const chk = document.getElementById('shuffleQuestionsToggle');
+      window._shuffleQuestions = chk ? chk.checked : false;
+      showToast(window._shuffleQuestions
+        ? 'Questions will be shuffled each session.'
+        : 'Question order preserved.'
+      );
     }
 
-    // ── Subjects & AI Prompts ──
-    var _subjectChipsBuilt = false;
-    var allSubjects = ['Anatomy','Physiology','Biochemistry','Pathology','Pharmacology','Microbiology','Forensic Medicine','Community Medicine','General Medicine','General Surgery','Obstetrics & Gynaecology','Paediatrics','Ophthalmology','ENT','Orthopaedics','Dermatology','Psychiatry','Radiology','Anaesthesiology'];
+    function onShuffleOptionsToggle() {
+      const chk = document.getElementById('shuffleOptionsToggle');
+      window._shuffleOptions = chk ? chk.checked : false;
+      showToast(window._shuffleOptions
+        ? 'Answer options will be randomised.'
+        : 'Option order preserved.'
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // HOW-TO GUIDE TOGGLE
+    // ═══════════════════════════════════════════════════════
+    function toggleHowToGuide() {
+      const btn     = document.getElementById('howToToggleBtn');
+      const content = document.getElementById('howToGuideContent');
+      if (!btn || !content) return;
+      const isOpen = content.classList.contains('open');
+      content.classList.toggle('open', !isOpen);
+      btn.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', (!isOpen).toString());
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // SUBJECTS & AI PROMPTS
+    // ═══════════════════════════════════════════════════════
+    let _subjectChipsBuilt = false;
+    const allSubjects = [
+      'Anatomy','Physiology','Biochemistry','Pathology',
+      'Pharmacology','Microbiology','Forensic Medicine',
+      'Community Medicine','General Medicine','General Surgery',
+      'Obstetrics & Gynaecology','Paediatrics','Ophthalmology',
+      'ENT','Orthopaedics','Dermatology','Psychiatry',
+      'Radiology','Anaesthesiology'
+    ];
+
     function buildSubjectChips() {
       if (_subjectChipsBuilt) return;
-      var container = document.getElementById('subjectChips');
+      const container = document.getElementById('subjectChips');
       if (!container) return;
       container.innerHTML = '';
       allSubjects.forEach(function(subj) {
-        var chip = document.createElement('span'); chip.className = 'subject-chip'; chip.textContent = subj; chip.setAttribute('role', 'button'); chip.setAttribute('tabindex', '0'); chip.setAttribute('aria-pressed', 'false');
-        chip.onclick = function() { var sel = this.classList.toggle('selected'); this.setAttribute('aria-pressed', sel ? 'true' : 'false'); updateSelectedSubjects(); };
-        chip.onkeydown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); } };
+        const chip = document.createElement('span');
+        chip.className   = 'subject-chip';
+        chip.textContent = subj;
+        chip.setAttribute('role', 'button');
+        chip.setAttribute('tabindex', '0');
+        chip.setAttribute('aria-pressed', 'false');
+        chip.addEventListener('click', function() {
+          const selected = chip.classList.toggle('selected');
+          chip.setAttribute('aria-pressed', selected ? 'true' : 'false');
+          updateSelectedSubjects();
+        });
+        chip.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chip.click(); }
+        });
         container.appendChild(chip);
       });
       _subjectChipsBuilt = true;
     }
+
     function updateSelectedSubjects() {
-      var chips = document.querySelectorAll('#subjectChips .subject-chip.selected'), selected = [];
+      const chips    = document.querySelectorAll('#subjectChips .subject-chip.selected');
+      const selected = [];
       chips.forEach(function(c) { selected.push(c.textContent); });
-      var hidden = document.getElementById('aiSelectedSubjects');
+      const hidden = document.getElementById('aiSelectedSubjects');
       if (hidden) hidden.value = selected.join(', ');
     }
-    function getSelectedSubjects() { var hidden = document.getElementById('aiSelectedSubjects'); return hidden ? hidden.value : ''; }
-    function openAIPromptModal() { buildSubjectChips(); openModal('aiPromptModal'); }
+
+    function getSelectedSubjects() {
+      const hidden = document.getElementById('aiSelectedSubjects');
+      return hidden ? hidden.value : '';
+    }
+
+    function openAIPromptModal() {
+      buildSubjectChips();
+      openModal('aiPromptModal');
+    }
+
     function switchPromptTab(tab) {
-      var tT = document.getElementById('tabTopic'), tN = document.getElementById('tabNotes');
-      var cT = document.getElementById('tabContentTopic'), cN = document.getElementById('tabContentNotes');
-      if (!tT || !tN) return;
-      if (tab === 'topic') { tT.classList.add('active'); tN.classList.remove('active'); cT.classList.add('active'); cN.classList.remove('active'); } 
-      else { tN.classList.add('active'); tT.classList.remove('active'); cN.classList.add('active'); cT.classList.remove('active'); }
+      const tT = document.getElementById('tabTopic');
+      const tN = document.getElementById('tabNotes');
+      const cT = document.getElementById('tabContentTopic');
+      const cN = document.getElementById('tabContentNotes');
+      if (!tT || !tN || !cT || !cN) return;
+      if (tab === 'topic') {
+        tT.classList.add('active');    tN.classList.remove('active');
+        cT.classList.add('active');    cN.classList.remove('active');
+      } else {
+        tN.classList.add('active');    tT.classList.remove('active');
+        cN.classList.add('active');    cT.classList.remove('active');
+      }
     }
 
     function generateAIPrompt() {
-      var selectedSubjects = getSelectedSubjects();
-      var topic    = document.getElementById('aiTopic').value.trim();
-      var numQ     = parseInt(document.getElementById('aiNumQuestions').value);
-      var format   = document.getElementById('aiFormatTopic').value;
-      var standard = document.getElementById('aiStandard').value;
-      var extra    = document.getElementById('aiExtraInstructions').value.trim();
+      const selectedSubjects = getSelectedSubjects();
+      const topicEl    = document.getElementById('aiTopic');
+      const numQEl     = document.getElementById('aiNumQuestions');
+      const formatEl   = document.getElementById('aiFormatTopic');
+      const standardEl = document.getElementById('aiStandard');
+      const extraEl    = document.getElementById('aiExtraInstructions');
+      const outputEl   = document.getElementById('aiGeneratedPrompt');
+      if (!topicEl || !numQEl || !formatEl || !standardEl || !outputEl) return;
 
-      if (!selectedSubjects && !topic) { showToast('Please select at least one subject or enter a topic.'); return; }
-      if (!numQ || numQ < 1) { showToast('Please enter a valid number of questions.'); return; }
+      const topic    = topicEl.value.trim();
+      const numQ     = parseInt(numQEl.value);
+      const format   = formatEl.value;
+      const standard = standardEl.value;
+      const extra    = extraEl ? extraEl.value.trim() : '';
 
-      var subjectPart = selectedSubjects ? 'on ' + selectedSubjects : '';
-      var topicPart   = topic ? (selectedSubjects ? ' — specifically "'+topic+'"' : 'on "'+topic+'"') : '';
+      if (!selectedSubjects && !topic) {
+        showToast('Please select at least one subject or enter a topic.');
+        return;
+      }
+      if (!numQ || numQ < 1) {
+        showToast('Please enter a valid number of questions.');
+        return;
+      }
 
-      var prompt = 'You are an expert medical educator creating exam-standard MCQs for ' + standard + ' aspirants.\n\n';
-      
-      var rules = 'STRICT RULES:\n';
+      const subjectPart = selectedSubjects ? 'on ' + selectedSubjects : '';
+      const topicPart   = topic
+        ? (selectedSubjects ? ' — specifically "' + topic + '"' : 'on "' + topic + '"')
+        : '';
+
+      let prompt = 'You are an expert medical educator creating exam-standard MCQs for ' + standard + ' aspirants.\n\n';
+      let rules  = 'STRICT RULES:\n';
       rules += '1. Each question must have EXACTLY 4 answer options (no more, no less).\n';
       rules += '2. The explanation must be IN-DEPTH and thorough. Include:\n';
       rules += '   - Why the correct answer is right (mechanism, reasoning)\n';
@@ -1524,47 +2028,55 @@
 
       if (format === 'standard') {
         prompt += 'Generate ' + numQ + ' theoretical medical MCQ questions ' + subjectPart + topicPart + '.\n\n';
-        rules += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
-      } 
-      else if (format === 'image') {
+        rules  += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
+      } else if (format === 'image') {
         prompt += 'Generate ' + numQ + ' image-based medical MCQ questions ' + subjectPart + topicPart + '.\n\n';
-        rules += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical/radiology/histology images relevant to the topic. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a clinical vignette that strictly requires visual analysis of the image to answer correctly. Verify the URL exists. DO NOT HALLUCINATE URLs.\n';
-      } 
-      else if (format === 'mix') {
-        var imgCount = Math.ceil(numQ * 0.3); // roughly 30% images
-        var theoryCount = numQ - imgCount;
+        rules  += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical/radiology/histology images relevant to the topic. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a clinical vignette that strictly requires visual analysis of the image to answer correctly. Verify the URL exists. DO NOT HALLUCINATE URLs.\n';
+      } else if (format === 'mix') {
+        const imgCount    = Math.ceil(numQ * 0.3);
+        const theoryCount = numQ - imgCount;
         prompt += 'Generate a total of ' + numQ + ' medical MCQ questions ' + subjectPart + topicPart + '. ';
         prompt += 'You MUST provide exactly ' + theoryCount + ' theoretical questions and ' + imgCount + ' image-based questions.\n\n';
-        rules += '4. For the ' + imgCount + ' image-based questions, YOU MUST USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for clear medical images. Extract the raw image URL (.jpg or .png), place it in "image_url", and build a vignette around it. DO NOT hallucinate URLs. For the ' + theoryCount + ' theoretical questions, leave "image_url" blank.\n';
+        rules  += '4. For the ' + imgCount + ' image-based questions, YOU MUST USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for clear medical images. Extract the raw image URL (.jpg or .png), place it in "image_url", and build a vignette around it. DO NOT hallucinate URLs. For the ' + theoryCount + ' theoretical questions, leave "image_url" blank.\n';
       }
 
       if (extra) rules += '5. Additional instructions: ' + extra + '\n';
       prompt += rules;
-      
       prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks. Start with [ and end with ].\n';
       prompt += 'Each object must have these exact fields:\n{\n  "question": "Full question text here",\n  "options": ["Option A", "Option B", "Option C", "Option D"],\n  "correct_option": "Must exactly match one option",\n  "explanation": "In-depth explanation",\n  "difficulty": 3,\n  "subject": "Subject name",\n  "topic": "Specific topic",\n  "tags": ["NEET PG"],\n  "image_url": "URL if image-based, otherwise empty string"\n}';
 
-      var textarea = document.getElementById('aiGeneratedPrompt');
-      textarea.value = prompt;
-      textarea.scrollIntoView({ behavior: 'smooth' });
+      outputEl.value = prompt;
+      // Subtle pulse animation to draw attention to the output
+      outputEl.classList.remove('ai-pulse');
+      void outputEl.offsetWidth; // force reflow to restart animation
+      outputEl.classList.add('ai-pulse');
+      outputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       showToast('Prompt generated! Copy and paste into any AI assistant.');
     }
 
     function generateAINotesPrompt() {
-      var notes    = document.getElementById('aiNotesContent').value.trim();
-      var numQ     = parseInt(document.getElementById('aiNotesNumQuestions').value);
-      var format   = document.getElementById('aiFormatNotes').value;
-      var standard = document.getElementById('aiNotesStandard').value;
-      var extra    = document.getElementById('aiNotesExtraInstructions').value.trim();
+      const notesEl    = document.getElementById('aiNotesContent');
+      const numQEl     = document.getElementById('aiNotesNumQuestions');
+      const formatEl   = document.getElementById('aiFormatNotes');
+      const standardEl = document.getElementById('aiNotesStandard');
+      const extraEl    = document.getElementById('aiNotesExtraInstructions');
+      const outputEl   = document.getElementById('aiNotesGeneratedPrompt');
+      if (!notesEl || !numQEl || !formatEl || !standardEl || !outputEl) return;
+
+      const notes    = notesEl.value.trim();
+      const numQ     = parseInt(numQEl.value);
+      const format   = formatEl.value;
+      const standard = standardEl.value;
+      const extra    = extraEl ? extraEl.value.trim() : '';
 
       if (!notes) { showToast('Please paste your study notes first.'); return; }
       if (!numQ || numQ < 1) { showToast('Please enter a valid number of questions.'); return; }
 
-      var prompt = 'You are an expert medical educator creating exam-standard MCQs for ' + standard + ' aspirants.\n\n';
+      let prompt = 'You are an expert medical educator creating exam-standard MCQs for ' + standard + ' aspirants.\n\n';
       prompt += 'Based on the following study notes, generate a total of ' + numQ + ' medical MCQ questions.\n\n';
       prompt += 'STUDY NOTES:\n"""\n' + notes + '\n"""\n\n';
-      
-      var rules = 'STRICT RULES:\n';
+
+      let rules = 'STRICT RULES:\n';
       rules += '1. Each question must have EXACTLY 4 answer options (no more, no less).\n';
       rules += '2. The explanation must be IN-DEPTH and thorough. Include:\n';
       rules += '   - Why the correct answer is right\n';
@@ -1574,160 +2086,444 @@
 
       if (format === 'standard') {
         rules += '4. Ensure all questions are standard text-based clinical vignettes without any images. Leave "image_url" blank ("").\n';
-      } 
-      else if (format === 'image') {
+      } else if (format === 'image') {
         rules += '4. YOU MUST USE YOUR WEB BROWSING TOOL. Search Wikimedia Commons for clear medical images relevant to the concepts in the notes. Extract the direct raw image URL (.jpg or .png) and place it in "image_url". Build a vignette that requires visual analysis. DO NOT HALLUCINATE URLs.\n';
-      } 
-      else if (format === 'mix') {
-        var imgCount = Math.ceil(numQ * 0.3);
-        var theoryCount = numQ - imgCount;
+      } else if (format === 'mix') {
+        const imgCount    = Math.ceil(numQ * 0.3);
+        const theoryCount = numQ - imgCount;
         rules += '4. You MUST provide exactly ' + theoryCount + ' theoretical questions and ' + imgCount + ' image-based questions. For image-based questions, USE YOUR WEB BROWSING TOOL to search Wikimedia Commons for relevant medical images. Extract the raw image URL (.jpg or .png) and place it in "image_url". DO NOT hallucinate URLs.\n';
       }
 
       if (extra) rules += '5. Additional instructions: ' + extra + '\n';
       prompt += rules;
-      
       prompt += '\nOUTPUT FORMAT — Return ONLY a raw JSON array. No markdown, no code blocks. Start with [ and end with ].\n';
       prompt += 'Each object must have these exact fields:\n{\n  "question": "Full question text here",\n  "options": ["Option A", "Option B", "Option C", "Option D"],\n  "correct_option": "Must exactly match one option",\n  "explanation": "In-depth explanation",\n  "difficulty": 3,\n  "subject": "Subject name",\n  "topic": "Specific topic",\n  "tags": ["NEET PG"],\n  "image_url": "URL if image-based, otherwise empty string"\n}';
 
-      var textarea = document.getElementById('aiNotesGeneratedPrompt');
-      textarea.value = prompt;
-      textarea.scrollIntoView({ behavior: 'smooth' });
+      outputEl.value = prompt;
+      outputEl.classList.remove('ai-pulse');
+      void outputEl.offsetWidth;
+      outputEl.classList.add('ai-pulse');
+      outputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       showToast('Notes-based prompt generated! Copy and paste into any AI assistant.');
     }
 
-    function copyAIPrompt() { copyTextToClipboard('aiGeneratedPrompt', 'copyPromptBtn', 'Prompt copied! Paste into any AI assistant.'); }
-    function clearAIPromptFields() {
-      document.querySelectorAll('#subjectChips .subject-chip.selected').forEach(function(c) { c.classList.remove('selected'); c.setAttribute('aria-pressed','false'); });
-      ['aiSelectedSubjects','aiTopic','aiExtraInstructions','aiGeneratedPrompt'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
-      var numQ = document.getElementById('aiNumQuestions'); if (numQ) numQ.value = '10';
-      var format = document.getElementById('aiFormatTopic'); if(format) format.value = 'standard';
-      updateSelectedSubjects(); showToast('All fields cleared.');
+    function copyAIPrompt() {
+      copyTextToClipboard('aiGeneratedPrompt', 'copyPromptBtn', 'Prompt copied! Paste into any AI assistant.');
     }
-    function copyAINotesPrompt() { copyTextToClipboard('aiNotesGeneratedPrompt', 'copyNotesPromptBtn', 'Prompt copied! Paste into any AI assistant.'); }
+    function copyAINotesPrompt() {
+      copyTextToClipboard('aiNotesGeneratedPrompt', 'copyNotesPromptBtn', 'Prompt copied! Paste into any AI assistant.');
+    }
+
+    function clearAIPromptFields() {
+      document.querySelectorAll('#subjectChips .subject-chip.selected').forEach(function(c) {
+        c.classList.remove('selected');
+        c.setAttribute('aria-pressed', 'false');
+      });
+      const fields = ['aiSelectedSubjects','aiTopic','aiExtraInstructions','aiGeneratedPrompt'];
+      fields.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const numQ   = document.getElementById('aiNumQuestions');
+      const format = document.getElementById('aiFormatTopic');
+      if (numQ)   numQ.value   = '10';
+      if (format) format.value = 'standard';
+      updateSelectedSubjects();
+      showToast('All fields cleared.');
+    }
+
     function clearAINotesFields() {
-      ['aiNotesContent','aiNotesExtraInstructions','aiNotesGeneratedPrompt'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
-      var numQ = document.getElementById('aiNotesNumQuestions'); if (numQ) numQ.value = '10';
-      var format = document.getElementById('aiFormatNotes'); if(format) format.value = 'standard';
+      const fields = ['aiNotesContent','aiNotesExtraInstructions','aiNotesGeneratedPrompt'];
+      fields.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const numQ   = document.getElementById('aiNotesNumQuestions');
+      const format = document.getElementById('aiFormatNotes');
+      if (numQ)   numQ.value   = '10';
+      if (format) format.value = 'standard';
       showToast('All fields cleared.');
     }
 
     function copyTextToClipboard(textareaId, btnId, successMsg) {
-      var textarea = document.getElementById(textareaId);
-      var btn      = document.getElementById(btnId);
-      if (!textarea || !textarea.value.trim()) { showToast('Click "Generate Prompt" first.'); return; }
-      var originalText = btn ? btn.textContent : '';
+      const textarea = document.getElementById(textareaId);
+      const btn      = document.getElementById(btnId);
+      if (!textarea || !textarea.value.trim()) {
+        showToast('Click "Generate Prompt" first.');
+        return;
+      }
+      const originalText = btn ? btn.textContent.trim() : '';
+
       function onSuccess() {
-        if (btn) { btn.textContent = 'Copied!'; btn.style.background = 'var(--accent)'; btn.style.color = '#fff'; setTimeout(function() { btn.textContent = originalText; btn.style.background = ''; btn.style.color = ''; }, 2000); }
+        if (btn) {
+          btn.textContent = 'Copied!';
+          btn.style.background = 'var(--accent)';
+          btn.style.color      = '#fff';
+          setTimeout(function() {
+            btn.textContent      = originalText;
+            btn.style.background = '';
+            btn.style.color      = '';
+          }, 2000);
+        }
         showToast(successMsg || 'Copied!');
       }
-      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(textarea.value).then(onSuccess).catch(function(err) { textarea.select(); showToast('Clipboard error. Text selected, please copy manually.'); }); } 
-      else { textarea.select(); showToast('Clipboard API not available. Text selected, please copy manually.'); }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textarea.value).then(onSuccess).catch(function() {
+          textarea.select();
+          showToast('Clipboard error. Text selected — copy manually.');
+        });
+      } else {
+        textarea.select();
+        showToast('Clipboard API not available. Text selected — copy manually.');
+      }
     }
 
-    function showToast(msg) {
-      var toast = document.getElementById('toast');
-      if (!toast) return;
-      toast.textContent = msg; toast.classList.add('show');
-      clearTimeout(toast._timeout);
-      toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 3000);
+    // ═══════════════════════════════════════════════════════
+    // JSON LIVE VALIDATOR
+    // ═══════════════════════════════════════════════════════
+    let _jsonValidateTimer = null;
+
+    function validateJSONLive() {
+      clearTimeout(_jsonValidateTimer);
+      _jsonValidateTimer = setTimeout(_doValidateJSON, 300);
     }
-    
-    // ── JSON Live Validator ──
-    var _jsonValidateTimer = null;
-    function validateJSONLive() { clearTimeout(_jsonValidateTimer); _jsonValidateTimer = setTimeout(_doValidateJSON, 300); }
+
     function _doValidateJSON() {
-      var textarea = document.getElementById('jsonInput'), textSpan = document.getElementById('jsonValidatorText'), indicator = document.getElementById('jsonValidatorIndicator'), helpBtn = document.getElementById('jsonHelpBtn');
+      const textarea  = document.getElementById('jsonInput');
+      const textSpan  = document.getElementById('jsonValidatorText');
+      const indicator = document.getElementById('jsonValidatorIndicator');
+      const helpBtn   = document.getElementById('jsonHelpBtn');
       if (!textarea || !indicator || !textSpan) return;
-      var value = textarea.value.trim();
-      if (value.length === 0) { textarea.classList.remove('valid-glow','invalid-glow'); textSpan.textContent = ''; indicator.className = 'json-validator-indicator'; if (helpBtn) helpBtn.classList.remove('visible'); hideSchemaErrors(); return; }
-      try { 
-        var parsed = JSON.parse(value); 
-        if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("Must be non-empty array");
-        var schemaIssues = [];
-        parsed.forEach(function(q, i) {
-          ['question','options','correct_option','explanation'].forEach(function(f) { if (!q[f]) schemaIssues.push('Q'+(i+1)+': missing "'+f+'"'); });
-          if (q.options && (!Array.isArray(q.options) || q.options.length < 2)) schemaIssues.push('Q'+(i+1)+': "options" must be array > 1');
-          if (q.correct_option && Array.isArray(q.options) && q.options.indexOf(q.correct_option) === -1) schemaIssues.push('Q'+(i+1)+': "correct_option" not in options');
-        });
-        if (schemaIssues.length > 0) {
-          textarea.classList.remove('valid-glow'); textarea.classList.add('invalid-glow');
-          textSpan.textContent = parsed.length + ' question(s) — ' + schemaIssues.length + ' issue(s)';
-          indicator.className = 'json-validator-indicator warning';
-          if (helpBtn) helpBtn.classList.add('visible');
-          showSchemaErrors(schemaIssues);
-        } else {
-          textarea.classList.add('valid-glow'); textarea.classList.remove('invalid-glow');
-          textSpan.textContent = parsed.length + ' question(s) detected — valid';
-          indicator.className = 'json-validator-indicator valid';
-          if (helpBtn) helpBtn.classList.remove('visible');
-          hideSchemaErrors();
-        }
+
+      const value = textarea.value.trim();
+      if (value.length === 0) {
+        textarea.classList.remove('valid-glow', 'invalid-glow');
+        textSpan.textContent = '';
+        indicator.className  = 'json-validator-indicator';
+        if (helpBtn) helpBtn.classList.remove('visible');
+        hideSchemaErrors();
+        return;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(value);
       } catch (e) {
-        textarea.classList.remove('valid-glow'); textarea.classList.add('invalid-glow');
+        textarea.classList.remove('valid-glow');
+        textarea.classList.add('invalid-glow');
         textSpan.textContent = 'Invalid JSON format';
-        indicator.className = 'json-validator-indicator invalid';
+        indicator.className  = 'json-validator-indicator invalid';
         if (helpBtn) helpBtn.classList.add('visible');
+        hideSchemaErrors();
+        return;
+      }
+
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        textarea.classList.remove('valid-glow');
+        textarea.classList.add('invalid-glow');
+        textSpan.textContent = 'Must be a non-empty JSON array';
+        indicator.className  = 'json-validator-indicator invalid';
+        if (helpBtn) helpBtn.classList.add('visible');
+        hideSchemaErrors();
+        return;
+      }
+
+      // Schema validation
+      const schemaIssues = [];
+      const required = ['question','options','correct_option','explanation'];
+      parsed.forEach(function(q, i) {
+        const label = 'Q' + (i + 1);
+        required.forEach(function(f) {
+          if (!q[f]) schemaIssues.push(label + ': missing "' + f + '"');
+        });
+        if (q.options && (!Array.isArray(q.options) || q.options.length < 2)) {
+          schemaIssues.push(label + ': "options" must be an array with 2+ items');
+        }
+        if (q.correct_option && Array.isArray(q.options) &&
+            q.options.indexOf(q.correct_option) === -1) {
+          schemaIssues.push(label + ': "correct_option" does not match any option');
+        }
+      });
+
+      if (schemaIssues.length > 0) {
+        textarea.classList.remove('valid-glow');
+        textarea.classList.add('invalid-glow');
+        textSpan.textContent = parsed.length + ' question(s) — ' + schemaIssues.length + ' issue(s)';
+        indicator.className  = 'json-validator-indicator warning';
+        if (helpBtn) helpBtn.classList.add('visible');
+        showSchemaErrors(schemaIssues);
+      } else {
+        textarea.classList.add('valid-glow');
+        textarea.classList.remove('invalid-glow');
+        textSpan.textContent = parsed.length + ' question(s) detected — valid';
+        indicator.className  = 'json-validator-indicator valid';
+        if (helpBtn) helpBtn.classList.remove('visible');
         hideSchemaErrors();
       }
     }
+
     function showSchemaErrors(issues) {
-      var container = document.getElementById('schemaErrorList'), list = document.getElementById('schemaErrorItems');
+      const container = document.getElementById('schemaErrorList');
+      const list      = document.getElementById('schemaErrorItems');
       if (!container || !list) return;
       list.innerHTML = '';
-      issues.slice(0, 8).forEach(function(issue) { var li = document.createElement('li'); li.textContent = issue; list.appendChild(li); });
-      if (issues.length > 8) { var li = document.createElement('li'); li.textContent = '… and '+(issues.length-8)+' more'; list.appendChild(li); }
+      const shown = issues.slice(0, 8);
+      shown.forEach(function(issue) {
+        const li = document.createElement('li');
+        li.textContent = issue;
+        list.appendChild(li);
+      });
+      if (issues.length > 8) {
+        const li = document.createElement('li');
+        li.textContent = '… and ' + (issues.length - 8) + ' more';
+        list.appendChild(li);
+      }
       container.classList.add('visible');
     }
-    function hideSchemaErrors() { var c = document.getElementById('schemaErrorList'); if (c) c.classList.remove('visible'); }
-    function toggleJSONHelp() { var p = document.getElementById('jsonHelpPanel'); if (p) { p.classList.toggle('open'); if(p.classList.contains('open')) p.scrollIntoView({behavior:'smooth', block:'nearest'}); } }
 
-    // ── Load Button & Paste ──
+    function hideSchemaErrors() {
+      const c = document.getElementById('schemaErrorList');
+      if (c) c.classList.remove('visible');
+    }
+
+    function toggleJSONHelp() {
+      const panel = document.getElementById('jsonHelpPanel');
+      if (!panel) return;
+      panel.classList.toggle('open');
+      if (panel.classList.contains('open')) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // LOAD BUTTON & PASTE FROM CLIPBOARD
+    // ═══════════════════════════════════════════════════════
     function handleLoadQuestions(btn) {
       if (btn.classList.contains('btn-loading')) return;
-      var textarea = document.getElementById('jsonInput');
-      if (!textarea || !textarea.value.trim()) { showToast('Please paste your JSON questions first.'); return; }
-      var originalHTML = btn.innerHTML;
+      const textarea = document.getElementById('jsonInput');
+      if (!textarea || !textarea.value.trim()) {
+        showToast('Please paste your JSON questions first.');
+        return;
+      }
+      const originalHTML = btn.innerHTML;
+      btn.setAttribute('data-original-html', originalHTML);
       btn.classList.add('btn-loading');
       btn.innerHTML = '<span class="btn-spinner"></span>Loading...';
-      btn.setAttribute('data-original-html', originalHTML);
-      
-      // Wait for next frame so spinner renders, then call parseJSON
+
       setTimeout(function() {
         if (typeof parseJSON === 'function') {
           parseJSON();
         } else {
           resetLoadButton(false);
-          showToast('System not fully loaded yet. Please wait a moment.');
+          showToast('System not fully loaded. Please wait a moment.');
         }
       }, 50);
 
-      // Safety fallback
-      setTimeout(function() { var b = document.getElementById('loadQuestionsBtn'); if (b && b.classList.contains('btn-loading')) resetLoadButton(false); }, 5000);
+      // Safety timeout — reset if stuck
+      setTimeout(function() {
+        const b = document.getElementById('loadQuestionsBtn');
+        if (b && b.classList.contains('btn-loading')) resetLoadButton(false);
+      }, 5000);
     }
 
     function resetLoadButton(success) {
-      var btn = document.getElementById('loadQuestionsBtn');
+      const btn = document.getElementById('loadQuestionsBtn');
       if (!btn) return;
       btn.classList.remove('btn-loading');
       if (success) {
         btn.classList.add('btn-success-state');
-        btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><polyline points="20 6 9 17 4 12"/></svg>Questions Loaded';
-        setTimeout(function() { btn.classList.remove('btn-success-state'); btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions'; }, 2500);
+        btn.innerHTML = [
+          '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"',
+          ' stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"',
+          ' style="vertical-align:-2px;margin-right:5px;">',
+          '<polyline points="20 6 9 17 4 12"/></svg>',
+          'Questions Loaded'
+        ].join('');
+        setTimeout(function() {
+          btn.classList.remove('btn-success-state');
+          btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions';
+        }, 2500);
       } else {
         btn.innerHTML = btn.getAttribute('data-original-html') || 'Load Questions';
       }
     }
 
     function pasteFromClipboard() {
-      if (!window.isSecureContext) { showToast('Clipboard requires HTTPS. Please paste manually.'); return; }
-      if (!navigator.clipboard || !navigator.clipboard.readText) { showToast('Clipboard API not supported here. Please paste manually.'); return; }
+      if (!window.isSecureContext) {
+        showToast('Clipboard requires HTTPS. Please paste manually.');
+        return;
+      }
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        showToast('Clipboard API not supported here. Please paste manually.');
+        return;
+      }
       navigator.clipboard.readText().then(function(text) {
-        var ta = document.getElementById('jsonInput');
-        if (ta && text) { ta.value = text; validateJSONLive(); showToast('Pasted from clipboard!'); }
-        else if (!text) showToast('Clipboard is empty.');
-      }).catch(function(err) { showToast('Clipboard read failed. Paste manually.'); });
+        const ta = document.getElementById('jsonInput');
+        if (ta && text) {
+          ta.value = text;
+          validateJSONLive();
+          showToast('Pasted from clipboard!');
+        } else if (!text) {
+          showToast('Clipboard is empty.');
+        }
+      }).catch(function() {
+        showToast('Clipboard read failed. Paste manually.');
+      });
     }
+
+    // ═══════════════════════════════════════════════════════
+    // BUG #3 FIX — setTimerPreset (safe event handling)
+    // Overrides script.js version. Supports onclick="setTimerPreset(event, sec)"
+    // ═══════════════════════════════════════════════════════
+    window.setTimerPreset = function(evtOrSec, maybeSec) {
+      let evt, sec;
+      if (typeof evtOrSec === 'number') {
+        // Old signature: setTimerPreset(sec) — shouldn't happen with new HTML but safe fallback
+        sec = evtOrSec;
+        evt = null;
+      } else {
+        // New signature: setTimerPreset(event, sec)
+        evt = evtOrSec;
+        sec = maybeSec;
+      }
+
+      window.timePerQuestion = sec;
+
+      // Update active state on all preset buttons
+      document.querySelectorAll('.timer-preset').forEach(function(p) {
+        p.classList.remove('active');
+      });
+
+      // Find the clicked button safely
+      if (evt && evt.currentTarget) {
+        evt.currentTarget.classList.add('active');
+      } else if (evt && evt.target) {
+        let btn = evt.target;
+        // Walk up in case a child element was clicked
+        while (btn && !btn.classList.contains('timer-preset')) {
+          btn = btn.parentElement;
+        }
+        if (btn) btn.classList.add('active');
+      }
+
+      // Clear custom input
+      const customInput = document.getElementById('customMinutes');
+      if (customInput) customInput.value = '';
+
+      // Update timer display if script.js provides it
+      if (typeof updateTimerDisplay === 'function') updateTimerDisplay();
+    };
+
+    // ═══════════════════════════════════════════════════════
+    // BUG #5 FIX — Pomodoro SVG start/pause button
+    // Clean implementation: no double-write, no fragile observer
+    // ═══════════════════════════════════════════════════════
+    function updatePomoStartButton(isRunning) {
+      const btn = document.getElementById('pomoStartBtn');
+      if (!btn) return;
+      if (isRunning) {
+        btn.innerHTML = [
+          '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"',
+          ' stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">',
+          '<rect x="6" y="4" width="4" height="16" rx="1"/>',
+          '<rect x="14" y="4" width="4" height="16" rx="1"/>',
+          '</svg>Pause'
+        ].join('');
+      } else {
+        btn.innerHTML = [
+          '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"',
+          ' stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">',
+          '<polygon points="6 4 20 12 6 20 6 4"/>',
+          '</svg>Start'
+        ].join('');
+      }
+    }
+
+    // Expose so script.js can call it directly
+    window.updatePomoStartButton = updatePomoStartButton;
+
+    // MutationObserver: watches for script.js writing text to the button
+    // and converts it back to SVG. Fires only when SVG is absent (text-only state).
+    document.addEventListener('DOMContentLoaded', function() {
+      const pomoBtn = document.getElementById('pomoStartBtn');
+      if (!pomoBtn) return;
+
+      let _observerLocked = false; // prevent re-entrant loops
+
+      const obs = new MutationObserver(function() {
+        if (_observerLocked) return;
+        // If the button has no SVG child, script.js wrote text — restore SVG
+        if (!pomoBtn.querySelector('svg')) {
+          _observerLocked = true;
+          const txt = pomoBtn.textContent || '';
+          // '▶' or 'Start' → play state; '⏸' or 'Pause' → pause state
+          const isPause = txt.indexOf('Pause') !== -1 || txt.indexOf('⏸') !== -1;
+          updatePomoStartButton(isPause);
+          // Unlock after a microtask so the DOM settles
+          Promise.resolve().then(function() { _observerLocked = false; });
+        }
+      });
+
+      obs.observe(pomoBtn, { childList: true, characterData: true, subtree: true });
+    });
+
+    // ═══════════════════════════════════════════════════════
+    // JSON TEXTAREA — One-time first-focus shimmer
+    // ═══════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+      const ta = document.getElementById('jsonInput');
+      if (!ta) return;
+      let shimmered = false;
+      ta.addEventListener('focus', function() {
+        if (shimmered) return;
+        shimmered = true;
+        ta.classList.add('first-focus-shimmer');
+        setTimeout(function() {
+          ta.classList.remove('first-focus-shimmer');
+        }, 1500);
+      });
+    });
+
+    // ═══════════════════════════════════════════════════════
+    // MODE CARD — iOS-style tap glow on touch/pointer
+    // ═══════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.mode-card').forEach(function(card) {
+        card.addEventListener('pointerdown', function() {
+          card.classList.add('tap-glow');
+          setTimeout(function() { card.classList.remove('tap-glow'); }, 600);
+        });
+      });
+    });
+
+    // ═══════════════════════════════════════════════════════
+    // THEME INIT — Restore saved theme on load without
+    // calling toggleTheme() (avoids double-toggle bug)
+    // ═══════════════════════════════════════════════════════
+    (function initTheme() {
+      let saved;
+      try { saved = localStorage.getItem('medquiz_theme'); } catch(e) {}
+      const prefersDark = window.matchMedia &&
+                          window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = saved ? saved === 'dark' : prefersDark !== false;
+
+      if (!isDark) {
+        // Apply light theme
+        document.body.classList.add('light');
+        document.documentElement.setAttribute('data-theme', 'light');
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute('content', '#ffffff');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+
+      // Set correct icon without animation (page load)
+      document.addEventListener('DOMContentLoaded', function() {
+        _setThemeIcon(isDark);
+      });
+    })();
+
   </script>
 
   <script src="https://js.puter.com/v2/"></script>
