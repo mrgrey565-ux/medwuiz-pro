@@ -490,90 +490,6 @@ function handleCSVUpload(event) {
 }
 
 // ═══════════════════════════════════════════════
-// OCR
-// ═══════════════════════════════════════════════
-function setupOCRZone() {
-  const zone = document.getElementById('ocrZone');
-  if (!zone) return;
-  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
-  zone.addEventListener('dragleave', ()  => zone.classList.remove('dragover'));
-  zone.addEventListener('drop',      e  => {
-    e.preventDefault();
-    zone.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      ocrFile = file;
-      showOCRPreview(file);
-      const btn = document.getElementById('ocrConvertBtn');
-      if (btn) btn.disabled = false;
-    }
-  });
-}
-
-function handleOCRUpload(event) {
-  const file = event.target.files[0];
-  if (file) {
-    ocrFile = file;
-    showOCRPreview(file);
-    const btn = document.getElementById('ocrConvertBtn');
-    if (btn) btn.disabled = false;
-  }
-}
-
-function showOCRPreview(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = document.getElementById('ocrPreviewImg');
-    if (img) { img.src = e.target.result; img.classList.add('show'); }
-  };
-  reader.readAsDataURL(file);
-}
-
-async function runOCR() {
-  if (!ocrFile) return;
-  const progress     = document.getElementById('ocrProgress');
-  const progressText = document.getElementById('ocrProgressText');
-  const result       = document.getElementById('ocrResult');
-  const btn          = document.getElementById('ocrConvertBtn');
-  if (progress) progress.style.display = 'block';
-  if (result)   result.style.display   = 'none';
-  if (btn)      btn.disabled           = true;
-  try {
-    if (progressText) progressText.textContent = 'Running OCR engine...';
-    const worker = await Tesseract.recognize(ocrFile, 'eng', {
-      logger: m => {
-        if (m.status === 'recognizing text' && progressText)
-          progressText.textContent = `Recognizing... ${Math.round(m.progress * 100)}%`;
-      }
-    });
-    const text = worker.data.text;
-    if (progressText) progressText.textContent = 'Parsing with AI...';
-    const prompt = `Extract all MCQs from this OCR text and return as valid JSON array. Each object must have EXACTLY 4 options: question, options (array of exactly 4 strings), correct_option (exact match), explanation (in-depth), subject, topic, difficulty (1-5), tags (array), image_url (""). Only output valid JSON, no other text.\n\nOCR text:\n\n${text}`;
-    const aiResponse = await callAI(prompt);
-    let json = aiResponse;
-    const match = aiResponse.match(/\[[\s\S]*\]/);
-    if (match) json = match[0];
-    const parsed = JSON.parse(json);
-    if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('No questions detected');
-    const input = document.getElementById('jsonInput');
-    if (input) input.value = JSON.stringify(parsed, null, 2);
-    if (result) {
-      result.style.display = 'block';
-      result.innerHTML = `<div class="parse-status success">${parsed.length} questions extracted via OCR. Close this and click Load Questions.</div>`;
-    }
-    showToast(`${parsed.length} questions extracted via OCR.`);
-  } catch (e) {
-    if (result) {
-      result.style.display = 'block';
-      result.innerHTML = `<div class="parse-status error">OCR failed: ${e.message}. Try a clearer image or paste JSON manually.</div>`;
-    }
-  } finally {
-    if (progress) progress.style.display = 'none';
-    if (btn)      btn.disabled           = false;
-  }
-}
-
-// ═══════════════════════════════════════════════
 // JSON PARSING
 // ═══════════════════════════════════════════════
 function parseJSON() {
@@ -1567,7 +1483,7 @@ function resetPomodoro() {
 }
 
 // ═══════════════════════════════════════════════
-// MILESTONE / DAILY GOAL
+// MILESTONE / DAILY GOAL (REWRITTEN FOR SVG DIAL)
 // ═══════════════════════════════════════════════
 async function loadDailyGoal() {
   const saved = localStorage.getItem('medquiz_daily_goal');
@@ -1598,22 +1514,42 @@ async function updateMilestone(answeredToday = 0) {
   await updateMilestoneBar();
 }
 
+// ── THE MAGIC: Updates BOTH the modal bar AND the Navbar SVG Dial ──
 async function updateMilestoneBar() {
-  const bar = document.getElementById('milestoneBar');
-  if (!bar) return;
   const today    = new Date().toISOString().slice(0, 10);
   const existing = (await dbGet('milestones', today)) || { date: today, answered: 0 };
   const answered = existing.answered || 0;
-  const pct      = Math.min(100, Math.round((answered / dailyGoal) * 100));
-  bar.classList.add('show');
+  const pct      = Math.min(100, Math.max(0, (answered / dailyGoal) * 100)); // clamp between 0 and 100
+
+  // 1. Update Modal UI
   const milestoneText = document.getElementById('milestoneText');
   const milestoneFill = document.getElementById('milestoneFill');
   if (milestoneText) milestoneText.textContent = `${answered} / ${dailyGoal} Questions Today`;
   if (milestoneFill) {
-    milestoneFill.style.width      = `${pct}%`;
-    milestoneFill.style.background = pct >= 100
-      ? 'var(--gradient-primary)'
-      : 'var(--gradient-success)';
+    milestoneFill.style.width = `${pct}%`;
+  }
+
+  // 2. Update Navbar SVG Ring
+  const navRing = document.getElementById('navGoalRing');
+  if (navRing) {
+    const circumference = 87.96; // 2 * PI * 14
+    const offset = circumference - (pct / 100) * circumference;
+    
+    // Animate the fill length
+    navRing.style.strokeDashoffset = offset;
+    
+    // Dynamic color shifting based on progress
+    if (pct >= 100) {
+      navRing.style.stroke = '#10b981'; // Green (Success)
+    } else if (pct >= 75) {
+      navRing.style.stroke = '#06b6d4'; // Cyan (Almost there)
+    } else if (pct >= 40) {
+      navRing.style.stroke = '#f59e0b'; // Orange (Halfway)
+    } else if (pct > 0) {
+      navRing.style.stroke = '#ef4444'; // Red (Started)
+    } else {
+      navRing.style.stroke = 'transparent'; // Hidden at exactly 0
+    }
   }
 }
 
@@ -2200,7 +2136,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── HOME ──
   if (isHome) {
     loadDailyGoal();
-    updateMilestoneBar();
     loadRetakeData();
     renderHeatmap();
     setupOCRZone();
