@@ -2,12 +2,12 @@
   "name": "MedQuiz Pro",
   "short_name": "MedQuiz",
   "description": "Advanced Medical MCQ Quiz Platform for NEET PG / INI-CET aspirants",
-  "start_url": "/index.html",
+  "start_url": "/medwuiz-pro/index.html",
+  "scope": "/medwuiz-pro/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0a0e1a",
   "theme_color": "#6366f1",
-  "scope": "/",
   "lang": "en",
   "categories": ["education", "medical", "productivity"],
 
@@ -89,7 +89,7 @@
       "name": "Start Quiz",
       "short_name": "Quiz",
       "description": "Jump straight to quiz setup",
-      "url": "/index.html#mainHomeCard",
+      "url": "/medwuiz-pro/index.html#mainHomeCard",
       "icons": [
         {
           "src": "icons/icon-96.png",
