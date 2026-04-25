@@ -23,6 +23,35 @@
                    BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
+    /* ── Micro-interactions & Premium Feel ── */
+    button, .mode-card, .subject-chip, .paste-btn, .how-to-toggle, .nav-icon-btn, .nav-brand {
+      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    /* Squish effect on click/tap for tactile feedback */
+    button:active:not(:disabled):not(.btn-loading), 
+    .paste-btn:active, 
+    .nav-icon-btn:active,
+    .nav-brand:active,
+    .subject-chip:active {
+      transform: scale(0.95);
+    }
+
+    .mode-card:active {
+      transform: scale(0.98);
+    }
+
+    /* Smooth focus rings for accessibility and premium input feel */
+    input:focus-visible, 
+    textarea:focus-visible, 
+    select:focus-visible, 
+    button:focus-visible,
+    .subject-chip:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+      border-color: var(--accent) !important;
+    }
+
     /* ── Navbar ── */
     .navbar {
       position: sticky; top: 0; z-index: 1000;
@@ -35,6 +64,7 @@
       box-shadow: 0 4px 24px rgba(0,0,0,0.4);
       background: rgba(10,14,26,0.95);
     }
+    .nav-brand { cursor: pointer; user-select: none; }
 
     /* ── Particles ── */
     #particlesCanvas {
@@ -127,7 +157,7 @@
       flex-shrink: 0; font-family: inherit;
     }
     .json-help-btn.visible { opacity: 1; transform: scale(1); }
-    .json-help-btn:hover { background: currentColor; color: #fff; }
+    .json-help-btn:hover { background: currentColor; color: #fff; transform: scale(1.1); }
 
     .json-help-panel {
       display: none; background: var(--bg-card);
@@ -136,7 +166,7 @@
       line-height: 1.7; color: var(--text-secondary);
       box-shadow: 0 4px 16px rgba(0,0,0,0.15);
     }
-    .json-help-panel.open { display: block; }
+    .json-help-panel.open { display: block; animation: chipFadeIn 0.3s ease forwards; }
     .json-help-panel h4 {
       margin: 0 0 8px 0; font-size: 13px;
       color: var(--text-primary); font-weight: 700;
@@ -162,16 +192,16 @@
       border-radius: 8px; font-size: 11px; color: #dc2626;
       line-height: 1.8; max-height: 120px; overflow-y: auto; display: none;
     }
-    .schema-error-list.visible { display: block; }
+    .schema-error-list.visible { display: block; animation: chipFadeIn 0.3s ease forwards; }
     .schema-error-list ul { margin: 0; padding-left: 16px; }
     .schema-error-list li { margin-bottom: 2px; }
 
     /* ── Mode Cards ── */
-    .mode-card { border-left: 4px solid transparent; transition: all 0.3s ease; }
+    .mode-card { border-left: 4px solid transparent; cursor: pointer; }
     #examModeCard   { border-left-color: #3b82f6; }
     #studyModeCard  { border-left-color: #22c55e; }
     #retakeModeCard { border-left-color: #f59e0b; }
-    .mode-card.selected { border-left-width: 5px; }
+    .mode-card.selected { border-left-width: 5px; background: rgba(99, 102, 241, 0.05); }
 
     /* ── Config Divider ── */
     .config-divider {
@@ -211,7 +241,7 @@
       padding: 6px 10px; font-size: 11px; font-family: inherit;
       font-weight: 500; color: var(--text-secondary);
       background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 6px; cursor: pointer; transition: all 0.2s;
+      border-radius: 6px; cursor: pointer;
     }
     .paste-btn:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -252,10 +282,11 @@
       color: var(--text-primary); cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       opacity: 0; transform: translateY(20px); pointer-events: none;
-      transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 16px rgba(0,0,0,0.25);
     }
     .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .back-to-top:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .back-to-top:hover { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(-4px); }
+    .back-to-top:active { transform: scale(0.9) translateY(0); }
 
     /* ── Subject Chips ── */
     .subject-chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -263,7 +294,7 @@
       padding: 5px 10px; font-size: 11px; font-family: inherit;
       font-weight: 500; border-radius: 16px; border: 1px solid var(--border);
       background: var(--bg-card); color: var(--text-secondary);
-      cursor: pointer; transition: all 0.2s; user-select: none; white-space: nowrap;
+      cursor: pointer; user-select: none; white-space: nowrap;
     }
     .subject-chip.selected {
       background: var(--accent); color: #fff; border-color: var(--accent);
@@ -281,7 +312,7 @@
     }
     .prompt-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
     .prompt-tab:hover  { color: var(--text-primary); }
-    .prompt-tab-content { display: none; }
+    .prompt-tab-content { display: none; animation: chipFadeIn 0.3s ease forwards; }
     .prompt-tab-content.active { display: block; }
 
     /* ── Custom Inputs ── */
@@ -289,11 +320,11 @@
       width: 100%; padding: 10px 12px; background: var(--bg-primary);
       border: 1px solid var(--border); border-radius: 8px;
       color: var(--text-primary); font-family: inherit; font-size: 13px;
-      box-sizing: border-box; transition: border-color 0.2s;
+      box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s;
     }
     .custom-number-input:focus {
       border-color: var(--accent); outline: none;
-      box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
     }
 
     .section-label {
@@ -327,12 +358,12 @@
       font-family: inherit; background: var(--bg-primary);
       border: 1px solid var(--border); border-radius: 8px;
       color: var(--text-secondary); cursor: pointer;
-      transition: all 0.2s; margin-bottom: 0; width: 100%;
+      margin-bottom: 0; width: 100%;
       justify-content: space-between;
     }
     .how-to-toggle:hover { border-color: var(--accent); color: var(--accent); }
     .how-to-toggle .toggle-arrow {
-      transition: transform 0.3s ease; font-size: 10px; flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); font-size: 10px; flex-shrink: 0;
     }
     .how-to-toggle.open .toggle-arrow { transform: rotate(180deg); }
     .how-to-guide-content {
@@ -355,15 +386,19 @@
       -webkit-backdrop-filter: blur(4px);
       align-items: center; justify-content: center;
       padding: 16px; box-sizing: border-box;
+      opacity: 0; transition: opacity 0.3s ease;
     }
-    .modal-overlay.active { display: flex; }
+    .modal-overlay.active { display: flex; opacity: 1; }
     .modal-box {
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: 16px; padding: 24px 22px 18px 22px;
       width: 100%; max-width: 520px; max-height: 85vh;
       overflow-y: auto; overscroll-behavior: contain;
       box-shadow: 0 20px 60px rgba(0,0,0,0.4); position: relative;
+      transform: translateY(20px) scale(0.98); opacity: 0;
+      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
     }
+    .modal-overlay.active .modal-box { transform: translateY(0) scale(1); opacity: 1; }
     .modal-icon {
       display: flex; align-items: center; justify-content: center;
       margin: 0 auto 8px auto; width: 44px; height: 44px;
@@ -387,7 +422,9 @@
         max-height: 88vh; border-radius: 20px 20px 0 0;
         width: 100%; max-width: 100%;
         padding-bottom: max(18px, env(safe-area-inset-bottom));
+        transform: translateY(100%);
       }
+      .modal-overlay.active .modal-box { transform: translateY(0); }
     }
 
     /* Confirm Modal */
@@ -404,7 +441,7 @@
     .btn-confirm-danger {
       background: #ef4444; color: #fff; border: none; border-radius: 8px;
       padding: 10px 20px; font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: background 0.2s; font-family: inherit;
+      cursor: pointer; font-family: inherit;
     }
     .btn-confirm-danger:hover { background: #dc2626; }
 
@@ -442,9 +479,11 @@
     }
     .toggle-switch input:checked + .toggle-track { background: var(--accent); }
     .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); }
+    
+    /* Focus visible for custom toggle */
+    .toggle-switch input:focus-visible + .toggle-track { box-shadow: 0 0 0 3px rgba(99,102,241,0.3); }
 
-    /* ── FIX 4 (Duplicate Difficulty): Hide stats-bar difficulty,
-       only show the animated meter ── */
+    /* ── FIX 4: Hide stats-bar difficulty, show animated meter ── */
     #statsBar .stat-item:last-child { display: none; }
 
     /* ── Difficulty Meter ── */
@@ -516,9 +555,8 @@
   <a href="#mainHomeCard" class="skip-link">Skip to main content</a>
   <canvas id="particlesCanvas" aria-hidden="true"></canvas>
 
-  <!-- ══════════ NAVBAR ══════════ -->
   <nav class="navbar no-print" id="mainNavbar">
-    <div class="nav-brand" onclick="window.location.href='index.html'" title="MedQuiz Pro Home">
+    <div class="nav-brand" tabindex="0" onclick="window.location.href='index.html'" title="MedQuiz Pro Home" aria-label="MedQuiz Pro Home">
       <div class="nav-logo">🧠</div>
       <span class="nav-brand-text">MedQuiz Pro</span>
     </div>
@@ -535,7 +573,6 @@
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
         </svg>
       </button>
-      <!-- FIX 3: Removed "(Free)" from AI status label -->
       <div class="ai-status connected" id="aiStatus" title="AI Integration Status">
         <span class="ai-status-dot"></span>
         <span id="aiStatusText">AI Ready</span>
@@ -568,10 +605,8 @@
     </div>
   </nav>
 
-  <!-- ══════════ HOME SCREEN ══════════ -->
   <div id="homeScreen" class="screen active">
 
-    <!-- HERO — Items 1 & 2 removed -->
     <div class="hero" id="heroSection">
       <div class="hero-logo">🧠</div>
       <h1>MedQuiz Pro</h1>
@@ -594,7 +629,6 @@
       </div>
     </div>
 
-    <!-- ── MAIN CARD ── -->
     <div class="home-card" id="mainHomeCard">
       <div class="card-title">
         <span class="card-title-icon">
@@ -607,7 +641,7 @@
         </span>
         <span>Build Your Question Bank</span>
         <button class="paste-btn" onclick="pasteFromClipboard()" title="Paste JSON from clipboard" style="margin-left:auto;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
           </svg>
@@ -673,7 +707,6 @@
         </div>
       </div>
 
-      <!-- Action Row -->
       <div class="action-row" style="margin-top:12px;">
         <button class="btn btn-primary" id="loadQuestionsBtn" onclick="handleLoadQuestions(this)">Load Questions</button>
         <span class="action-separator">·</span>
@@ -686,7 +719,6 @@
         <button class="btn btn-accent btn-sm" onclick="openAIPromptModal()">AI Generate</button>
       </div>
 
-      <!-- Smart Filters -->
       <div class="smart-filters" id="smartFilters" style="display:none">
         <span class="filter-label">Quick Filters</span>
         <button class="smart-filter-chip" data-tag="HYT" onclick="toggleSmartFilter('HYT',this)">HYT Only</button>
@@ -694,26 +726,22 @@
         <button class="smart-filter-chip" data-tag="ALL" onclick="resetSmartFilters()">All</button>
       </div>
 
-      <!-- Parse Status -->
       <div class="parse-status" id="parseStatus"></div>
 
-      <!-- Q Preview — chip list hidden, stats only -->
       <div class="q-preview" id="qPreview">
         <h3 id="qPreviewTitle"></h3>
         <div class="q-chip-list" id="qChipList" style="display:none"></div>
         <div class="stats-bar" id="statsBar"></div>
       </div>
 
-      <!-- ══ QUIZ CONFIG SECTION ══ -->
       <div id="quizConfigSection" class="quiz-config-section">
 
         <div class="config-divider"><span>Quiz Settings</span></div>
 
-        <!-- Mode Selector -->
         <div class="mode-selector" id="modeSelector">
           <h3>Choose Your Quiz Mode</h3>
           <div class="mode-cards">
-            <div class="mode-card" id="examModeCard" onclick="selectMode('exam')">
+            <div class="mode-card" id="examModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('exam')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('exam');}">
               <span class="mode-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/>
@@ -723,7 +751,7 @@
               <div class="mode-name">Exam Mode</div>
               <div class="mode-desc">Timed · CBT-style · Final submit · Full review</div>
             </div>
-            <div class="mode-card" id="studyModeCard" onclick="selectMode('study')">
+            <div class="mode-card" id="studyModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('study')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('study');}">
               <span class="mode-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -733,7 +761,7 @@
               <div class="mode-name">Study Mode</div>
               <div class="mode-desc">No timer · Instant feedback · AI help · Learn deeply</div>
             </div>
-            <div class="mode-card" id="retakeModeCard" onclick="selectMode('retake')" style="display:none">
+            <div class="mode-card" id="retakeModeCard" tabindex="0" role="button" aria-pressed="false" onclick="selectMode('retake')" style="display:none" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectMode('retake');}">
               <span class="mode-icon">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="1 4 1 10 7 10"/>
@@ -746,7 +774,6 @@
           </div>
         </div>
 
-        <!-- Timer Config -->
         <div class="timer-config" id="timerConfig">
           <label>Exam Timer</label>
           <div class="timer-presets">
@@ -757,13 +784,12 @@
             <button class="timer-preset" onclick="setTimerPreset(120)">2 min/Q</button>
           </div>
           <div class="custom-time">
-            <input type="number" id="customMinutes" min="0" placeholder="Custom (min)">
+            <input type="number" id="customMinutes" min="0" placeholder="Custom (min)" class="custom-number-input" style="width: auto;">
             <button class="btn btn-ghost btn-sm" onclick="setCustomTimer()">Set Custom</button>
             <span class="timer-display-text" id="timerDisplay2">Total: —</span>
           </div>
         </div>
 
-        <!-- Scoring Config -->
         <div class="scoring-config" id="scoringConfig">
           <label>
             <input type="checkbox" id="negMarkingCheck" onchange="toggleScoringModel()">
@@ -772,7 +798,6 @@
           <span class="scoring-hint">Correct: +4 · Wrong: −1 · Skipped: 0</span>
         </div>
 
-        <!-- Question Settings: Shuffle only (target removed) -->
         <div class="config-divider" style="margin-top:18px;"><span>Question Settings</span></div>
 
         <div class="settings-row" id="shuffleSettingRow">
@@ -788,7 +813,7 @@
               <div class="settings-row-sub">Randomise order each session</div>
             </div>
           </div>
-          <label class="toggle-switch" aria-label="Shuffle questions">
+          <label class="toggle-switch" aria-label="Shuffle questions" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleQuestionsToggle').click();}">
             <input type="checkbox" id="shuffleQuestionsToggle" onchange="onShuffleToggle()">
             <span class="toggle-track"></span>
           </label>
@@ -809,13 +834,12 @@
               <div class="settings-row-sub">Randomise A/B/C/D order per question</div>
             </div>
           </div>
-          <label class="toggle-switch" aria-label="Shuffle answer options">
+          <label class="toggle-switch" aria-label="Shuffle answer options" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); document.getElementById('shuffleOptionsToggle').click();}">
             <input type="checkbox" id="shuffleOptionsToggle" onchange="onShuffleOptionsToggle()">
             <span class="toggle-track"></span>
           </label>
         </div>
 
-        <!-- FIX 4: Difficulty meter only — no duplicate stat -->
         <div class="difficulty-meter-wrap" id="difficultyMeterWrap" style="display:none;">
           <div class="difficulty-meter-header">
             <span class="difficulty-meter-label">
@@ -839,7 +863,6 @@
           </div>
         </div>
 
-        <!-- Daily Milestone -->
         <div class="milestone-bar" id="milestoneBar">
           <div class="milestone-header">
             <span>Daily Goal</span>
@@ -849,33 +872,22 @@
             <div class="milestone-progress-fill" id="milestoneFill" style="width:0%"></div>
           </div>
           <div class="milestone-controls">
-            <input type="number" id="dailyGoalInput" min="1" max="500" value="100" class="goal-input">
+            <input type="number" id="dailyGoalInput" min="1" max="500" value="100" class="goal-input custom-number-input" style="width: 80px; padding: 6px 10px;">
             <button class="btn btn-ghost btn-xs" onclick="setDailyGoal()">Set Goal</button>
             <button class="btn btn-ghost btn-xs" onclick="confirmResetDailyGoal()" title="Reset today's count">Reset</button>
           </div>
         </div>
 
-        <!-- Start Section -->
         <div class="start-section" id="startSection">
           <button class="btn btn-primary btn-lg btn-full" onclick="startQuiz()">Start Quiz</button>
         </div>
 
-      </div><!-- end quizConfigSection -->
-    </div><!-- end home-card -->
-  </div><!-- end homeScreen -->
-
-  <!-- FIX 2: Mobile start bar removed entirely -->
-
-  <!-- Back to Top -->
-  <button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()" title="Back to top" aria-label="Back to top">
+      </div></div></div><button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()" title="Back to top" aria-label="Back to top">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="18 15 12 9 6 15"/>
     </svg>
   </button>
 
-  <!-- ══════════ MODALS ══════════ -->
-
-  <!-- Confirm Modal -->
   <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
     <div class="modal-box" style="max-width:380px; text-align:center;">
       <div class="confirm-modal-icon-wrap">
@@ -894,7 +906,6 @@
     </div>
   </div>
 
-  <!-- Question Bank Modal -->
   <div class="modal-overlay" id="bankModal" role="dialog" aria-modal="true" aria-label="Question Bank">
     <div class="modal-box" style="max-width:600px">
       <div class="modal-icon">
@@ -908,8 +919,7 @@
       <div class="modal-body" style="text-align:left">
         <div class="bank-list" id="bankList"></div>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-          <input type="text" id="bankNameInput" placeholder="Bank name..."
-            style="flex:1;padding:8px 10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:inherit;font-size:12px;min-width:120px">
+          <input type="text" id="bankNameInput" placeholder="Bank name..." class="custom-number-input" style="flex:1; min-width:120px">
           <button class="btn btn-primary btn-sm" onclick="saveToBank()">Save Current</button>
         </div>
       </div>
@@ -919,7 +929,6 @@
     </div>
   </div>
 
-  <!-- Review Folders Modal -->
   <div class="modal-overlay" id="folderModal" role="dialog" aria-modal="true" aria-label="Review Folders">
     <div class="modal-box" style="max-width:550px">
       <div class="modal-icon">
@@ -931,8 +940,7 @@
       <div class="modal-body" style="text-align:left">
         <div class="folder-list" id="folderList"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input type="text" id="newFolderName" placeholder="New folder name..."
-            style="flex:1;padding:8px 10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:inherit;font-size:12px;min-width:120px">
+          <input type="text" id="newFolderName" placeholder="New folder name..." class="custom-number-input" style="flex:1; min-width:120px">
           <button class="btn btn-primary btn-sm" onclick="createFolder()">Create</button>
         </div>
         <div id="folderQuestions" style="margin-top:12px;max-height:200px;overflow-y:auto"></div>
@@ -943,7 +951,6 @@
     </div>
   </div>
 
-  <!-- AI Prompt Generator Modal -->
   <div class="modal-overlay" id="aiPromptModal" role="dialog" aria-modal="true" aria-label="AI Prompt Generator">
     <div class="modal-box" style="max-width:620px">
       <div class="modal-icon">
@@ -963,7 +970,6 @@
           <button class="prompt-tab" onclick="switchPromptTab('notes')" id="tabNotes">Notes-Based</button>
         </div>
 
-        <!-- Topic Tab -->
         <div class="prompt-tab-content active" id="tabContentTopic">
           <div style="margin-bottom:14px;">
             <span class="section-label">Subjects <span class="optional-tag">(optional — select one or more)</span></span>
@@ -981,7 +987,7 @@
             </div>
             <div style="flex:2;min-width:160px;">
               <span class="section-label">Exam Standard</span>
-              <select id="aiStandard" style="width:100%;padding:10px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:inherit;font-size:13px;appearance:none;cursor:pointer;">
+              <select id="aiStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
                 <option value="NEET PG / INI-CET" selected>NEET PG / INI-CET</option>
                 <option value="FMGE / MCI Screening">FMGE / MCI Screening</option>
                 <option value="MBBS University Exam">MBBS University Exam</option>
@@ -1004,18 +1010,14 @@
           </div>
           <div style="margin-bottom:20px;">
             <span class="section-label">Generated Prompt</span>
-            <textarea id="aiGeneratedPrompt" readonly rows="6"
-              style="width:100%;padding:12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;"
-              placeholder="Your generated prompt will appear here..."></textarea>
+            <textarea id="aiGeneratedPrompt" readonly rows="6" class="custom-number-input" style="font-family:'JetBrains Mono',monospace;font-size:11px;resize:vertical;" placeholder="Your generated prompt will appear here..."></textarea>
           </div>
         </div>
 
-        <!-- Notes Tab -->
         <div class="prompt-tab-content" id="tabContentNotes">
           <div style="margin-bottom:14px;">
             <span class="section-label">Paste Your Study Notes</span>
-            <textarea id="aiNotesContent" rows="6" placeholder="Paste your notes, textbook content, or lecture summary here."
-              style="width:100%;padding:12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:inherit;font-size:12px;line-height:1.6;resize:vertical;box-sizing:border-box;"></textarea>
+            <textarea id="aiNotesContent" rows="6" placeholder="Paste your notes, textbook content, or lecture summary here." class="custom-number-input" style="resize:vertical;"></textarea>
           </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
             <div style="flex:1;min-width:100px;">
@@ -1024,7 +1026,7 @@
             </div>
             <div style="flex:2;min-width:160px;">
               <span class="section-label">Exam Standard</span>
-              <select id="aiNotesStandard" style="width:100%;padding:10px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:inherit;font-size:13px;appearance:none;cursor:pointer;">
+              <select id="aiNotesStandard" class="custom-number-input" style="cursor:pointer; appearance:auto;">
                 <option value="NEET PG / INI-CET" selected>NEET PG / INI-CET</option>
                 <option value="FMGE / MCI Screening">FMGE / MCI Screening</option>
                 <option value="MBBS University Exam">MBBS University Exam</option>
@@ -1047,13 +1049,10 @@
           </div>
           <div style="margin-bottom:20px;">
             <span class="section-label">Generated Prompt</span>
-            <textarea id="aiNotesGeneratedPrompt" readonly rows="6"
-              style="width:100%;padding:12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;"
-              placeholder="Your notes-based prompt will appear here..."></textarea>
+            <textarea id="aiNotesGeneratedPrompt" readonly rows="6" class="custom-number-input" style="font-family:'JetBrains Mono',monospace;font-size:11px;resize:vertical;" placeholder="Your notes-based prompt will appear here..."></textarea>
           </div>
         </div>
 
-        <!-- BUG 4: How to Use — Collapsible -->
         <div style="border-top:1px solid var(--border);padding-top:16px;">
           <button class="how-to-toggle" id="howToToggleBtn" onclick="toggleHowToGuide()" aria-expanded="false">
             <span style="display:flex;align-items:center;gap:8px;">
@@ -1090,14 +1089,12 @@
           </div>
         </div>
 
-      </div><!-- end modal-body -->
-      <div class="modal-actions">
+      </div><div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('aiPromptModal')">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- AI Configuration Modal -->
   <div class="modal-overlay" id="aiConfigModal" role="dialog" aria-modal="true" aria-label="AI Settings">
     <div class="modal-box">
       <div class="modal-icon">
@@ -1109,7 +1106,7 @@
       <div class="modal-body" style="text-align:left">
         <div class="api-config-field">
           <label for="providerSelect">AI Provider</label>
-          <select id="providerSelect" onchange="onProviderChange()">
+          <select id="providerSelect" onchange="onProviderChange()" class="custom-number-input" style="padding: 8px 12px; cursor: pointer;">
             <option value="pollinations">Pollinations AI — FREE, No Key Needed</option>
             <option value="gemini">Google Gemini (Requires API Key)</option>
           </select>
@@ -1117,7 +1114,7 @@
         <div id="pollinationsConfig">
           <div class="api-config-field">
             <label for="pollinationsModelSelect">Model</label>
-            <select id="pollinationsModelSelect">
+            <select id="pollinationsModelSelect" class="custom-number-input" style="padding: 8px 12px; cursor: pointer;">
               <option value="openai">OpenAI GPT (Recommended)</option>
               <option value="openai-fast">OpenAI GPT Fast</option>
             </select>
@@ -1127,12 +1124,12 @@
         <div id="geminiConfig" style="display:none">
           <div class="api-config-field">
             <label for="apiKeyInput">Google Gemini API Key</label>
-            <input type="password" id="apiKeyInput" placeholder="AIza...">
+            <input type="password" id="apiKeyInput" placeholder="AIza..." class="custom-number-input" style="padding: 8px 12px;">
             <div class="api-help">Get a free API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.</div>
           </div>
           <div class="api-config-field">
             <label for="modelSelect">Gemini Model</label>
-            <select id="modelSelect">
+            <select id="modelSelect" class="custom-number-input" style="padding: 8px 12px; cursor: pointer;">
               <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended)</option>
               <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
               <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
@@ -1147,7 +1144,6 @@
     </div>
   </div>
 
-  <!-- Help Modal -->
   <div class="modal-overlay" id="helpModal" role="dialog" aria-modal="true" aria-label="Help and Shortcuts">
     <div class="modal-box">
       <div class="modal-icon">
@@ -1202,7 +1198,6 @@
     </div>
   </div>
 
-  <!-- ══════════ POMODORO ══════════ -->
   <button class="pomodoro-toggle" id="pomodoroToggle" onclick="togglePomodoroWidget()" title="Focus Timer" aria-label="Pomodoro Focus Timer">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="10"/>
@@ -1225,10 +1220,8 @@
     </div>
   </div>
 
-  <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <!-- ══════════ INLINE SCRIPTS ══════════ -->
   <script>
     'use strict';
 
@@ -1302,16 +1295,13 @@
       );
     }
 
-    // BUG 1 FIX: Reset daily goal — also clears IndexedDB milestone for today
     function confirmResetDailyGoal() {
       showConfirm(
         'Reset today\'s progress to 0? Your session count will be permanently cleared.',
         function() {
           var today = new Date().toISOString().slice(0, 10);
-          // Clear localStorage legacy keys
           localStorage.setItem('medquiz_daily_count', '0');
           localStorage.setItem('medquiz_daily_date',  new Date().toDateString());
-          // Clear IndexedDB milestone for today so refresh doesn't reload old count
           if (typeof openDB === 'function') {
             openDB().then(function(db) {
               var tx    = db.transaction('milestones', 'readwrite');
@@ -1343,14 +1333,18 @@
       if (milestoneText) milestoneText.textContent = answered + ' / ' + goal + ' Questions Today';
     }
 
-    // ── Particles ─────────────────────────────
+    // ── Optimized Particles for Mobile ─────────
     (function() {
       var canvas = document.getElementById('particlesCanvas');
       if (!canvas) return;
       var ctx = canvas.getContext('2d');
       var particles = [], animationFrameId = null, w, h;
 
-      function getParticleCount() { return Math.min(80, Math.max(20, Math.floor(window.innerWidth / 28))); }
+      function getParticleCount() { 
+        // Optimized: Fewer particles on smaller screens to save battery
+        var divisor = window.innerWidth < 600 ? 50 : 28;
+        return Math.min(80, Math.max(15, Math.floor(window.innerWidth / divisor))); 
+      }
       function resizeCanvas()     { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
       function createParticle()   {
         return { x: Math.random()*w, y: Math.random()*h, size: Math.random()*2.5+0.8,
@@ -1414,13 +1408,12 @@
       if (s) s.classList.remove('revealed');
     }
 
-    // ── quizParsed event from script.js ──────
+    // ── quizParsed event ──────────────────────
     document.addEventListener('quizParsed', function(e) {
       var detail    = (e && e.detail) ? e.detail : {};
       var count     = detail.count     || 0;
       var questions = detail.questions || [];
 
-      // Animated SVG check in parse status
       var parseStatus = document.getElementById('parseStatus');
       if (parseStatus) {
         var svgCheck = '<span class="status-check-svg">'
@@ -1439,7 +1432,7 @@
 
     document.addEventListener('quizParseError', function() { resetLoadButton(false); });
 
-    // ── FIX 4: Difficulty Meter ───────────────
+    // ── Difficulty Meter ───────────────
     function updateDifficultyMeter(questions) {
       var wrap  = document.getElementById('difficultyMeterWrap');
       var fill  = document.getElementById('difficultyFill');
@@ -1458,7 +1451,7 @@
       var tier, tierLabel, colorHex;
       if (avg < 2.4)      { tier = 'easy';   tierLabel = 'Easy';      colorHex = '#22c55e'; }
       else if (avg < 3.7) { tier = 'medium'; tierLabel = 'Moderate';  colorHex = '#f59e0b'; }
-      else                { tier = 'hard';   tierLabel = 'Difficult';  colorHex = '#ef4444'; }
+      else                { tier = 'hard';   tierLabel = 'Difficult'; colorHex = '#ef4444'; }
       fill.style.width = '0%';
       fill.style.background = colorHex;
       setTimeout(function() { fill.style.width = pct + '%'; }, 80);
@@ -1480,7 +1473,7 @@
       showToast(window._shuffleOptions ? 'Answer options will be randomised.' : 'Option order preserved.');
     }
 
-    // ── BUG 4: How-to Guide Toggle ────────────
+    // ── How-to Guide Toggle ────────────
     function toggleHowToGuide() {
       var btn     = document.getElementById('howToToggleBtn');
       var content = document.getElementById('howToGuideContent');
@@ -1699,10 +1692,10 @@
       }
     }
 
-    // ── Paste from Clipboard ──────────────────
+    // ── Paste from Clipboard (Modernized) ─────
     function pasteFromClipboard() {
       if (!window.isSecureContext) { showToast('Clipboard requires HTTPS. Please paste manually.'); return; }
-      if (!navigator.clipboard || !navigator.clipboard.readText) { showToast('Clipboard not supported. Please paste manually.'); return; }
+      if (!navigator.clipboard || !navigator.clipboard.readText) { showToast('Clipboard API not supported here. Please paste manually.'); return; }
       navigator.clipboard.readText().then(function(text) {
         var ta = document.getElementById('jsonInput');
         if (ta && text) { ta.value = text; validateJSONLive(); showToast('Pasted from clipboard!'); }
@@ -1712,7 +1705,7 @@
       });
     }
 
-    // ── BUG 3: AI Prompt — Topic (4 options, in-depth) ──
+    // ── AI Prompt Generator ───────────────────
     function generateAIPrompt() {
       var selectedSubjects = getSelectedSubjects();
       var topic    = document.getElementById('aiTopic').value.trim();
@@ -1774,7 +1767,6 @@
       showToast('All fields cleared.');
     }
 
-    // ── BUG 3: AI Prompt — Notes (4 options, in-depth) ──
     function generateAINotesPrompt() {
       var notes    = document.getElementById('aiNotesContent').value.trim();
       var numQ     = document.getElementById('aiNotesNumQuestions').value;
@@ -1829,22 +1821,44 @@
       showToast('All fields cleared.');
     }
 
-    // ── Clipboard Helper ──────────────────────
+    // ── Clipboard Helper (Modernized to strict clipboard API) ─
     function copyTextToClipboard(textareaId, btnId, successMsg) {
       var textarea = document.getElementById(textareaId);
       var btn      = document.getElementById(btnId);
-      if (!textarea || !textarea.value.trim()) { showToast('Click "Generate Prompt" first.'); return; }
+      
+      if (!textarea || !textarea.value.trim()) { 
+        showToast('Click "Generate Prompt" first.'); 
+        return; 
+      }
+      
       var originalText = btn ? btn.textContent : '';
+      
       function onSuccess() {
         if (btn) {
-          btn.textContent = 'Copied!'; btn.style.background = 'var(--accent)'; btn.style.color = '#fff';
-          setTimeout(function() { btn.textContent = originalText; btn.style.background = ''; btn.style.color = ''; }, 2000);
+          btn.textContent = 'Copied!'; 
+          btn.style.background = 'var(--accent)'; 
+          btn.style.color = '#fff';
+          setTimeout(function() { 
+            btn.textContent = originalText; 
+            btn.style.background = ''; 
+            btn.style.color = ''; 
+          }, 2000);
         }
         showToast(successMsg || 'Copied!');
       }
+
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(textarea.value).then(onSuccess).catch(function() { textarea.select(); document.execCommand('copy'); onSuccess(); });
-      } else { textarea.select(); document.execCommand('copy'); onSuccess(); }
+        navigator.clipboard.writeText(textarea.value)
+          .then(onSuccess)
+          .catch(function(err) {
+            console.error('Clipboard write failed:', err);
+            textarea.select();
+            showToast('Clipboard error. Text selected, please copy manually.');
+          });
+      } else { 
+        textarea.select(); 
+        showToast('Clipboard API not available. Text selected, please copy manually.');
+      }
     }
 
     // ── Toast ─────────────────────────────────
