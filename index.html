@@ -913,11 +913,11 @@
         <div class="timer-config" id="timerConfig">
           <label>Exam Timer</label>
           <div class="timer-presets">
-            <button class="timer-preset" onclick="setTimerPreset(event, 0)">No Limit</button>
-            <button class="timer-preset" onclick="setTimerPreset(event, 30)">30s/Q</button>
-            <button class="timer-preset" onclick="setTimerPreset(event, 60)">1 min/Q</button>
-            <button class="timer-preset active" onclick="setTimerPreset(event, 90)">1.5 min/Q</button>
-            <button class="timer-preset" onclick="setTimerPreset(event, 120)">2 min/Q</button>
+            <button class="timer-preset" onclick="setTimerPreset(0, this)">No Limit</button>
+<button class="timer-preset" onclick="setTimerPreset(30, this)">30s/Q</button>
+<button class="timer-preset" onclick="setTimerPreset(60, this)">1 min/Q</button>
+<button class="timer-preset active" onclick="setTimerPreset(90, this)">1.5 min/Q</button>
+<button class="timer-preset" onclick="setTimerPreset(120, this)">2 min/Q</button>
           </div>
           <div class="custom-time">
             <input type="number" id="customMinutes" min="0" placeholder="Custom (min)" class="custom-number-input" style="width: auto;">
