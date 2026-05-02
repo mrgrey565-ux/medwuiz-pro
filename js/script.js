@@ -2312,3 +2312,47 @@ async function createFolderFromBank() {
 }
 
 }
+// ──────────────────────────────────────────
+// PARSE JSON FROM TEXTAREA
+// ──────────────────────────────────────────
+function parseJSON() {
+  const textarea = document.getElementById('jsonInput');
+  if (!textarea) {
+    showToast('Textarea not found.');
+    return;
+  }
+  const raw = textarea.value.trim();
+  if (!raw) {
+    showToast('Please paste your JSON questions first.');
+    return;
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    showToast('Invalid JSON format. Fix errors and try again.');
+    console.error(e);
+    return;
+  }
+
+  // Quick validation
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    showToast('JSON must be a non-empty array of question objects.');
+    return;
+  }
+
+  // Optional deeper validation (skip if schema errors are already shown)
+  // Store globally for other functions
+  window.lastParsedQuestions = parsed;
+
+  // Dispatch quizParsed event so config section reveals
+  document.dispatchEvent(new CustomEvent('quizParsed', {
+    detail: {
+      count: parsed.length,
+      questions: parsed
+    }
+  }));
+
+  showToast(parsed.length + ' question(s) loaded successfully.');
+}
