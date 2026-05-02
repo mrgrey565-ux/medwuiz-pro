@@ -691,11 +691,11 @@ function selectMode(mode) {
   updateTimerDisplay();
 }
 
-function setTimerPreset(sec) {
+function setTimerPreset(sec, btn) {
   vibrate(20);
   timePerQuestion = sec;
   document.querySelectorAll('.timer-preset').forEach(p => p.classList.remove('active'));
-  if (event && event.target) event.target.classList.add('active');
+  if (btn) btn.classList.add('active'); // ✅ explicit parameter, no implicit global
   const customMin = document.getElementById('customMinutes');
   if (customMin) customMin.value = '';
   updateTimerDisplay();
