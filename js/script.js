@@ -901,6 +901,11 @@ async function createFolder() {
 // EXAM MODE
 // ═══════════════════════════════════════════════
 function startExam() {
+  if (!questions || questions.length === 0) {
+  showToast('Error: No questions found. Returning home.');
+  setTimeout(() => window.location.href = 'index.html', 1500);
+  return;
+  }
   currentQ             = 0;
   examAnswers          = {};
   flagged              = new Set();
