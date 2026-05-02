@@ -76,30 +76,17 @@ function initPWA() {
   
   const iconURL = canvas.toDataURL('image/png');
 
-  // 2. Generate and inject Manifest dynamically
-  const manifest = {
-    name: "MedQuiz Pro",
-    short_name: "MedQuiz",
-    start_url: "./index.html",
-    display: "standalone",
-    background_color: "#0a0e1a",
-    theme_color: "#0a0e1a",
-    icons: [{ src: iconURL, sizes: "512x512", type: "image/png", purpose: "any maskable" }]
-  };
-  
-  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-  const manifestURL = URL.createObjectURL(manifestBlob);
-
+  // 2. Link to static manifest (fixes 404 when installed)
   const link = document.createElement('link');
   link.rel = 'manifest';
-  link.href = manifestURL;
+  link.href = '/medwuiz-pro/manifest.json';
   document.head.appendChild(link);
 
-  // 3. Listen for the browser install prompt
+  // 3. Listen for the browser install prompt – store it, never auto‑show
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     window.deferredInstallPrompt = e;
-    showInstallBanner(iconURL);
+    // showInstallBanner(iconURL) is intentionally removed here
   });
 }
 
@@ -704,11 +691,11 @@ function selectMode(mode) {
   updateTimerDisplay();
 }
 
-function setTimerPreset(sec) {
+function setTimerPreset(sec, btn) {
   vibrate(20);
   timePerQuestion = sec;
   document.querySelectorAll('.timer-preset').forEach(p => p.classList.remove('active'));
-  if (event && event.target) event.target.classList.add('active');
+  if (btn) btn.classList.add('active'); // ✅ explicit parameter, no implicit global
   const customMin = document.getElementById('customMinutes');
   if (customMin) customMin.value = '';
   updateTimerDisplay();
@@ -788,20 +775,73 @@ async function saveToBank() {
 async function loadBankList() {
   const list = document.getElementById('bankList');
   if (!list) return;
-  const banks = await dbGetAll('banks');
+
+  const [banks, folders] = await Promise.all([dbGetAll('banks'), dbGetAll('folders')]);
+
+  // ---------- QUESTION BANKS SECTION ----------
   if (banks.length === 0) {
     list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">No saved banks yet.</div>';
-    return;
+  } else {
+    list.innerHTML = `
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Question Banks</div>
+      ${banks.map(b => `
+        <div class="bank-item">
+          <div style="flex:1;min-width:0">
+            <span class="bank-item-name">${b.name}</span>
+            <span class="bank-item-meta">${b.count} questions · ${new Date(b.savedAt).toLocaleDateString()}</span>
+          </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-xs" onclick="loadBank('${b.name}')">Load</button>
+            <button class="btn btn-ghost btn-xs" onclick="moveBankToFolder('${b.name}')">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:2px;">
+                <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.89l-1.1-1.7A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+                <path d="M8 10h.01M8 13h.01M8 16h.01" stroke-width="1.5" opacity="0.6"/>
+              </svg>
+              Move
+            </button>
+            <button class="btn btn-red btn-xs" onclick="deleteBank('${b.name}')">Delete</button>
+          </div>
+        </div>`).join('')}
+    `;
   }
-  list.innerHTML = banks.map(b => `
-    <div class="bank-item">
-      <span class="bank-item-name">${b.name}</span>
-      <span class="bank-item-meta">${b.count} questions · ${new Date(b.savedAt).toLocaleDateString()}</span>
-      <div style="display:flex;gap:4px">
-        <button class="btn btn-primary btn-xs" onclick="loadBank('${b.name}')">Load</button>
-        <button class="btn btn-red btn-xs"     onclick="deleteBank('${b.name}')">Delete</button>
-      </div>
-    </div>`).join('');
+
+  // ---------- FOLDERS SECTION (injected inside bank modal) ----------
+  const folderSection = document.getElementById('bankFolderSection');
+  if (!folderSection) return; // section is only in index.html bankModal
+
+  // Premium folder SVG used for each folder
+  const folderIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.89l-1.1-1.7A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+    <path d="M8 10h.01M8 13h.01M8 16h.01" stroke-width="1.5" opacity="0.6"/>
+  </svg>`;
+
+  if (folders.length === 0) {
+    folderSection.innerHTML = `
+      <div style="font-size:11px;color:var(--text-muted);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.05em">Folders</div>
+      <div style="font-size:12px;color:var(--text-muted);padding:10px 0">No folders yet. Create one below.</div>`;
+  } else {
+    folderSection.innerHTML = `
+      <div style="font-size:11px;color:var(--text-muted);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.05em">Folders</div>
+      ${folders.map(f => `
+        <div class="bank-item" style="flex-direction:column;align-items:flex-start;gap:6px">
+          <div style="display:flex;width:100%;align-items:center;gap:8px">
+            <span style="display:inline-flex;align-items:center;color:var(--accent);">${folderIconSVG}</span>
+            <span class="bank-item-name" style="flex:1">${f.folderName}</span>
+            <span class="bank-item-meta">${(f.banks || []).length} bank sets · ${(f.questions || []).length} saved Qs</span>
+            <button class="btn btn-red btn-xs" onclick="deleteFolder('${f.folderName}')">Delete</button>
+          </div>
+          ${(f.banks || []).length > 0 ? `
+            <div style="padding-left:28px;width:100%">
+              ${(f.banks).map(bName => `
+                <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-top:1px solid var(--border)">
+                  <span style="font-size:12px;flex:1;color:var(--text-secondary)">${bName}</span>
+                  <button class="btn btn-primary btn-xs" onclick="loadBankByName('${bName}')">Load</button>
+                  <button class="btn btn-ghost btn-xs" onclick="removeBankFromFolder('${f.folderName}','${bName}')">Remove</button>
+                </div>`).join('')}
+            </div>` : ''}
+        </div>`).join('')}
+    `;
+  }
 }
 
 async function loadBank(name) {
@@ -914,6 +954,11 @@ async function createFolder() {
 // EXAM MODE
 // ═══════════════════════════════════════════════
 function startExam() {
+  if (!questions || questions.length === 0) {
+  showToast('Error: No questions found. Returning home.');
+  setTimeout(() => window.location.href = 'index.html', 1500);
+  return;
+  }
   currentQ             = 0;
   examAnswers          = {};
   flagged              = new Set();
@@ -2191,22 +2236,79 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ── Service Worker ──
+  // ── Service Worker (fix: use real sw.js with correct scope) ──
   if ('serviceWorker' in navigator) {
-    const swCode = `
-      self.addEventListener('install', e => self.skipWaiting());
-      self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-      self.addEventListener('fetch', e => {
-        e.respondWith(
-          caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
-            const clone = resp.clone();
-            caches.open('medquiz-v1').then(c => c.put(e.request, clone));
-            return resp;
-          }).catch(() => caches.match(e.request)))
-        );
-      });`;
-    const blob  = new Blob([swCode], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl).catch(() => {});
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/medwuiz-pro/sw.js', {
+        scope: '/medwuiz-pro/'
+      }).then(reg => {
+        console.log('[SW] Registered, scope:', reg.scope);
+      }).catch(err => {
+        console.warn('[SW] Registration failed:', err);
+      });
+    });
   }
 });
+
+// ──────────────────────────────────────────
+// FOLDER / BANK WIRING (Priority 2)
+// ──────────────────────────────────────────
+
+async function moveBankToFolder(bankName) {
+  const folders = await dbGetAll('folders');
+  if (folders.length === 0) {
+    showToast('No folders yet! Create a folder first.');
+    return;
+  }
+  const folderNames = folders.map(f => f.folderName);
+  const chosen = prompt(
+    `Move "${bankName}" to folder:\n${folderNames.map((n, i) => `${i + 1}. ${n}`).join('\n')}\n\nType folder name:`
+  );
+  if (!chosen || !chosen.trim()) return;
+
+  const folder = await dbGet('folders', chosen.trim());
+  if (!folder) { showToast('Folder not found.'); return; }
+
+  if (!folder.banks) folder.banks = [];
+  if (folder.banks.includes(bankName)) { showToast('Already in that folder.'); return; }
+
+  folder.banks.push(bankName);
+  await dbPut('folders', folder);
+  showToast(`"${bankName}" moved to folder "${chosen.trim()}".`);
+  loadBankList();
+}
+
+async function loadBankByName(bankName) {
+  await loadBank(bankName);
+}
+
+async function removeBankFromFolder(folderName, bankName) {
+  const folder = await dbGet('folders', folderName);
+  if (!folder) return;
+  folder.banks = (folder.banks || []).filter(b => b !== bankName);
+  await dbPut('folders', folder);
+  showToast(`Removed from folder.`);
+  loadBankList();
+}
+
+async function deleteFolder(folderName) {
+  if (!confirm(`Delete folder "${folderName}"? Bank sets inside are NOT deleted.`)) return;
+  await dbDelete('folders', folderName);
+  showToast(`Folder "${folderName}" deleted.`);
+  loadBankList();
+}
+
+async function createFolderFromBank() {
+  const input = document.getElementById('bankFolderNameInput');
+  const name  = input ? input.value.trim() : '';
+  if (!name) { showToast('Enter a folder name.'); return; }
+  const existing = await dbGet('folders', name);
+  if (existing) { showToast('Folder already exists.'); return; }
+  await dbPut('folders', { folderName: name, banks: [], questions: [] });
+  if (input) input.value = '';
+  showToast(`Folder "${name}" created!`);
+  vibrate(40);
+  loadBankList();
+}
+
+}
